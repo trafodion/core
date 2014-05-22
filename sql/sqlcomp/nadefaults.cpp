@@ -1717,6 +1717,7 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
   DD_____(HBASE_CATALOG,                        "HBASE"),
   DDkwd__(HBASE_CHECK_AND_UPDEL_OPT,		"ON"),
 
+ DDkwd__(HBASE_COMPUTE_DOP_USING_TABLE_SIZES,        "ON"),
  DDkwd__(HBASE_COPROCESSORS,		             "ON"),
 
  DDkwd__(HBASE_CREATE_OLD_MD_FOR_UPGRADE_TESTING,   "OFF"),
@@ -1728,7 +1729,7 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
  DDui___(HBASE_MAX_COLUMN_VAL_LENGTH,                  "1000"),
  DDui___(HBASE_MAX_ESPS,                        "9999"),
  DDui___(HBASE_MAX_NUM_SEARCH_KEYS,                  "512"),
- DDui___(HBASE_MIN_BYTES_PER_ESP_PARTITION,     "67108864"),
+ DDui1__(HBASE_MIN_BYTES_PER_ESP_PARTITION,     "67108864"),
 
   DDkwd__(HBASE_NATIVE_IUD,		"OFF"),
 

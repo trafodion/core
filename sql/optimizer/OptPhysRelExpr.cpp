@@ -12103,9 +12103,12 @@ Context* RelRoot::createContextForAChild(Context* myContext,
     Lng32 nodesInActiveClusters =  gpClusterInfo->numOfSMPs();
 
 
+    NABoolean canAdjustDoP = TRUE;
+
     if(CURRSTMT_OPTDEFAULTS->isFakeHardware())
     {
       nodesInActiveClusters = defs.getAsLong(DEF_NUM_NODES_IN_ACTIVE_CLUSTERS);
+      canAdjustDoP = FALSE;
     }
 
     countOfCPUs = cpusPerNode * nodesInActiveClusters;
@@ -12128,6 +12131,8 @@ Context* RelRoot::createContextForAChild(Context* myContext,
 
          pipelinesPerCPU = pne / countOfCPUs;
       }
+
+      canAdjustDoP = FALSE;
     }
 
     // final adjustment to countOfCPUs and pipelinesPerCPU - special cases
@@ -12158,6 +12163,7 @@ Context* RelRoot::createContextForAChild(Context* myContext,
              CURRSTMT_OPTDEFAULTS->setRequiredESPs(partns);
              CURRSTMT_OPTDEFAULTS->setRequiredScanDescForFastDelete(
                                 ((Delete*)x)->getScanIndexDesc());
+             canAdjustDoP = FALSE;
           }
        } 
     }
@@ -12191,6 +12197,8 @@ Context* RelRoot::createContextForAChild(Context* myContext,
          countOfCPUs = partns;
          pipelinesPerCPU = 1;
          CURRSTMT_OPTDEFAULTS->setRequiredESPs(partns);
+
+         canAdjustDoP = FALSE;
        }
     } 
 
@@ -12214,6 +12222,8 @@ Context* RelRoot::createContextForAChild(Context* myContext,
           countOfCPUs = partns;
           pipelinesPerCPU = 1;
           CURRSTMT_OPTDEFAULTS->setRequiredESPs(partns);
+
+          canAdjustDoP = FALSE;
        }
     }
    
@@ -12265,7 +12275,42 @@ Context* RelRoot::createContextForAChild(Context* myContext,
              countOfCPUs = partns;
              pipelinesPerCPU = 1;
              CURRSTMT_OPTDEFAULTS->setRequiredESPs(partns);
+             canAdjustDoP = FALSE;
           }
+       }
+    }
+             
+                               
+    Lng32 minBytesPerESP = defs.getAsLong(HBASE_MIN_BYTES_PER_ESP_PARTITION);
+
+    if ( CmpCommon::getDefault(HBASE_COMPUTE_DOP_USING_TABLE_SIZES) != DF_ON )
+      canAdjustDoP = FALSE;
+
+    // Adjust DoP based on table size, if possible
+    if ( canAdjustDoP ) {
+       QueryAnalysis* qAnalysis = CmpCommon::statement()->getQueryAnalysis();
+       TableAnalysis * tAnalysis = qAnalysis->getLargestTable();
+   
+       if ( tAnalysis ) {
+          CostScalar tableSize = tAnalysis->getCardinalityOfBaseTable() *
+                                 tAnalysis->getRecordSizeOfBaseTable() ;
+   
+          CostScalar esps = tableSize / CostScalar(minBytesPerESP);
+   
+          countOfCPUs = (Lng32)(esps.getCeiling().getValue());
+   
+          if ( countOfCPUs < 1 )
+             countOfCPUs = 1;
+          else {
+   
+            Lng32 maxCPUs =  cpusPerNode * nodesInActiveClusters;
+   
+            if ( countOfCPUs >  maxCPUs * pipelinesPerCPU )
+               countOfCPUs = maxCPUs * pipelinesPerCPU;
+          }
+   
+          pipelinesPerCPU = 1;
+   
        }
     }
 
@@ -14521,7 +14566,7 @@ FileScan::createRangePartFuncForHbaseTableUsingStats(
 
   NABoolean useMCSplit = (CmpCommon::getDefault(HBASE_RANGE_PARTITIONING_MC_SPLIT) == DF_ON);
 
-  if ( bytesPerESP == 0 || partns == 1 ||
+  if ( partns == 1 ||
        (!useMCSplit && (partitioningKeyColumns.entries() != 1 ))) // if partition key has more than one column but MC stats based 
                                                                   // partitioning is disabled, then return
     return NULL;
