@@ -6022,6 +6022,10 @@ RelExpr * SampleScanRule::nextSubstitute(RelExpr * before,
   RelSample * befSample = (RelSample *)before;
   Scan * befScan = (Scan *)(before->child(0).getPtr());
 
+  // Sample node above an HBase scan should have been removed in Binder,
+  // after pushing sampling into the scan itself.
+  CMPASSERT(!befScan->isHbaseTable());
+
   CMPASSERT(befSample->isSimpleRandomRelative() == TRUE);
 
   // If scan is on VP table, then must be single partition scan

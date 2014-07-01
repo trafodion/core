@@ -9850,6 +9850,9 @@ const NAString HbaseAccess::getText() const
   NAString op(CmpCommon::statementHeap());
   NAString tname(getTableName().getText(),CmpCommon::statementHeap());
 
+  if (isSampleScan() == TRUE)
+    op = "sample_";
+
   if (getIndexDesc() == NULL OR getIndexDesc()->isClusteringIndex())
     {
       if (isSeabaseTable())

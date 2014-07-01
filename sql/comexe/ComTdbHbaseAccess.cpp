@@ -93,7 +93,8 @@ ComTdbHbaseAccess::ComTdbHbaseAccess(
 				     char * port,
 				     char * interface,
                                      char * zkPort,
-				     HbasePerfAttributes * hbasePerfAttributes
+				     HbasePerfAttributes * hbasePerfAttributes,
+				     Float32 samplingRate
 				     )
 : ComTdb( ComTdb::ex_HBASE_ACCESS,
 	  eye_HBASE_ACCESS,
@@ -170,7 +171,8 @@ ComTdbHbaseAccess::ComTdbHbaseAccess(
   interface_(interface),
   zkPort_(zkPort),
   hbasePerfAttributes_(hbasePerfAttributes),
-  LoadPrepLocation_ (NULL)
+  LoadPrepLocation_ (NULL),
+  samplingRate_(samplingRate)
 {};
 
 ComTdbHbaseAccess::ComTdbHbaseAccess(
@@ -269,7 +271,8 @@ ComTdbHbaseAccess::ComTdbHbaseAccess(
   zkPort_(zkPort),
 
   hbasePerfAttributes_(NULL),
-  LoadPrepLocation_(NULL)
+  LoadPrepLocation_(NULL),
+  samplingRate_(-1)
 {
 }
 
