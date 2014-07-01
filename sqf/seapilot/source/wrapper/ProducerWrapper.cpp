@@ -35,6 +35,7 @@
 
 #include "qpidwrapper.h"
 #include "wrapper/amqpwrapper.h"
+#include "common/sp_errors.h"
 #include "common/evl_sqlog_eventnum.h"
 #include "ProducerWrapper.h"
 
@@ -285,7 +286,6 @@ int ProducerWrapper::getSystemConfig()
 
         qpidWrapper_.set_iPAddress (config_.get_iPAddress());
         qpidWrapper_.set_portNumber(config_.get_portNumber());
-        qpidWrapper_.set_mode      (config_.get_mode());
     }
     
     if (config_.get_spDisabled())
