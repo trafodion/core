@@ -155,9 +155,14 @@ void HSSqTableDef::GetLabelInfo(labelDetail detail)
 Lng32 HSTableDef::getColumnNames()
   {
     HSErrorCatcher errorCatcher(retcode_, - UERR_UNABLE_TO_DESCRIBE_COLUMN_NAMES, "DescribeColumnNames()", TRUE);
-    HSFuncExecQuery("CONTROL QUERY DEFAULT DISPLAY_DIVISION_BY_COLUMNS 'ON'"); 
+    if ((!HSGlobalsClass::isHbaseCat(getCatName())) && (!HSGlobalsClass::isHiveCat(getCatName())))
+       HSFuncExecQuery("CONTROL QUERY DEFAULT DISPLAY_DIVISION_BY_COLUMNS 'ON'"); 
+
     Lng32 retcode = DescribeColumnNames();
-    HSFuncExecQuery("CONTROL QUERY DEFAULT DISPLAY_DIVISION_BY_COLUMNS RESET");
+
+    if ((!HSGlobalsClass::isHbaseCat(getCatName())) && (!HSGlobalsClass::isHiveCat(getCatName())))
+       HSFuncExecQuery("CONTROL QUERY DEFAULT DISPLAY_DIVISION_BY_COLUMNS RESET");
+
     return retcode;
   }
 
