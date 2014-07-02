@@ -1,0 +1,87 @@
+#!/bin/sh
+
+if [ $# -lt 2 ]; then
+	echo "usage: $0 <target> <install>"
+	exit 1
+fi
+
+target=$1
+shift
+install=$1
+shift
+
+if [ ! -d "$target" ]; then
+	echo "<target>=$target is not a directory"
+	exit 1
+fi
+
+if [ ! -d "$install" ]; then
+	echo "<install>=$install is not a directory"
+	exit 1
+fi
+
+# change to absolute
+if [ `expr "$target" : '/.*'` -eq 0 ]; then
+	target="$PWD/$target"
+fi
+if [ `expr "$install" : '/.*'` -eq 0 ]; then
+	install="$PWD/$install"
+fi
+
+cwd=$PWD
+cd $install
+. ./sqenv.sh
+if [[ $SQ_MTYPE -eq 64 ]]; then
+   MPI_DIR="opt/hpmpi/lib/linux_amd64"
+else
+   MPI_DIR="opt/hpmpi/lib/linux_ia32"
+fi
+
+SQLIB_DIRS="\
+$MPI_DIR \
+export/lib$SQ_MBTYPE \
+seapilot/export/lib \
+seapilot/thirdparty_export/lib\
+"
+
+branch=`sqid | grep Release | sed -e 's|^.*branch ||' -e 's|,.*||' -e 's|\/|-|'`
+OUT=zgdb-`basename $target`-$branch
+cd $cwd
+
+
+rm -f $OUT
+echo "Creating output file=$OUT"
+
+# setup solib-absolute-prefix
+solib_abs_prefix="set solib-absolute-prefix $target"
+
+# setup solib-search-path
+solib_search_path="set solib-search-path "
+
+# add SQ standard libs
+for dir in $SQLIB_DIRS; do
+	solib_search_path="$solib_search_path$install/$dir:"
+done
+
+cwd=$PWD
+cd $target
+tcwd=$PWD
+tmpdirlist=`find . -type d`
+tgtdirlist=""
+for dir in $tmpdirlist; do
+	cd $tcwd/$dir
+	cnt=`ls -R | grep ':' | wc -l`
+	if [ $cnt -eq 1 ]; then
+		tgtdirlist="$tgtdirlist $dir"
+	fi
+done
+cd $cwd
+
+# add target libs
+for dir in $tgtdirlist; do
+	solib_search_path="$solib_search_path$target/$dir:"
+done
+
+# generate output file
+echo "$solib_abs_prefix" >> $OUT
+echo "$solib_search_path" >> $OUT
