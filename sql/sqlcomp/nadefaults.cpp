@@ -4754,7 +4754,9 @@ float NADefaults::getNumOfESPsPerNodeInFloat() const
    double maxEspPerCpuPerOp = getAsDouble(MAX_ESPS_PER_CPU_PER_OP);
 
    CollIndex cores =
-      (OSIM_isNSKbehavior() || CURRSTMT_OPTDEFAULTS->isFakeHardware()) ?
+     (OSIM_isNSKbehavior() || 
+      (CmpCommon::context() && CURRSTMT_OPTDEFAULTS->isFakeHardware())
+     ) ?  
         getAsLong(DEF_NUM_SMP_CPUS) :
         gpClusterInfo->numberOfCpusPerSMP();
 
@@ -4766,7 +4768,9 @@ ULng32 NADefaults::getTotalNumOfESPsInCluster() const
    float espsPerNode = getNumOfESPsPerNodeInFloat();
 
    CollIndex numOfNodes = 
-     (OSIM_isNSKbehavior() || CURRSTMT_OPTDEFAULTS->isFakeHardware()) ?  
+     (OSIM_isNSKbehavior() || 
+      (CmpCommon::context() && CURRSTMT_OPTDEFAULTS->isFakeHardware())
+     ) ?  
      getAsLong(DEF_NUM_NODES_IN_ACTIVE_CLUSTERS) :  // fake or NSK
      gpClusterInfo->numOfSMPs();                    // non-fake
    
