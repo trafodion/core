@@ -1,6 +1,6 @@
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 2013-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 2014 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,26 +17,12 @@
 // @@@ END COPYRIGHT @@@
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include "vers.h"
+#include <string.h>
+#include "SCMVersHelp.h"
 
-#define SQ_LIO_SIGNAL_REQUEST_REPLY (SIGRTMAX - 4)
+// component version for libraries
+#define VERS_CV_MAJ 1
+#define VERS_CV_MIN 0
+#define VERS_CV_UPD 1
 
-VERS_LIB(libseabasesig)
-
-DEFINE_COMP_DOVERS(rtsigblock)
-
-static int monitor_rtsigblock_proc() {
-    sigset_t lv_sig_set;
-    // Setup signal handling
-    sigemptyset(&lv_sig_set);
-    sigaddset(&lv_sig_set, SQ_LIO_SIGNAL_REQUEST_REPLY);
-    int err = pthread_sigmask(SIG_BLOCK, &lv_sig_set, NULL);
-    if (err)
-        abort();
-    return 0;
-}
-
-static int dummy_var = monitor_rtsigblock_proc();
-
+VERS_LIB(win_libwin)
