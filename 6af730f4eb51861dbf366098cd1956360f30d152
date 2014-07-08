@@ -1,0 +1,14 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Chris Sheedy <chris.sheedy@hp.com>
+Code-Review+2: Hans Zeller <hans.zeller@hp.com>
+Code-Review+1: Qifan Chen <qifan.chen@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Suresh Subbiah <suresh.subbiah@hp.com>
+Workflow+1: Suresh Subbiah <suresh.subbiah@hp.com>
+Code-Review+2: Selvaganesan Govindarajan <selva.ganesan@hp.com>
+Workflow+1: Selvaganesan Govindarajan <selva.ganesan@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 08 Jul 2014 09:57:45 +0000
+Reviewed-on: https://review.trafodion.org/29
+Project: trafodion/core
+Branch: refs/heads/master
