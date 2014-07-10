@@ -351,6 +351,10 @@ CmpContext::~CmpContext()
   // reset thread global variables
   CmpMain::SiKeyArray_ = NULL;
   CmpMain::SiKeyArraySize_ = 0;
+#ifdef NA_DEBUG_GUI
+  if (CmpMain::msGui_ == this)
+      CmpMain::msGui_ = NULL;
+#endif
   HSGlobalsClass::resetJitLogThresholdHash();
 }
 

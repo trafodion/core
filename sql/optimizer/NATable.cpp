@@ -77,6 +77,7 @@
 #define MAX_NODE_NAME 9
 
 #include "SqlParserGlobals.h"
+#include "CmpMain.h"
 
 //#define __ROSETTA
 //#include "rosetta_ddl_include.h"
@@ -577,6 +578,7 @@ void HistogramCache::createColStatsList
                     preFetch,
                     (Int64) CURRSTMT_OPTDEFAULTS->histDefaultSampleSize()
                     );   
+     
   }
 
   //check if we are using the cache

@@ -314,7 +314,7 @@ void CmpMain::initGuiDisplay(RelExpr *queryExpr)
 #ifdef NA_DEBUG_GUI
   NABoolean CmpMain::guiDisplay(Sqlcmpdbg::CompilationPhase phase, RelExpr* q)
   {
-#if defined(NA_WINNT)  || defined(NA_LINUX_QT)
+#if defined(NA_LINUX_QT)
       if (((RelRoot *)q)->getDisplayTree() && CmpMain::pExpFuncs_)
       {
         initializeGUIData(CmpMain::pExpFuncs_);
@@ -487,6 +487,15 @@ void CmpMain::sqlcompCleanup(const char *input_str,
     // interval has expired
     cmpTracker->logCompilerStatusOnInterval(trackingInterval);
   }
+  
+#if defined(NA_LINUX_QT)
+  if( dlptr  &&  CmpMain::msGui_ == CmpCommon::context() && DisplayGraph)
+  {	
+    int ret = dlclose(dlptr);
+    dlptr = NULL;
+    CmpMain::msGui_ = NULL;
+  }	
+#endif
 
 }
 
@@ -631,8 +640,6 @@ CmpMain::ReturnStatus CmpMain::sqlcomp(QueryText& input,            //IN
   *gen_code = 0;
   *gen_code_len = 0;
   RelExpr *queryExpr = NULL;
-
-  DisplayGraph = TRUE;
 
   // Init Query Analysis Global Instance
   QueryAnalysis* queryAnalysis = CmpCommon::statement()->initQueryAnalysis();
@@ -871,7 +878,6 @@ CmpMain::ReturnStatus CmpMain::sqlcompStatic
   *gen_code_len = 0;
   RelExpr *queryExpr = NULL;
 
-  DisplayGraph = TRUE;
 
   QueryAnalysis* queryAnalysis = CmpCommon::statement()->initQueryAnalysis();
   //CompGlobals* globes = CompGlobals::InitGlobalInstance();
@@ -1446,6 +1452,8 @@ CmpMain::ReturnStatus CmpMain::sqlcomp(const char *input_str,           //IN
   try{
 
 
+    NABoolean oldDisplayGraph = DisplayGraph;
+    DisplayGraph = ((RelRoot *)queryExpr)->getDisplayTree();
 
     CmpMain::ReturnStatus  ok =
           compile(input_str, charset,
@@ -1460,7 +1468,8 @@ CmpMain::ReturnStatus CmpMain::sqlcomp(const char *input_str,           //IN
 		   cacheable,
                    begTime,
                    shouldLog);
-
+                   
+    DisplayGraph = oldDisplayGraph;
 
     return ok;
   }
@@ -1592,13 +1601,6 @@ CmpMain::ReturnStatus CmpMain::compile(const char *input_str,           //IN
   ActiveSchemaDB()->createStmtTables();
   BindWA bindWA(ActiveSchemaDB(), CmpCommon::context());
 
-
-#ifdef NA_DEBUG_GUI
-  if (useQueryCache && ((RelRoot *)queryExpr)->getDisplayTree()
-      && CmpMain::pExpFuncs_
-      ) {
-  }
-#endif
 
   if (useQueryCache && CmpCommon::getDefault(NSK_DBG) == DF_ON) {
     useQueryCache = FALSE; // LCOV_EXCL_LINE   
@@ -2042,8 +2044,6 @@ CmpMain::ReturnStatus CmpMain::compile(const char *input_str,           //IN
   GUI_or_LOG_DISPLAY(
     Sqlcmpdbg::AFTER_PRECODEGEN, NSK_DBG_SHOW_TREE_AFTER_PRE_CODEGEN, "preCodegen");
 
-  DisplayGraph = FALSE;
-
   MonitorMemoryUsage_Enter("Generator");
   // generate code
   ENTERMAIN_TASK_MONITOR( generatorTime );
@@ -2066,8 +2066,6 @@ CmpMain::ReturnStatus CmpMain::compile(const char *input_str,           //IN
   
   GUI_or_LOG_DISPLAY(
     Sqlcmpdbg::AFTER_CODEGEN, NSK_DBG_SHOW_TREE_AFTER_CODEGEN, "codegen");
-
-  DisplayGraph = FALSE;
 
   Lng32 objLength = generator.getFinalObjLength();
   if (objLength <= 0) {
@@ -2231,10 +2229,10 @@ CmpMain::ReturnStatus CmpMain::compile(const char *input_str,           //IN
                 }
 
               } // for each fragment
-
-             CmpMain::pExpFuncs_->fpDisplayTDBTree(Sqlcmpdbg::AFTER_TDBGEN,
-                                                    (ComTdb *)baseAddr,
-                                                    fragDir);
+             if(((RelRoot *)queryExpr)->getDisplayTree())
+               CmpMain::pExpFuncs_->fpDisplayTDBTree(Sqlcmpdbg::AFTER_TDBGEN,
+                                                                                     (ComTdb *)baseAddr,
+                                                                                     fragDir);
 
              // delete the copied object
              delete newCopy;
@@ -2266,12 +2264,6 @@ CmpMain::ReturnStatus CmpMain::compile(const char *input_str,           //IN
                 retval = DISPLAYDONE;
               }
         } // display TCB tree
-        //clean up GUI Debugger
-        if ( CmpMain::msGui_ == CmpCommon::context() )
-        { 
-          CmpMain::pExpFuncs_->fpCleanUp();
-          CmpMain::pExpFuncs_ = NULL;
-        }
 #endif // NA_DEBUG_GUI
         // "cb" is eventually freed by heap's destructor.
         // "cb" cannot be safely freed here because mxcmp-to-CLI IPC code
@@ -2467,15 +2459,6 @@ CmpMain::ReturnStatus CmpMain::compile(const char *input_str,           //IN
 
   if (fragmentDir)
     *fragmentDir = generator.removeFragmentDir();
-
-#if defined(NA_LINUX_QT)
-  if( dlptr  &&  CmpMain::msGui_ == CmpCommon::context() )
-  {
-    int ret = dlclose(dlptr);
-    dlptr = NULL;
-    CmpMain::msGui_ = NULL ;
-  }
-#endif
 
   return retval;
 }
