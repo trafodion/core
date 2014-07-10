@@ -237,7 +237,7 @@ public :
   NABoolean showQueryStats() { return showQueryStats_; }
   void setShowQueryStats() { showQueryStats_ = TRUE; }
   void resetShowQueryStats() { showQueryStats_ = FALSE; }
-     
+
   virtual ~CmpContext();
 
   enum InternalCompileEnum

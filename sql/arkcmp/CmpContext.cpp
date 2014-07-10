@@ -124,6 +124,7 @@ CmpContext::CmpContext(UInt32 f, CollHeap * h)
   parserResetIsNeeded_(FALSE),
   sqlTextBuf_(NULL),
   uninitializedSeabaseErrNum_(0),
+
   transMode_(TransMode::IL_NOT_SPECIFIED_,    // init'd below
              TransMode::READ_WRITE_,
              TransMode::OFF_)
