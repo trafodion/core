@@ -77,6 +77,7 @@
 #define MAX_NODE_NAME 9
 
 #include "SqlParserGlobals.h"
+#include "CmpMain.h"
 
 //#define __ROSETTA
 //#include "rosetta_ddl_include.h"
@@ -565,6 +566,13 @@ void HistogramCache::createColStatsList
         }
      }
 
+     // disable GUI debugger display for metadata queries
+     // in case it is enabled
+#ifdef NA_DEBUG_GUI
+     CmpContext* oldmsGui = CmpMain::msGui_;
+     CmpMain::msGui_ = NULL;
+#endif
+
      FetchHistograms(qualifiedName,
                      type,
                     (colArray),
@@ -577,6 +585,13 @@ void HistogramCache::createColStatsList
                     preFetch,
                     (Int64) CURRSTMT_OPTDEFAULTS->histDefaultSampleSize()
                     );   
+
+     
+     // restore the GUI display setting
+#ifdef NA_DEBUG_GUI
+     CmpMain::msGui_ = oldmsGui;
+#endif
+
   }
 
   //check if we are using the cache

@@ -376,7 +376,6 @@ void CmpMain::loadSqlCmpDbgDLL_msGui()
 }
 #endif // NA_DEBUG_GUI
 
-
 #ifndef NDEBUG
 #define ENTER_TASK_MONITOR(x) \
   { if (CURRSTMT_OPTDEFAULTS->compileTimeMonitor()) x.enter(); }
@@ -487,6 +486,16 @@ void CmpMain::sqlcompCleanup(const char *input_str,
     // interval has expired
     cmpTracker->logCompilerStatusOnInterval(trackingInterval);
   }
+
+  // shutdown GUI debugger ddl and reset global variables
+#if defined(NA_LINUX_QT)
+  if( dlptr  &&  CmpMain::msGui_ == CmpCommon::context() )
+  {
+    int ret = dlclose(dlptr);
+    dlptr = NULL;
+    CmpMain::msGui_ = NULL ;
+  }
+#endif
 
 }
 
@@ -2478,7 +2487,7 @@ CmpMain::ReturnStatus CmpMain::compile(const char *input_str,           //IN
 #endif
 
   return retval;
-}
+} 
 
 // constructor for query stmt attribute settings
 QryStmtAttributeSet::QryStmtAttributeSet() : nEntries(0) {}

@@ -44,6 +44,7 @@
 
 #include "CmpDDLCatErrorCodes.h"
 #include "Globals.h"
+#include "CmpMain.h"
 
 // defined in CmpDescribe.cpp
 extern short CmpDescribeSeabaseTable ( 
@@ -5957,6 +5958,13 @@ desc_struct * CmpSeabaseDDL::getSeabaseTableDesc(const NAString &catName,
              else
               switched = TRUE;
 
+          // disable GUI debugger display for metadata queries
+          // in case it is enabled
+#ifdef NA_DEBUG_GUI
+          CmpContext* oldmsGui = CmpMain::msGui_;
+          CmpMain::msGui_ = NULL;
+#endif
+
           if (sendAllControlsAndFlags())
             return NULL;
 
@@ -5975,6 +5983,11 @@ desc_struct * CmpSeabaseDDL::getSeabaseTableDesc(const NAString &catName,
           CmpCommon::diags()->mergeAfter(*tempDiags);
           tempDiags->clear();
           tempDiags->deAllocate();
+
+          // restore the GUI debugger display control 
+#ifdef NA_DEBUG_GUI
+          CmpMain::msGui_ = oldmsGui;
+#endif
 
           // switch back the internal commpiler, ignore error for now
           if (switched == TRUE)

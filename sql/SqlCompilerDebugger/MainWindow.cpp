@@ -32,9 +32,7 @@
   The QApplication should be constructed before any UI control variables, e.g. the MainWindow.
   Otherwise, the UI cannot be launch due to errors.
 */
-static int argc = 1;
-static char **argv;
-QApplication application_(argc, argv);
+QApplication* application_ = NULL;
 
 /*
   The MainWindow must be constucted after the QApplication.
@@ -86,11 +84,12 @@ NABoolean MainWindow::Run()
 {
     IsBackToSqlCompiler_ = FALSE;
     IsQuiting = FALSE;
+
     while (!IsBackToSqlCompiler_)
     {
         if (!IsQuiting)
         {
-            application_.processEvents(QEventLoop::WaitForMoreEvents |
+            application_->processEvents(QEventLoop::WaitForMoreEvents |
                                        QEventLoop::EventLoopExec);
         }
         else
