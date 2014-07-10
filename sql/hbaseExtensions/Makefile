@@ -28,17 +28,25 @@ JAVA6_VERSION               =1.6
 JAVA6_SUFFIX                =-java6
 BLD_HBASE_EXT_JARNAME_1_6   =trafodion-hbase-extensions-$(TRAFODION_VER)$(JAVA6_SUFFIX).jar
 
+MANIF			    =$(MY_SQROOT)/export/include/SCMBuildMan.mf
+VFILE			    =trafodion-hbase-extensions.jar.version
+VSFILE			    =$(VFILE)s
+
 .NOTPARALLEL: all
 
 all: build_all
 
 jdk_1_7:
+	cat $(MANIF) $(VFILE) > $(VSFILE)
 	set -o pipefail && $(MAVEN) package -DskipTests | tee -a build_extensions.log
 	cp -pf target/$(BLD_HBASE_EXT_JARNAME) $(MY_SQROOT)/export/lib
+	$(RM) $(VSFILE)
 
 jdk_1_6:
+	cat $(MANIF) $(VFILE) > $(VSFILE)
 	set -o pipefail && JAVA_HOME=$(JAVAJDK16) $(MAVEN) package -Djava.version=$(JAVA6_VERSION) -Dext-suffix=$(JAVA6_SUFFIX) -DskipTests | tee -a build_extensions.log
 	cp -pf target/$(BLD_HBASE_EXT_JARNAME_1_6) $(MY_SQROOT)/export/lib
+	$(RM) $(VSFILE)
 
 build_all: jdk_1_6 jdk_1_7
 
