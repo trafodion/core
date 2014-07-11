@@ -787,6 +787,13 @@ public:
 	       NABoolean visitVEGMembers = FALSE,
 	       NABoolean visitIndexColDefs = FALSE);
 
+  // A variation of the above method that saves the matching ItemExprs in a
+  // ItemExprList. The order of occurences of these ItemExprs is maintained.
+  void findAll(OperatorTypeEnum wantedType,
+	       ItemExprList& result,
+	       NABoolean visitVEGMembers = FALSE,
+	       NABoolean visitIndexColDefs = FALSE);
+
   // Find the number of elements in the expression tree, and the maximum tree depth.
   Lng32 getTreeSize(Lng32& maxDepth, NABoolean giveUpThreshold);
 

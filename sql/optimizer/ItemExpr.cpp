@@ -1474,6 +1474,89 @@ void ItemExpr::findAll(OperatorTypeEnum wantedType,
 
 } // ItemExpr::findAll
 
+void ItemExpr::findAll(OperatorTypeEnum wantedType,
+		       ItemExprList& result,
+		       NABoolean visitVEGMembers,
+		       NABoolean visitIndexColDefs)
+{
+  OperatorTypeEnum myType = getOperatorType();
+
+  if (myType == wantedType)
+    result.insert(this);
+
+  // for VEGReferences and VEGPredicates (both having arity 0),
+  // look at all the VEG members as well, if requested by the caller
+  if (visitVEGMembers AND
+      (myType == ITM_VEG_REFERENCE OR myType == ITM_VEG_PREDICATE))
+    {
+      VEG *veg;
+      ValueId vegM;
+
+      if (myType == ITM_VEG_REFERENCE)
+	veg = ((VEGReference *) this)->getVEG();
+      else
+	veg = ((VEGPredicate *) this)->getVEG();
+
+      if(! veg->seenBefore())
+      {
+	      veg->markAsSeenBefore();
+	      for (ValueId x = veg->getAllValues().init();
+			 veg->getAllValues().next(x);
+			 veg->getAllValues().advance(x))
+
+	      x.getItemExpr()->findAll(wantedType,
+			       result,
+			       visitVEGMembers,
+			       visitIndexColDefs);
+
+	      veg->markAsNotSeenBefore();
+      }
+    }
+
+  // for indexcolumns, look at the corresponding base column
+  // or expression from the base table, if requested
+  if (visitIndexColDefs AND myType == ITM_INDEXCOLUMN)
+    {
+      ((IndexColumn *) this)->getDefinition().getItemExpr()->
+	findAll(wantedType,
+		result,
+		visitVEGMembers,
+		visitIndexColDefs);
+    }
+
+  // recurse
+  Int32 nc = getArity();
+
+  for (Lng32 i = 0; i < (Lng32)nc; i++)
+    child(i)->findAll(wantedType,
+		      result,
+		      visitVEGMembers,
+		      visitIndexColDefs);
+
+  if ( nc == 0 )
+    switch ( myType )
+      {
+      case ITM_VALUEIDUNION:
+	{
+          // NB: ValueIdUnion objects can have more than 2 sources!
+	  ValueIdUnion * tempUnion = (ValueIdUnion*) this;
+          for (Lng32 i = 0; i < (Lng32)tempUnion->entries(); i++)
+            {
+              tempUnion->getSource(i).getItemExpr()->
+                findAll (wantedType,
+                         result,
+                         visitVEGMembers,
+                         visitIndexColDefs);
+            }
+	  break;
+	}
+
+      default:
+	break;
+      }
+
+} // ItemExpr::findAll
+
 Lng32 ItemExpr::getTreeSize(Lng32& maxDepth, NABoolean giveUpThreshold)
 {
   Lng32 currentSize=1;
