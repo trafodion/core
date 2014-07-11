@@ -25,6 +25,7 @@ cqd hbase_async_drop_table 'OFF';
 cqd hbase_serialization 'ON';
 --cqd hbase_coprocessors 'OFF';
 cqd hbase_filter_preds 'ON';
+cqd pcode_opt_flags '28';
 set SCHEMA $$TEST_SCHEMA$$;
 #endif
 
