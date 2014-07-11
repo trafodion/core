@@ -22,11 +22,11 @@
 //
 
 #include <platform_ndcs.h>
-#ifdef NSK_PLATFORM
+/*#ifdef NSK_PLATFORM
 #include <sqlWin.h>
 #else
 #include <sql.h>
-#endif
+#endif*/
 #include <sqlext.h>
 #include "JdbcDriverGlobal.h"
 #include "org_trafodion_jdbc_t2_SQLMXConnection.h"
@@ -37,6 +37,7 @@
 #endif
 #include "CoreCommon.h"
 #include "SrvrCommon.h"
+#include "SrvrOthers.h"
 #include "CSrvrConnect.h"
 #include "Debug.h"
 #include "GlobalInformation.h"
@@ -135,7 +136,6 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_setTransaction
 
 	// Null out outputValueList before we pass it down
 	CLEAR_LIST(outputValueList);
-#ifndef TODO
 	odbc_SQLSvc_GetSQLCatalogs_sme_(NULL, NULL,
 		&exception_,
 		dialogueId,
@@ -161,7 +161,6 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_setTransaction
 		NULL,
 		NULL,
 		NULL);
-#endif
 	switch (exception_.exception_nr)
 	{
 	case CEE_SUCCESS:

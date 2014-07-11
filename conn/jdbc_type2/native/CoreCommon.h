@@ -24,6 +24,7 @@
 
 #include <set>
 #include <string>
+#include <cstring>
 #include "tip.h"
 
 #define MAX_STMT_LABEL_LEN		512
@@ -179,14 +180,14 @@ typedef struct _SRVR_GLOBAL_Def
 	tip_handle_t		tip_gateway;
 	char				*pxid_url;
 	long long			local_xid;
-	UINT				xid_length;
+	//UINT				xid_length;
 
-	LPCRITICAL_SECTION	CSObject;
-	BOOL				failOverEnabled;
+	//LPCRITICAL_SECTION	CSObject;
+	bool				failOverEnabled;
 	long				clientACP;
 	long				clientErrorLCID;
 	long				clientLCID;
-	BOOL				useCtrlInferNCHAR;
+	bool				useCtrlInferNCHAR;
 	char				NskSystemCatalogName[MAX_NSKCATALOGNAME_LEN+1]; // MP system catalog name
 	char				DefaultCatalog[129];
 	char				DefaultSchema[129];
@@ -196,7 +197,7 @@ typedef struct _SRVR_GLOBAL_Def
 //	std::set<std::string> setOfCQD; // Added for MFC 
 	int					moduleCaching;          // Added for MFC
 	char				compiledModuleLocation[100]; // Added for MFC
-	BOOL				jdbcProcess;		// This flag is used to determine the query for SQLTables
+	bool				jdbcProcess;		// This flag is used to determine the query for SQLTables
 	short				nowaitOn;
 	short				nowaitFilenum;
 	char				SystemCatalog[129]; // MX system catalog name
@@ -237,13 +238,13 @@ typedef struct tagTIME_TYPE
 
 typedef struct tagTIMESTAMP_TYPE
 {
-	SWORD   year;
-	UCHAR   month;
-	UCHAR   day;
-	UCHAR   hour;
-	UCHAR   minute;
-	UCHAR   second;
-	UCHAR   fraction[4]; // This has been treated as UDWORD by SQL/MX. However this is not
+	//SWORD   year;
+	//UCHAR   month;
+	//UCHAR   day;
+	//UCHAR   hour;
+	//UCHAR   minute;
+	//UCHAR   second;
+	//UCHAR   fraction[4]; // This has been treated as UDWORD by SQL/MX. However this is not
 	// word aligned. We should ensure that we don't treat this as UDWORD
 	// without copying to temp variable. Same is the case when we do copy.
 	//  I am using sizeof (UDWORD) for copying to and fro.
@@ -302,7 +303,7 @@ typedef struct {
 	SQLValue_def *_buffer;
 } SQLValueList_def;
 
-typedef struct {
+typedef struct tag {
 	long version;
 	long dataType;
 	long datetimeCode;

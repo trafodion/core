@@ -27,11 +27,11 @@
 #include <wchar.h>
 #include <errno.h>
 #include <time.h>
-#ifdef NSK_PLATFORM
+/*#ifdef NSK_PLATFORM
 #include <sqlWin.h>
 #else
 #include <sql.h>
-#endif
+#endif*/
 #include <sqlext.h>
 #include <sqltypes.h>
 #include <math.h>
@@ -48,6 +48,7 @@
 #include "pThreadsSync.h"
 #endif
 #include "SrvrCommon.h"
+#include "SrvrOthers.h"
 #include "Debug.h"
 #include "GlobalInformation.h"
 #include "org_trafodion_jdbc_t2_T2Driver.h"  //spjrs
@@ -2198,7 +2199,6 @@ func_exit:
 		// Null out outputValueList before we pass it down
 		CLEAR_LIST(outputValueList);
 
-#ifndef TODO	// Linux port Todo:
 		odbc_SQLSvc_GetSQLCatalogs_sme_(NULL, NULL,
 			&exception_,
 			dialogueId,
@@ -2224,7 +2224,6 @@ func_exit:
 			nfkCatalogNm,
 			nfkSchemaNm,
 			nfkTableNm);
-#endif
 
 		if (catalogNm)
 			JNI_ReleaseStringUTFChars(jenv,catalogNm, nCatalogNm);
@@ -2272,10 +2271,10 @@ func_exit:
 
 			if (sqlWarning._length > 0) setSQLWarning(jenv, jobj, &sqlWarning);
 			// Free up outputValueList memory
-			for (int i=0; i < outputValueList._length; i++)
+			/*for (int i=0; i < outputValueList._length; i++)
 			{
 				MEMORY_DELETE(outputValueList._buffer[i].dataValue._buffer);
-			}
+			}*/
 			MEMORY_DELETE(outputValueList._buffer);
 			break;
 		case odbc_SQLSvc_GetSQLCatalogs_ParamError_exn_:

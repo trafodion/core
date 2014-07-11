@@ -25,11 +25,11 @@
 
 #include <platform_ndcs.h>
 #include <stdlib.h>
-#ifdef NSK_PLATFORM
+/*#ifdef NSK_PLATFORM
 	#include <sqlWin.h>
 #else
 	#include <sql.h>
-#endif
+#endif*/
 #include <sqlext.h>
 #include "sqlcli.h"
 //#include "SrvrFunctions.h"	// Linux port - Todo

@@ -30,14 +30,14 @@
  */
 
 #include <platform_ndcs.h>
-#ifdef NSK_PLATFORM
+/*#ifdef NSK_PLATFORM
 #include <sqlWin.h>
 #include "pThreadsSync.h"
 #include <MD5.h> // MFC
 #include <SQLCLIdev.h> // MFC
 #else
 #include <sql.h>
-#endif
+#endif*/
 #include <sqlext.h>
 #include "SrvrCommon.h"
 #include "SrvrKds.h"

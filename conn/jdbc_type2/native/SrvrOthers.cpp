@@ -30,15 +30,17 @@
 
 #include <platform_ndcs.h>
 #include <stdio.h>
-#ifdef NSK_PLATFORM
+/*#ifdef NSK_PLATFORM
 #include <sqlWin.h>
 #else
 #include <sql.h>
-#endif
+#endif*/
 #include <sqlext.h>
 #include "SrvrCommon.h"
-#include "SqlInterface.h"
+#include "CoreCommon.h"
+#include "SrvrFunctions.h"
 #include "SrvrKds.h"
+#include "SqlInterface.h"
 #include "CommonDiags.h"
 #include "Debug.h"
 

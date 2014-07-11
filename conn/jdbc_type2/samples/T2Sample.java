@@ -112,20 +112,20 @@ public class T2Sample
                         pStmt.setBigDecimal(2, new BigDecimal("-100.12"));
                         rs = pStmt.executeQuery();
                         break;
-                      /*case 6:
+                    case 6:
                         System.out.println("");
                         System.out.println("Accessing Metadata");
                         System.out.println("getTypeInfo() ");
-                            dbMeta = connection.getMetaData();
-                            rs = dbMeta.getTypeInfo();
+                        dbMeta = connection.getMetaData();
+                        rs = dbMeta.getTypeInfo();
                         break;
-                     case 7:
+                   case 7:
                         System.out.println("");
                         System.out.println("getCatalogs()");
                         dbMeta = connection.getMetaData();
                         rs = dbMeta.getCatalogs();
                         break;
-                    case 8:
+                   case 8:
                         System.out.println("");
                         System.out.println("getTables() ");
                         dbMeta = connection.getMetaData();
@@ -136,7 +136,7 @@ public class T2Sample
                         System.out.println("getColumns()");
                         dbMeta = connection.getMetaData();
                         rs = dbMeta.getColumns(null, null, "SAMPLE", "%");
-                        break;*/
+                        break;
                     default:
                         rs = null;
                         continue;

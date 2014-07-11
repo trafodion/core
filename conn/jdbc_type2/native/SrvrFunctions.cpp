@@ -24,11 +24,11 @@
 
 
 #include <windows.h>
-#ifdef NSK_PLATFORM
+/*#ifdef NSK_PLATFORM
 	#include <sqlWin.h>
 #else
 	#include <sql.h>
-#endif
+#endif*/
 #include <sqlext.h>
 #include "srvrCommon.h"
 #include "SrvrFunctions.h"
