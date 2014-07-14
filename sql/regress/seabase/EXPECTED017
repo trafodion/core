@@ -1,0 +1,239 @@
+>>obey TEST017(setup);
+>>--------------
+>>create  table T017TTB ( a int not null primary key, b int, c int);
+
+--- SQL operation complete.
+>>
+>>create  table T017TTA ( a int not null primary key, b int, c int);
+
+--- SQL operation complete.
+>>
+>>create  table T017TTC ( a int not null primary key, b int, c int) SALT using 2 partitions on (a);
+
+--- SQL operation complete.
+>>
+>>load  into T017TTA
++>  select
++>    0 +  (100 * x100) +  (10 * x10) + x1,
++>    0 +  (100 * x100) +  (10 * x10) + x1,
++>    0 +  (100 * x100) +  (10 * x10) + x1
++>  from (values(1)) as starter
++>    transpose 0,1,2,3,4,5,6,7,8,9 as x100
++>    transpose 0,1,2,3,4,5,6,7,8,9 as x10
++>    transpose 0,1,2,3,4,5,6,7,8,9 as x1 ;
+
+--- SQL operation complete.
+>>
+>>
+>>obey TEST017(tests_simple);
+>>----------------------
+>>create index T017TTBIDXb on T017TTB(b) no populate;
+
+--- SQL operation complete.
+>>create index T017TTBIDXc on T017TTB(c) no populate;
+
+--- SQL operation complete.
+>>
+>>create index T017TTCIDXb on T017TTC(b) no populate;
+
+--- SQL operation complete.
+>>create index T017TTCIDXc on T017TTC(c) no populate;
+
+--- SQL operation complete.
+>>
+>>
+>>execute indexinfo using 'T017TTB';
+
+(EXPR)                                                                            OBJECT_TYPE  INDEX_VALID_DEF  TABLE_VALID_DEF
+--------------------------------------------------------------------------------  -----------  ---------------  ---------------
+
+T017TTBIDXB                                                                       IX           N                Y              
+T017TTBIDXC                                                                       IX           N                Y              
+
+--- 2 row(s) selected.
+>>execute indexinfo using 'T017TTC';
+
+(EXPR)                                                                            OBJECT_TYPE  INDEX_VALID_DEF  TABLE_VALID_DEF
+--------------------------------------------------------------------------------  -----------  ---------------  ---------------
+
+T017TTCIDXB                                                                       IX           N                Y              
+T017TTCIDXC                                                                       IX           N                Y              
+
+--- 2 row(s) selected.
+>>set parserflags 1;
+
+--- SQL operation complete.
+>>select count(*) from table(index_table T017TTBIDXb);
+
+(EXPR)              
+--------------------
+
+                   0
+
+--- 1 row(s) selected.
+>>select count(*) from table(index_table T017TTBIDXc);
+
+(EXPR)              
+--------------------
+
+                   0
+
+--- 1 row(s) selected.
+>>select count(*) from table(index_table T017TTCIDXb);
+
+(EXPR)              
+--------------------
+
+                   0
+
+--- 1 row(s) selected.
+>>select count(*) from table(index_table T017TTCIDXc);
+
+(EXPR)              
+--------------------
+
+                   0
+
+--- 1 row(s) selected.
+>>
+>>alter table T017TTB enable all indexes;
+
+--- SQL operation complete.
+>>alter table T017TTC enable all indexes;
+
+--- SQL operation complete.
+>>
+>>execute indexinfo using 'T017TTB';
+
+(EXPR)                                                                            OBJECT_TYPE  INDEX_VALID_DEF  TABLE_VALID_DEF
+--------------------------------------------------------------------------------  -----------  ---------------  ---------------
+
+T017TTBIDXB                                                                       IX           Y                Y              
+T017TTBIDXC                                                                       IX           Y                Y              
+
+--- 2 row(s) selected.
+>>execute indexinfo using 'T017TTC';
+
+(EXPR)                                                                            OBJECT_TYPE  INDEX_VALID_DEF  TABLE_VALID_DEF
+--------------------------------------------------------------------------------  -----------  ---------------  ---------------
+
+T017TTCIDXB                                                                       IX           Y                Y              
+T017TTCIDXC                                                                       IX           Y                Y              
+
+--- 2 row(s) selected.
+>>
+>>alter table T017TTB disable all indexes;
+
+--- SQL operation complete.
+>>alter table T017TTC disable all indexes;
+
+--- SQL operation complete.
+>>
+>>execute indexinfo using 'T017TTB';
+
+(EXPR)                                                                            OBJECT_TYPE  INDEX_VALID_DEF  TABLE_VALID_DEF
+--------------------------------------------------------------------------------  -----------  ---------------  ---------------
+
+T017TTBIDXB                                                                       IX           N                Y              
+T017TTBIDXC                                                                       IX           N                Y              
+
+--- 2 row(s) selected.
+>>execute indexinfo using 'T017TTC';
+
+(EXPR)                                                                            OBJECT_TYPE  INDEX_VALID_DEF  TABLE_VALID_DEF
+--------------------------------------------------------------------------------  -----------  ---------------  ---------------
+
+T017TTCIDXB                                                                       IX           N                Y              
+T017TTCIDXC                                                                       IX           N                Y              
+
+--- 2 row(s) selected.
+>>load into T017TTB select * from T017TTA;
+
+--- SQL operation complete.
+>>load into T017TTC select * from T017TTA;
+
+--- SQL operation complete.
+>>
+>>
+>>populate all indexes on T017TTB;
+
+--- SQL operation complete.
+>>execute indexinfo using 'T017TTB';
+
+(EXPR)                                                                            OBJECT_TYPE  INDEX_VALID_DEF  TABLE_VALID_DEF
+--------------------------------------------------------------------------------  -----------  ---------------  ---------------
+
+T017TTBIDXB                                                                       IX           Y                Y              
+T017TTBIDXC                                                                       IX           Y                Y              
+
+--- 2 row(s) selected.
+>>set parserflags 1;
+
+--- SQL operation complete.
+>>select count(*) from table(index_table T017TTBIDXb);
+
+(EXPR)              
+--------------------
+
+                1000
+
+--- 1 row(s) selected.
+>>select count(*) from table(index_table T017TTBIDXc);
+
+(EXPR)              
+--------------------
+
+                1000
+
+--- 1 row(s) selected.
+>>
+>>populate all indexes on T017TTC;
+
+--- SQL operation complete.
+>>execute indexinfo using 'T017TTC';
+
+(EXPR)                                                                            OBJECT_TYPE  INDEX_VALID_DEF  TABLE_VALID_DEF
+--------------------------------------------------------------------------------  -----------  ---------------  ---------------
+
+T017TTCIDXB                                                                       IX           Y                Y              
+T017TTCIDXC                                                                       IX           Y                Y              
+
+--- 2 row(s) selected.
+>>set parserflags 1;
+
+--- SQL operation complete.
+>>select count(*) from table(index_table T017TTCIDXb);
+
+(EXPR)              
+--------------------
+
+                1000
+
+--- 1 row(s) selected.
+>>select count(*) from table(index_table T017TTCIDXc);
+
+(EXPR)              
+--------------------
+
+                1000
+
+--- 1 row(s) selected.
+>>
+>>drop index T017TTBIDXb;
+
+--- SQL operation complete.
+>>drop index T017TTBIDXc;
+
+--- SQL operation complete.
+>>
+>>populate all indexes on T017TTB;
+
+--- SQL operation complete.
+>>alter table T017TTB enable all indexes;
+
+--- SQL operation complete.
+>>
+>>
+>>
+>>--obey TEST017(clnup);
+>>log;
