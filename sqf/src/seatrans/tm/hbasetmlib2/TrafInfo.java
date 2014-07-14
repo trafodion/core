@@ -120,6 +120,9 @@ public class TrafInfo {
                             continue;
                         }
                     }
+                    if(tableName.contains("TLOG")){
+                        continue;
+                    }
 
                     System.out.println("--------------------------------------------------------------------"
                                      + "\n\t   " + rinfo.getRegionId()
