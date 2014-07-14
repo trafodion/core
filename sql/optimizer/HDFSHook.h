@@ -89,6 +89,24 @@ private:
   static THREAD_P NABoolean hasVirtualSQNodes_;
 };
 
+class HHDFSDiags
+{
+public:
+
+  HHDFSDiags() { success_ = TRUE; }
+  NABoolean isSuccess() const { return success_; }
+  const char *getErrLoc() const { return errLoc_; }
+  const char *getErrMsg() const { return errMsg_; }
+  void recordError(const char *errMsg,
+                   const char *errLoc = NULL);
+  void reset() { errLoc_ = ""; errMsg_ = ""; success_ = TRUE; }
+
+private:
+  NABoolean success_;
+  NAString errLoc_;
+  NAString errMsg_;
+};
+
 class HHDFSStatsBase : public NABasicObject
 {
 public:
@@ -129,13 +147,14 @@ public:
                                    fileName_(heap),
                                    blockHosts_(NULL) {}
   ~HHDFSFileStats();
-  NABoolean populate(hdfsFS fs,
-                     hdfsFileInfo *fileInfo,
-                     Int32& samples,
-                     NABoolean doEsimation = TRUE,
-                     char recordTerminator = '\n',
-                     NABoolean isSequenceFile = FALSE
-                     );
+  void populate(hdfsFS fs,
+                hdfsFileInfo *fileInfo,
+                Int32& samples,
+                HHDFSDiags &diags,
+                NABoolean doEstimation = TRUE,
+                char recordTerminator = '\n',
+                NABoolean isSequenceFile = FALSE
+                );
   const NAString & getFileName() const                   { return fileName_; }
   Int32 getReplication() const                        { return replication_; }
   Int64 getBlockSize() const                            { return blockSize_; }
@@ -168,11 +187,12 @@ public:
                                                  { return fileStatsList_[i]; }
   HHDFSFileStats * operator[](CollIndex i)       { return fileStatsList_[i]; }
 
-  NABoolean addFile(hdfsFS fs, hdfsFileInfo *fileInfo, 
-                    NABoolean doEstimate = TRUE,
-                    char recordTerminator = '\n',
-                    NABoolean isSequenceFile = FALSE,
-                    CollIndex pos = NULL_COLL_INDEX);
+  void addFile(hdfsFS fs, hdfsFileInfo *fileInfo, 
+               HHDFSDiags &diags,
+               NABoolean doEstimate = TRUE,
+               char recordTerminator = '\n',
+               NABoolean isSequenceFile = FALSE,
+               CollIndex pos = NULL_COLL_INDEX);
                     
   void removeAt(CollIndex i);
   void print(FILE *ofd);
@@ -205,9 +225,9 @@ public:
   Int32 getLastValidBucketIndx() const               { return defaultBucketIdx_; }
   NABoolean isSequenceFile() const { return isSequenceFile_; }
 
-  NABoolean populate(hdfsFS fs, const NAString &dir, Int32 numOfBuckets,
-                     NABoolean doEsTimation, char recordTerminator, NABoolean isSequenceFile);
-  NABoolean validateAndRefresh(hdfsFS fs, NABoolean refresh);
+  void populate(hdfsFS fs, const NAString &dir, Int32 numOfBuckets, HHDFSDiags &diags,
+                NABoolean doEsTimation, char recordTerminator, NABoolean isSequenceFile);
+  NABoolean validateAndRefresh(hdfsFS fs, HHDFSDiags &diags, NABoolean refresh);
   Int32 determineBucketNum(const char *fileName);
   void print(FILE *ofd);
 
@@ -267,7 +287,7 @@ public:
                           Int32 &hdfsPort,
                           NAString &tableDir);
 
-  NABoolean processDirectory(const NAString &dir, Int32 numOfBuckets, NABoolean doEstimation, char recordTerminator, NABoolean isSequenceFile);
+  void processDirectory(const NAString &dir, Int32 numOfBuckets, NABoolean doEstimation, char recordTerminator, NABoolean isSequenceFile);
 
 
   void setPortOverride(Int32 portOverride)         { hdfsPortOverride_ = portOverride; }
@@ -295,6 +315,10 @@ public:
    {
      return (hiveStatsSize_);
    }
+
+  const HHDFSDiags &getDiags() const { return diags_; }
+  const NABoolean hasError() const { return !diags_.isSuccess(); }
+
 private:
 
   NABoolean connectHDFS(const NAString &host, Int32 port);
@@ -325,6 +349,12 @@ private:
   // an array and not a list is that we want to use an NASubarray
   // for it in class HivePartitionAndBucketKey (file SearchKey.h).
   ARRAY(HHDFSListPartitionStats *) listPartitionStatsList_;
+
+  // these diags get reset and populated by two calls on this method:
+  // populate() and validateAndRefresh()
+  // Check the diags after these two calls
+  // (optional for second call, as it is only an optimization)
+  HHDFSDiags diags_;
 
   NAMemory *heap_;
 };
