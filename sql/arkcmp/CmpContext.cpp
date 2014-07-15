@@ -124,6 +124,7 @@ CmpContext::CmpContext(UInt32 f, CollHeap * h)
   parserResetIsNeeded_(FALSE),
   sqlTextBuf_(NULL),
   uninitializedSeabaseErrNum_(0),
+  trafMDDescsInfo_(NULL),
   transMode_(TransMode::IL_NOT_SPECIFIED_,    // init'd below
              TransMode::READ_WRITE_,
              TransMode::OFF_)
@@ -280,9 +281,9 @@ CmpContext::CmpContext(UInt32 f, CollHeap * h)
 
   optDefaults_ = new (heap_) OptDefaults();
 
-  // create global dynamic metadata descriptors
+  // create dynamic metadata descriptors
   CmpSeabaseDDL cmpSeabaseDDL(heap_);
-  cmpSeabaseDDL.createMDdescs();
+  cmpSeabaseDDL.createMDdescs(trafMDDescsInfo_);
 
   emptyInLogProp_ = NULL;
 }
