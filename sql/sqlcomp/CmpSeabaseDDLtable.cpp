@@ -5075,7 +5075,7 @@ desc_struct * CmpSeabaseDDL::getSeabaseHistTableDesc(const NAString &catName,
 				   0, NULL, 0, NULL,
 				   numCols, colInfo,
 				   numKeys, keyInfo,
-				   indexInfo))
+				   indexInfo, CTXTHEAP))
 	return NULL;
 
       constrName = HBASE_HIST_PK;
@@ -5088,7 +5088,7 @@ desc_struct * CmpSeabaseDDL::getSeabaseHistTableDesc(const NAString &catName,
 				   0, NULL, 0, NULL,
 				   numCols, colInfo,
 				   numKeys, keyInfo,
-				   indexInfo))
+				   indexInfo, CTXTHEAP))
 	return NULL;
       
       constrName = HBASE_HISTINT_PK;
