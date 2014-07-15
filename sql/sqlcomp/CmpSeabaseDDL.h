@@ -752,8 +752,8 @@ class CmpSeabaseDDL
 				 ComTdbVirtTableColumnInfo* &colInfoArray,
 				 Lng32 &numKeys,
 				 ComTdbVirtTableKeyInfo* &keyInfoArray,
-				 
-				 ComTdbVirtTableIndexInfo* &indexInfo);
+				 ComTdbVirtTableIndexInfo* &indexInfo,
+                                 NAMemory *heap);
 
   short createIndexColAndKeyInfoArrays(
 				       ElemDDLColRefArray & indexColRefArray,

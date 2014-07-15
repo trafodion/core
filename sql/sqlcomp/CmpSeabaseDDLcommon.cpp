@@ -217,7 +217,8 @@ short CmpSeabaseDDL::processDDLandCreateDescs(
 					      Lng32 &numKeys, // OUT
 					      ComTdbVirtTableKeyInfo* &keyInfoArray, // OUT
 
-					      ComTdbVirtTableIndexInfo* &indexInfo) // OUT
+					      ComTdbVirtTableIndexInfo* &indexInfo, // OUT
+                                              NAMemory * heap)
 {
   numCols = 0;
   numKeys = 0;
@@ -286,18 +287,18 @@ short CmpSeabaseDDL::processDDLandCreateDescs(
       numKeys = keyArray.entries();
       
       colInfoArray = (ComTdbVirtTableColumnInfo*)
-	new(CTXTHEAP) char[numCols * sizeof(ComTdbVirtTableColumnInfo)];
+	new(heap) char[numCols * sizeof(ComTdbVirtTableColumnInfo)];
       
       keyInfoArray = (ComTdbVirtTableKeyInfo*)
-	new(CTXTHEAP) char[numKeys * sizeof(ComTdbVirtTableKeyInfo)];
+	new(heap) char[numKeys * sizeof(ComTdbVirtTableKeyInfo)];
       
-      if (buildColInfoArray(&colArray, colInfoArray, FALSE, 0, CTXTHEAP))
+      if (buildColInfoArray(&colArray, colInfoArray, FALSE, 0, heap))
 	{
 	  return resetCQD(cqdWasSet, -1);
 	}
 
       if (buildKeyInfoArray(&colArray, &keyArray, colInfoArray, keyInfoArray, FALSE,
-			    CTXTHEAP))
+			    heap))
 	{
 	  return resetCQD(cqdWasSet, -1);
 	}
@@ -312,7 +313,7 @@ short CmpSeabaseDDL::processDDLandCreateDescs(
 	      char hcq[100];
 	      strcpy(hcq, ci.hbaseColQual);
 	      
-	      ci.hbaseColQual = new(CTXTHEAP) char[strlen(hcq) + 1 +1];
+	      ci.hbaseColQual = new(heap) char[strlen(hcq) + 1 +1];
 	      strcpy((char*)ci.hbaseColQual, (char*)"@");
 	      strcat((char*)ci.hbaseColQual, hcq);
 	    } // for
@@ -321,7 +322,7 @@ short CmpSeabaseDDL::processDDLandCreateDescs(
 	    {
 	      ComTdbVirtTableKeyInfo &ci = keyInfoArray[i];
 
-	      ci.hbaseColQual = new(CTXTHEAP) char[10];
+	      ci.hbaseColQual = new(heap) char[10];
 	      str_sprintf((char*)ci.hbaseColQual, "@%d", ci.keySeqNum);
 	    }
 	} // if
@@ -374,14 +375,14 @@ short CmpSeabaseDDL::processDDLandCreateDescs(
 					 numIndexKeys, numIndexNonKeys, numIndexCols,
 					 indexColInfoArray, indexKeyInfoArray,
 					 selColList,
-					 CTXTHEAP))
+					 heap))
 	return resetCQD(cqdWasSet, -1);
 
       numIndexNonKeys = numIndexCols - numIndexKeys;
       
       if (numIndexNonKeys > 0)
 	indexNonKeyInfoArray = (ComTdbVirtTableKeyInfo*)
-	  new(CTXTHEAP) char[numIndexNonKeys *  sizeof(ComTdbVirtTableKeyInfo)];
+	  new(heap) char[numIndexNonKeys *  sizeof(ComTdbVirtTableKeyInfo)];
       
       Lng32 ink = 0;
       for (Lng32 i = numIndexKeys; i < numIndexCols; i++)
@@ -399,24 +400,24 @@ short CmpSeabaseDDL::processDDLandCreateDescs(
 	  ki.ordering = 0;
 	  ki.nonKeyCol = 1;
 	  
-	  ki.hbaseColFam = new(CTXTHEAP) char[strlen(SEABASE_DEFAULT_COL_FAMILY) + 1];
+	  ki.hbaseColFam = new(heap) char[strlen(SEABASE_DEFAULT_COL_FAMILY) + 1];
 	  strcpy((char*)ki.hbaseColFam, SEABASE_DEFAULT_COL_FAMILY);
 	  
 	  char qualNumStr[40];
 	  str_sprintf(qualNumStr, "@%d", ki.keySeqNum);
 	  
-	  ki.hbaseColQual = new(CTXTHEAP) char[strlen(qualNumStr)+1];
+	  ki.hbaseColQual = new(heap) char[strlen(qualNumStr)+1];
 	  strcpy((char*)ki.hbaseColQual, qualNumStr);
 
 	  ink++;
 	} // for
       
       indexInfo = (ComTdbVirtTableIndexInfo*)
-	new(CTXTHEAP) char[1 * sizeof(ComTdbVirtTableIndexInfo)];
-      indexInfo->baseTableName = new(CTXTHEAP) char[extTableName.length()+ 1];
+	new(heap) char[1 * sizeof(ComTdbVirtTableIndexInfo)];
+      indexInfo->baseTableName = new(heap) char[extTableName.length()+ 1];
       strcpy((char*)indexInfo->baseTableName, extTableName.data());
 
-      indexInfo->indexName = new(CTXTHEAP) char[extIndexName.length()+ 1];
+      indexInfo->indexName = new(heap) char[extIndexName.length()+ 1];
       strcpy((char*)indexInfo->indexName, extIndexName.data());
 
       indexInfo->keytag = 1;
@@ -447,7 +448,7 @@ short CmpSeabaseDDL::createMDdescs()
 
   Lng32 numTables = sizeof(allMDtablesInfo) / sizeof(MDTableInfo);
   trafMDDescsInfo_ = (MDDescsInfo*) 
-    new(CTXTHEAP) char[numTables * sizeof(MDDescsInfo)];
+    new(GetCliGlobals()->exCollHeap()) char[numTables * sizeof(MDDescsInfo)];
   Parser parser(CmpCommon::context());
   for (Lng32 i = 0; i < numTables; i++)
     {
@@ -470,7 +471,7 @@ short CmpSeabaseDDL::createMDdescs()
 				   0, NULL, 0, NULL,
 				   numCols, colInfoArray,
 				   numKeys, keyInfoArray,
-				   indexInfo))
+				   indexInfo, GetCliGlobals()->exCollHeap()))
 	return -1;
 
       mddi.numNewCols = numCols;
@@ -487,7 +488,7 @@ short CmpSeabaseDDL::createMDdescs()
 				       0, NULL, 0, NULL,
 				       numCols, colInfoArray,
 				       numKeys, keyInfoArray,
-				       indexInfo))
+				       indexInfo, GetCliGlobals()->exCollHeap()))
 	    return -1;
 	}
       
@@ -518,7 +519,7 @@ short CmpSeabaseDDL::createMDdescs()
 				       numKeys, keyInfoArray,
 				       numIndexCols, indexColInfoArray,
 				       numIndexKeys, indexKeyInfoArray,
-				       indexInfo))
+				       indexInfo, GetCliGlobals()->exCollHeap()))
 	    return -1;
 
 	  mddi.indexInfo = indexInfo;
