@@ -1459,43 +1459,24 @@ static ItemExpr * getRangePartitionBoundaryValuesFromEncodedKeys(
 
            if ( rc == ex_expr::EXPR_OK ) {
 
-            char staticDecodeInAsciiBuf[200];
-            Lng32 staticDecodeInAsciiBufLen = 200;
+            char staticDecodeInUTF8Buf[200];
+            Lng32 staticDecodeInUTF8BufLen = 200;
 
-            Lng32 decodeInAsciiBufLen = staticDecodeInAsciiBufLen;
-            char* decodeInAsciiBuf = staticDecodeInAsciiBuf;
+            Lng32 decodeInUTF8BufLen = staticDecodeInUTF8BufLen;
+            char* decodeInUTF8Buf = staticDecodeInUTF8Buf;
 
             // Allocate a new buffer if the static one is not big enough.
-            if ( DFS2REC::isAnyVarChar(pkType->getFSDatatype()) ) {
-
-               // get the exact length for VARCHAR type
-               Lng32 vc_len;
-
-               if ( pkType->getVarLenHdrSize() == 2 ) {
-                  UInt16 vcLen16;
-                  str_cpy_all((char *)&vcLen16, &decodeBuf[resultOffset], 
-                               pkType->getVarLenHdrSize());
-                  vc_len = vcLen16;
-               } else {
-                  str_cpy_all((char *)&vc_len, &decodeBuf[resultOffset], 
-                               pkType->getVarLenHdrSize());
-               }
-
-               // the actual result length is the VC length + the header length
-               resultLength = vc_len + pkType->getVarLenHdrSize();
-
-               // Multiplying by 8 to deal with conversion bewteen any two 
-               // known character sets supported. 
-               if ( decodeInAsciiBufLen < vc_len*8 ) {
-                  decodeInAsciiBufLen = vc_len*8 + pkType->getVarLenHdrSize();  
-                  decodeInAsciiBuf = new (STMTHEAP) char[decodeInAsciiBufLen];
-               }
-            } else 
-             if ( staticDecodeInAsciiBufLen < resultLength * factor ) {
-               decodeInAsciiBufLen = resultLength * factor;
-               decodeInAsciiBuf = new (STMTHEAP) char[decodeInAsciiBufLen];
-             }
-
+            if ( staticDecodeInUTF8BufLen < resultLength * factor + pkType->getVarLenHdrSize()) {
+              decodeInUTF8BufLen = resultLength * factor + pkType->getVarLenHdrSize();
+              decodeInUTF8Buf = new (STMTHEAP) char[decodeInUTF8BufLen];
+            }
+            
+            // include VC length indicator for call to convDoIt
+            if (pkType->getVarLenHdrSize() > 0) {
+              CMPASSERT(resultOffset >= pkType->getVarLenHdrSize());
+              resultOffset -= pkType->getVarLenHdrSize();
+              resultLength += pkType->getVarLenHdrSize();
+            }
 
             Lng32 len;
 
@@ -1503,7 +1484,8 @@ static ItemExpr * getRangePartitionBoundaryValuesFromEncodedKeys(
                  pkType->getFSDatatype(), 
                  pkType->getPrecision(), 
                  pkType->getScaleOrCharset(), 
-                 decodeInAsciiBuf, decodeInAsciiBufLen, REC_BYTE_V_ASCII, 0, 0, 
+                 decodeInUTF8Buf, decodeInUTF8BufLen, REC_BYTE_V_ASCII,
+                 0, SQLCHARSETCODE_UTF8, 
                  (char*)&len, sizeof(len), heap, NULL,
                  conv_case_index::CONV_UNKNOWN, 
                  0, // data conversionErrorFlag 
@@ -1516,7 +1498,7 @@ static ItemExpr * getRangePartitionBoundaryValuesFromEncodedKeys(
                 new (heap) ConstValue(pkType,
                                     (void *) &(decodeBuf[resultOffset]),
                                     resultLength,
-                                    new(heap) NAString(decodeInAsciiBuf, len),
+                                    new(heap) NAString(decodeInUTF8Buf, len),
                                     heap);
 
            }

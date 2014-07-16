@@ -3187,11 +3187,15 @@ Lng32 RangePartitionBoundaries::getOptimizedNumberOfPartKeys()
       // Are there more values listed than we assume as partitioning
       // key columns? Adjust our assumption if needed.
 
-      //if ( boundaryValues_[i] ) {
+      if ( boundaryValues_[i] ) {
          CollIndex numKeySpecs = boundaryValues_[i]->entries();
          if (numKeySpecs > numPartKeyCols)
             numPartKeyCols = numKeySpecs;
-      //}
+      } else {
+        // no boundary values specified in SQL syntax
+        // (e.g. when we got binary region boundaries only)
+        numPartKeyCols = partKeyColumnCount_;
+      }
     }
 
 #pragma nowarn(1506)   // warning elimination
