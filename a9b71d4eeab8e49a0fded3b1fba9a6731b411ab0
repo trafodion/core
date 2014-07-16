@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Anuradha <anuradha.hegde@hp.com>
+Code-Review+2: Zbigniew Omanski <zbigniew.omanski@hp.com>
+Workflow+1: Zbigniew Omanski <zbigniew.omanski@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Wed, 16 Jul 2014 18:51:16 +0000
+Reviewed-on: https://review.trafodion.org/114
+Project: trafodion/core
+Branch: refs/heads/master
