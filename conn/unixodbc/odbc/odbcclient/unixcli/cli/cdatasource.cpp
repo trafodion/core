@@ -127,10 +127,24 @@ CDataSource::CDataSource()
 
     if (len > 0)
     {	
-	if (strcmp((const char *)keyValueBuf, SYSTEM_DEFAULT) == 0)
-	    m_DSIOCompression = 0;
-	else
-	    m_DSIOCompression = atol((const char *)keyValueBuf);
+		if(strcmp((const char *)keyValueBuf,SYSTEM_DEFAULT)==0){
+				m_DSIOCompression = 0;
+		}
+		else if(strcmp((const char *)keyValueBuf,"no compression")==0){
+			m_DSIOCompression = COMP_NO_COMPRESSION;
+		}
+		else if(strcmp((const char *)keyValueBuf,"best speed")==0){
+			m_DSIOCompression = COMP_BEST_SPEED;
+		}
+		else if(strcmp((const char *)keyValueBuf,"best compression")==0){
+			m_DSIOCompression = COMP_BEST_COMPRESSION;
+		}
+		else if(strcmp((const char *)keyValueBuf,"balance")==0){
+			m_DSIOCompression = COMP_DEFAULT;
+		}
+		else{
+			m_DSIOCompression = atol((const char *)keyValueBuf);
+		}
     }
     else
 	m_DSIOCompression = 0;
@@ -751,10 +765,24 @@ short CDataSource::readDSValues(char *DSName,CConnect* pConnection)
 
 	if (len > 0)
 	{
-		if (strcmp((const char *)keyValueBuf, SYSTEM_DEFAULT) == 0)
-			m_DSIOCompression = 0;
-		else
+		if(strcmp((const char *)keyValueBuf,SYSTEM_DEFAULT)==0){
+				m_DSIOCompression = 0;
+		}
+		else if(strcmp((const char *)keyValueBuf,"no compression")==0){
+			m_DSIOCompression = COMP_NO_COMPRESSION;
+		}
+		else if(strcmp((const char *)keyValueBuf,"best speed")==0){
+			m_DSIOCompression = COMP_BEST_SPEED;
+		}
+		else if(strcmp((const char *)keyValueBuf,"best compression")==0){
+			m_DSIOCompression = COMP_BEST_COMPRESSION;
+		}
+		else if(strcmp((const char *)keyValueBuf,"balance")==0){
+			m_DSIOCompression = COMP_DEFAULT;
+		}
+		else{
 			m_DSIOCompression = atol((const char *)keyValueBuf);
+		}
 	}
 
 	keyValueLength = sizeof(m_DSServiceName);
@@ -943,10 +971,24 @@ void CDataSource::updateDSValues(short DSNType, CONNECT_FIELD_ITEMS *connectFiel
 				m_DSCertificateFileActive[sizeof(m_DSCertificateFileActive)-1] = 0;
 				break;
 			case KEY_COMPRESSION:
-				if (stricmp(AttrValue, SYSTEM_DEFAULT) == 0)
+				if (stricmp(AttrValue, SYSTEM_DEFAULT) == 0){
 					m_DSIOCompression = 0;
-				else
+				}
+				else if(strcmp(AttrValue,"no compression")==0){
+					m_DSIOCompression = COMP_NO_COMPRESSION;
+				}
+				else if(strcmp(AttrValue,"best speed")==0){
+					m_DSIOCompression = COMP_BEST_SPEED;
+				}
+				else if(strcmp(AttrValue,"best compression")==0){
+					m_DSIOCompression = COMP_BEST_COMPRESSION;
+				}
+				else if(strcmp(AttrValue,"balance")==0){
+					m_DSIOCompression = COMP_DEFAULT;
+				}
+				else{
 			        m_DSIOCompression = atol((const char *)AttrValue);
+				}
 				break;
 			default:
 				break;
