@@ -3145,6 +3145,10 @@ NABoolean createNAFileSets(desc_struct * table_desc       /*IN*/,
   // $$$ probably not necessary to call this even once ...
   setUpClusterInfo(CmpCommon::contextHeap());
 
+  NABoolean doHash2 = 
+      (CmpCommon::getDefault(HBASE_PARTITIONING) != DF_ON && 
+       !(bindWA && bindWA->isTrafLoadPrep())); 
+
   // ---------------------------------------------------------------------
   // loop over all indexes/VPs defined on the base table
   // ---------------------------------------------------------------------
@@ -3173,7 +3177,7 @@ NABoolean createNAFileSets(desc_struct * table_desc       /*IN*/,
       NABoolean isNotAvailable =
 	indexes_desc->body.indexes_desc.notAvailable;
 
-      ItemExprList hbaseSaltColumnList(heap);
+      ItemExprList hbaseSaltColumnList(CmpCommon::statementHeap());
 
       // ---------------------------------------------------------------------
       // loop over the clustering key columns of the index
@@ -3535,15 +3539,17 @@ NABoolean createNAFileSets(desc_struct * table_desc       /*IN*/,
               desc_struct* hbd = 
                    ((table_desc_struct*)table_desc)->hbase_regionkey_desc;
 
-              if ( hbd && hbd->header.nodetype == DESC_HBASE_HASH2_REGION_TYPE ) {
+              if ( doHash2 && hbd && hbd->header.nodetype == DESC_HBASE_HASH2_REGION_TYPE ) {
 	           partFunc = createHash2PartitioningFunctionForHBase(
 	    	      ((table_desc_struct*)table_desc)->hbase_regionkey_desc,
 		      heap);
 
                    partitioningKeyColumns = hbaseSaltOnColumns;
 
-              } else
-                if (hbd && hbd->header.nodetype == DESC_HBASE_RANGE_REGION_TYPE)
+              } else 
+                if ((!doHash2 && (hbd && hbd->header.nodetype == DESC_HBASE_HASH2_REGION_TYPE))
+                      ||
+                (hbd && hbd->header.nodetype == DESC_HBASE_RANGE_REGION_TYPE))
 	           partFunc = createRangePartitioningFunctionForHBase(
 	    	      ((table_desc_struct*)table_desc)->hbase_regionkey_desc,
 	    	      partitioningKeyColumns,
@@ -6442,17 +6448,48 @@ NATable * NATableDB::get(const ExtendedQualName* key, BindWA* bindWA, NABoolean 
   if(!cachedNATable)
     return NULL;
 
-  //Found in cache.  If that's all the caller wanted, return now.
-  if ( findInCacheOnly )
-     return cachedNATable;
-
   //This flag determines if a cached object should be deleted and
   //reconstructed
   NABoolean removeEntry = FALSE;
 
+  if ( cachedNATable->isHbaseTable() ) {
+
+      const NAFileSet* naSet = cachedNATable -> getClusteringIndex();
+
+      if ( naSet ) {
+         PartitioningFunction* pf = naSet->getPartitioningFunction();
+
+         if ( pf ) {
+            NABoolean rangeSplitSaltedTable = 
+              CmpCommon::getDefault(HBASE_PARTITIONING) == DF_ON ||
+              (bindWA && bindWA->isTrafLoadPrep());
+             
+            // if force to range partition a salted table, and the salted table is 
+            // a hash2, do not return the cached object.
+            if ( rangeSplitSaltedTable &&
+                 pf->castToHash2PartitioningFunction() ) {
+               removeEntry = TRUE;
+            } 
+
+            // if force to hash2 partition a salted table, and the cached table is 
+            // a range, do not return the cached object.
+            if ( 
+                 CmpCommon::getDefault(HBASE_PARTITIONING) != DF_ON &&
+                 cachedNATable->hasSaltedColumn() &&
+                 pf->castToRangePartitioningFunction() 
+               )
+               removeEntry = TRUE;
+         }
+     }
+  }
+
+  //Found in cache.  If that's all the caller wanted, return now.
+  if ( !removeEntry && findInCacheOnly )
+     return cachedNATable;
+
   //if this is the first time this cache entry has been accessed
   //during the current statement
-  if(!cachedNATable->accessedInCurrentStatement())
+  if( !removeEntry && !cachedNATable->accessedInCurrentStatement())
   {
     //Note: cachedNATable->labelDisplayKey_ won't not be NULL
     //for NATable Objects that are in the cache. If the object
@@ -6767,6 +6804,17 @@ ExtendedQualName::SpecialTableType NATable::getTableType()
 {
   return qualifiedName_.getSpecialType();
 }
+
+NABoolean NATable::hasSaltedColumn()
+{
+  for (CollIndex i=0; i<colArray_.entries(); i++ )
+  {
+    if ( colArray_[i]->isSaltColumn() ) 
+      return TRUE;
+  }
+  return FALSE;
+}
+
 
 // get details of this NATable cache entry
 void NATableDB::getEntryDetails(

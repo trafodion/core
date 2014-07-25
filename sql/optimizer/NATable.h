@@ -541,6 +541,8 @@ public:
 
   const char *getViewCheck() const              { return viewCheck_; }
 
+  NABoolean hasSaltedColumn();
+
   void setUpdatable( NABoolean value )
   {  value ? flags_ |= IS_UPDATABLE : flags_ &= ~IS_UPDATABLE; }
 
