@@ -34,6 +34,8 @@
 #include "key_single_subset.h"
 #include "ex_mdam.h"
 
+#define ROWSET_MAX_NO_ROWS     1000
+
 // -----------------------------------------------------------------------
 // Classes defined in this file
 // -----------------------------------------------------------------------
@@ -258,7 +260,6 @@ protected:
   short createRowwiseRow();
   short fetchRowVec();
   short createSQRow();
-  short createSQRow(TRowResult &rowResult);
   short createSQRow(jbyte *rowResult);
   short getColPos(char * colName, Lng32 colNameLen, Lng32 &idx);
   short applyPred(ex_expr * expr,UInt16 tuppIndex = 0,
@@ -282,9 +283,15 @@ protected:
 			UInt16 tuppIndex, char * tuppRow, Queue * listOfColNames,
 			NABoolean isUpdate = FALSE,
 			std::vector<UInt32> * posVec = NULL);
+  short createDirectRowBuffer(UInt16 tuppIndex, char * tuppRow, 
+                        Queue * listOfColNames,
+			NABoolean isUpdate = FALSE,
+			std::vector<UInt32> * posVec = NULL);
 
   short createRowwiseMutations(MutationVec &mutations,
 			       char * inputRow);
+
+  short createDirectRowwiseBuffer(char * inputRow);
 
   Lng32 initNextKeyRange(sql_buffer_pool *pool = NULL, atp_struct * atp = NULL);
   Lng32 setupUniqueKeyAndCols(NABoolean doInit);
@@ -296,7 +303,25 @@ protected:
 
   short setupHbaseFilterPreds();
   void setRowID(char *rowId, Lng32 rowIdLen);
+  void allocateDirectBufferForJNI();
+  void allocateDirectRowBufferForJNI(short numCols, 
+                          short maxRows = 1);
+  void patchDirectRowBuffers();
+  void patchDirectRowIDBuffers();
+  void allocateDirectRowIDBufferForJNI(short maxRows = 1);
+  short copyColToDirectBuffer( BYTE *rowCurPtr, 
+                char *colName, short colNameLen,
+                NABoolean prependNullVal, char nullVal, 
+                char *colVal, short colValLen);
+  short copyRowIDToDirectBuffer(short currRowNum, HbaseStr &rowID);
 
+  short numColsInDirectBuffer()
+  {
+    if (row_.val != NULL)
+        return bswap_16(*(short *)row_.val);
+    else
+        return 0;
+  }
   /////////////////////////////////////////////////////
   //
   // Private data.
@@ -365,9 +390,20 @@ protected:
   Lng32 currRowidIdx_;
 
   MutationVec mutations_;
+
+  HbaseStr rowID_;
+
+  Lng32 rowIDAllocatedLen_;
+  char *rowIDAllocatedVal_;
+  BYTE *directRowIDBuffer_;
+  Lng32 directRowIDBufferLen_;
+  short directBufferRowNum_;
+  HbaseStr dbRowID_;
+  HbaseStr rowIDs_;
+  BYTE *directRowBuffer_;
+  Lng32 directRowBufferLen_;
   HbaseStr row_;
-  Lng32 rowAllocatedLen_;
-  char *rowAllocatedVal_;
+  HbaseStr rows_;
 };
 
 class ExHbaseTaskTcb : public ExGod
