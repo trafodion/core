@@ -3865,6 +3865,24 @@ short ExExeUtilHBaseBulkLoadTcb::work()
           break;
         }
 
+        // do not stats-split
+        cliRC = holdAndSetCQD("HBASE_PARTITIONING", "OFF");
+        if (cliRC < 0)
+        {
+          cliInterface()->retrieveSQLDiagnostics(getDiagsArea());
+          step_ = LOAD_ERROR_;
+          break;
+        }
+
+        // do not use hash2
+        cliRC = holdAndSetCQD("HBASE_HASH2_PARTITIONING", "OFF");
+        if (cliRC < 0)
+        {
+          cliInterface()->retrieveSQLDiagnostics(getDiagsArea());
+          step_ = LOAD_ERROR_;
+          break;
+        }
+
         char * transQuery =hblTdb().ldQuery_;
         cliRC = cliInterface()->executeImmediate(transQuery,
                                                  NULL,
@@ -3878,6 +3896,23 @@ short ExExeUtilHBaseBulkLoadTcb::work()
           step_ = LOAD_ERROR_;
           break;
         }
+
+        cliRC = holdAndSetCQD("HBASE_HASH2_PARTITIONING", "RESET");
+        if (cliRC < 0)
+        {
+          cliInterface()->retrieveSQLDiagnostics(getDiagsArea());
+          step_ = LOAD_ERROR_;
+          break;
+        }
+
+        cliRC = holdAndSetCQD("HBASE_PARTITIONING", "RESET");
+        if (cliRC < 0)
+        {
+          cliInterface()->retrieveSQLDiagnostics(getDiagsArea());
+          step_ = LOAD_ERROR_;
+          break;
+        }
+
 
         step_ = COMPLETE_BULK_LOAD_;
 

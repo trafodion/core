@@ -5670,7 +5670,8 @@ RelExpr *RelRoot::bindNode(BindWA *bindWA)
     // Check the number of requested streams
     NADefaults &defs = bindWA->getSchemaDB()->getDefaults();
 
-    ComUInt32 numConfiguredESPs = defs.getTotalNumOfESPsInCluster();
+    NABoolean fakeEnv = FALSE;
+    ComUInt32 numConfiguredESPs = defs.getTotalNumOfESPsInCluster(fakeEnv);
     
     if ((numExtractStreams == 1) || (numExtractStreams > numConfiguredESPs))
     {
