@@ -228,7 +228,7 @@ class CmpSeabaseDDL
   
   void deallocEHI(ExpHbaseInterface* &ehi);
   
-  short sendAllControlsAndFlags();
+  short sendAllControlsAndFlags(CmpContext* prevContext=NULL);
 
   void restoreAllControlsAndFlags();
   

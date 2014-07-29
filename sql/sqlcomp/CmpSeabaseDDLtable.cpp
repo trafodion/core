@@ -6067,6 +6067,7 @@ desc_struct * CmpSeabaseDDL::getSeabaseTableDesc(const NAString &catName,
 	{
           // use metadata compiler
           NABoolean switched = FALSE;
+          CmpContext* currContext = CmpCommon::context();
           if (IdentifyMyself::GetMyName() == I_AM_EMBEDDED_SQL_COMPILER)
             if (SQL_EXEC_SWITCH_TO_COMPILER_TYPE(
                                      CmpContextInfo::CMPCONTEXT_TYPE_META))
@@ -6077,7 +6078,7 @@ desc_struct * CmpSeabaseDDL::getSeabaseTableDesc(const NAString &catName,
              else
               switched = TRUE;
 
-          if (sendAllControlsAndFlags())
+          if (sendAllControlsAndFlags(currContext))
             return NULL;
 
 	  tDesc = getSeabaseUserTableDesc(catName, schName, objName, 

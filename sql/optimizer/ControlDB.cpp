@@ -242,8 +242,25 @@ void ControlDB::setControlDefault(ControlQueryDefault *def)
     case CACHE_HISTOGRAMS_IN_KB:
       setHistogramCacheState();
       break;
+    case SHOWCONTROL_SHOW_ALL:
+      break;
+
+    default:
+
+      // for embedded compilers, keep a copy of the reset CQD so it can be passed to a CI
+      // we switch to. This is needed in case the CQD was changed earlier and the changed value
+      // was passed on to the same CI in a previous switch. 
+      if ((IdentifyMyself::GetMyName() == I_AM_EMBEDDED_SQL_COMPILER) &&
+          (def->getValue() != ""))
+      {
+         ControlQueryDefault * defCopy = (ControlQueryDefault *)
+         def->copyTree(CONTROLDBHEAP);
+         cqdList_.insert(defCopy);
+      }
+      break;
 
     }
+
     return;
   }
 
