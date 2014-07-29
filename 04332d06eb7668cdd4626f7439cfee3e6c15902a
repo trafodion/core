@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Hans Zeller <hans.zeller@hp.com>
+Code-Review+2: Dave Birdsall <dave.birdsall@hp.com>
+Workflow+1: Dave Birdsall <dave.birdsall@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 29 Jul 2014 18:58:09 +0000
+Reviewed-on: https://review.trafodion.org/153
+Project: trafodion/core
+Branch: refs/heads/master
