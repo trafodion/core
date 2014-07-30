@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Joanie Cooper <joanie.cooper@hp.com>
+Code-Review+2: Suresh Subbiah <suresh.subbiah@hp.com>
+Workflow+1: Selvaganesan Govindarajan <selva.ganesan@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Wed, 30 Jul 2014 00:30:20 +0000
+Reviewed-on: https://review.trafodion.org/166
+Project: trafodion/core
+Branch: refs/heads/master
