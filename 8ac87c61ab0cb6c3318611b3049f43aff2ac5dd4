@@ -1,0 +1,11 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Narendra Goyal <narendra.goyal@hp.com>
+Workflow+1: Narendra Goyal <narendra.goyal@hp.com>
+Code-Review+1: Gonzalo Correa <gonzalo.correa@hp.com>
+Code-Review+1: Prashanth Vasudev <vasudev.prashanth@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Wed, 30 Jul 2014 01:07:15 +0000
+Reviewed-on: https://review.trafodion.org/160
+Project: trafodion/core
+Branch: refs/heads/master
