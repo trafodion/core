@@ -2107,7 +2107,29 @@ short HbaseAccess::codeGen(Generator * generator)
     new(space) ComTdbHbaseAccess::HbasePerfAttributes();
   if (CmpCommon::getDefault(HBASE_SCAN_CACHE_BLOCKS) == DF_ON)
     hbpa->setCacheBlocks(TRUE);
-  hbpa->setNumCacheRows(CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS));
+
+  // compute the number of rows accessed per scan node instance and use it
+  // to set HBase scan cache size (in units of number of rows). This cache
+  // is in the HBase client, i.e. in the java side of 
+  // master executor or esp process. Using this cache avoids RPC calls to the
+  // region server for each row, however setting the value too high consumes 
+  // memory and can lead to timeout errors as the RPC call that gets a 
+  // big chunk of rows can take longer to complete.
+  double estRowsAccessed = getEstRowsAccessed().getValue();
+  CollIndex myId = generator->getFragmentDir()->getCurrentId();
+  Lng32 numESPs = generator->getFragmentDir()->getNumESPs(myId);
+  if (numESPs == 0)
+    numESPs++;
+  Int64 rowsAccessedPerEsp = estRowsAccessed/numESPs ;
+  if (rowsAccessedPerEsp > CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS_MIN))
+  {
+    if (rowsAccessedPerEsp > CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS_MAX))
+      hbpa->setNumCacheRows(CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS_MAX));
+    else
+       hbpa->setNumCacheRows(rowsAccessedPerEsp);
+  }
+  else
+    hbpa->setNumCacheRows(CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS_MIN));
 
   // create hdfsscan_tdb
   ComTdbHbaseAccess *hbasescan_tdb = new(space) 
@@ -2356,7 +2378,7 @@ short HbaseAccessCoProcAggr::codeGen(Generator * generator)
     new(space) ComTdbHbaseAccess::HbasePerfAttributes();
   if (CmpCommon::getDefault(HBASE_SCAN_CACHE_BLOCKS) == DF_ON)
     hbpa->setCacheBlocks(TRUE);
-  hbpa->setNumCacheRows(CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS));
+  hbpa->setNumCacheRows(CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS_MIN));
 
   // create hdfsscan_tdb
   ComTdbHbaseAccess *hbasescan_tdb = new(space) 

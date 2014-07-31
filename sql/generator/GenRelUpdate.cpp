@@ -1166,7 +1166,7 @@ short HbaseDelete::codeGen(Generator * generator)
     new(space) ComTdbHbaseAccess::HbasePerfAttributes();
   if (CmpCommon::getDefault(HBASE_SCAN_CACHE_BLOCKS) == DF_ON)
     hbpa->setCacheBlocks(TRUE);
-  hbpa->setNumCacheRows(CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS));
+  hbpa->setNumCacheRows(CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS_MIN));
 
   // create hdfsscan_tdb
   ComTdbHbaseAccess *hbasescan_tdb = new(space) 
@@ -1911,7 +1911,7 @@ short HbaseUpdate::codeGen(Generator * generator)
     new(space) ComTdbHbaseAccess::HbasePerfAttributes();
   if (CmpCommon::getDefault(HBASE_SCAN_CACHE_BLOCKS) == DF_ON)
     hbpa->setCacheBlocks(TRUE);
-  hbpa->setNumCacheRows(CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS));
+  hbpa->setNumCacheRows(CmpCommon::getDefaultNumeric(HBASE_SCAN_NUM_CACHE_ROWS_MIN));
 
 
   // create hdfsscan_tdb
