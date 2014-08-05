@@ -51,6 +51,9 @@ if [ $? -ne 0 ]; then
   exit 0
 fi
 
+# Enable core files with unlimited size
+ulimit -c unlimited
+
 diffOnly=0
 
 OK=-1
@@ -200,5 +203,37 @@ echo "*"
 echo "*  Regression tests complete"
 echo "*"
 echo "*****************************************************************"
+
+# Start WIP -- csheedy 2014-08-04
+##############################
+echo "+++++++++++++++"
+
+which find-corefiles.pl
+FINDCOREFILES=$(which find-corefiles.pl 2>/dev/null)
+if [[ -n "$FINDCOREFILES" ]]; then
+	find-corefiles.pl --help
+	echo "+++++++++++++++"
+	echo "find-corefiles.pl $PWD -debug"
+	find-corefiles.pl $PWD -debug
+	echo "+++++++++++++++"
+	ecjop "find-corefiles.pl $PWD -debug -xml"
+	find-corefiles.pl $PWD -debug -xml
+	echo "+++++++++++++++"
+	echo "find-corefiles.pl $PWD"
+	find-corefiles.pl $PWD
+	echo "+++++++++++++++"
+	echo "find-corefiles.pl $PWD -xml"
+	find-corefiles.pl $PWD -xml
+	echo "+++++++++++++++"
+	echo "find-corefiles.pl --debug"
+	find-corefiles.pl --debug
+	echo "+++++++++++++++"
+	echo "find-corefiles.pl"
+	find-corefiles.pl
+fi
+
+echo "+++++++++++++++"
+##############################
+# End WIP -- csheedy 2014-08-04
 
 exit
