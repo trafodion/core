@@ -37,6 +37,7 @@ obey TEST002(clnup);
 
 log LOG002 clear;
 
+cqd PCODE_NE_DBG_LEVEL '14';
 create table t002t1 (a int, b char(9), c int, d char(4));
 create table t002t2 (a int not null, b char(9), c int, d char(4), primary key (a));
 create table t002t3 (a int not null, b char(9) not null, c int, d char(4), primary key (a, b));
