@@ -212,7 +212,7 @@ void CliGlobals::init( NABoolean espProcess,
   myNumSegs_ = 0;
   myNumCpus_ = 0;
   SEGMENT_INFO * segs = new(&executorMemory_) SEGMENT_INFO[MAX_NO_OF_SEGMENTS];
-  ComRtGetNeoSegsInfo(segs, MAX_NO_OF_SEGMENTS, myNumSegs_,
+  ComRtGetSegsInfo(segs, MAX_NO_OF_SEGMENTS, myNumSegs_,
            (NAHeap *)&executorMemory_);
   for (Lng32 i = 0; i < myNumSegs_; i++)
     {

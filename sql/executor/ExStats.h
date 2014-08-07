@@ -4466,8 +4466,10 @@ public:
   inline void setGlobalStatsHeapUsed(Int64 size) { currGlobalStatsHeapUsage_ = size;  }
   inline void setStatsHeapWaterMark(Int64 size) {  globalStatsHeapWatermark_ = size; }
   inline void setNoOfStmtStats(Lng32 noOfStmts) { currNoOfStmtStats_ = noOfStmts;  }
-  inline void incProcessRegd() { currNoOfProcessStatsHeap_++;}
-  inline void decProcessRegd() { currNoOfProcessStatsHeap_--; }
+  inline void incProcessStatsHeaps() { currNoOfProcessStatsHeap_++;}
+  inline void decProcessStatsHeaps() { currNoOfProcessStatsHeap_--; }
+  inline void incProcessRegd() { currNoOfRegProcesses_++;}
+  inline void decProcessRegd() { currNoOfRegProcesses_--; }
   inline Lng32 getProcessRegd() { return currNoOfProcessStatsHeap_; }
   inline void setSemPid(pid_t pid) { semPid_ = pid; }
   inline void setSscpOpens(short numSscps) { sscpOpens_ = numSscps; }
@@ -4522,6 +4524,7 @@ private:
   Int64 currGlobalStatsHeapUsage_;
   Int64 globalStatsHeapWatermark_;
   Lng32  currNoOfStmtStats_;
+  Lng32 currNoOfRegProcesses_;
   Lng32  currNoOfProcessStatsHeap_;
   pid_t semPid_;
   short sscpOpens_;
