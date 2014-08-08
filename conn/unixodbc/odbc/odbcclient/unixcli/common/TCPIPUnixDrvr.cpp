@@ -447,9 +447,9 @@ bool DoIO (CTCPIPUnixDrvr* pTCPIPSystem, IDL_char* wbuffer, IDL_long write_count
 	else
 	{
 		wheader.compress_ind = COMP_NO;
-		wheader.compress_type = 0;
+		wheader.compress_type = COMP_NO_COMPRESSION;
 		rheader.compress_ind = COMP_NO;
-		rheader.compress_type = 0;
+		rheader.compress_type = COMP_NO_COMPRESSION;
 	}
 
 // send to the server
@@ -459,12 +459,12 @@ bool DoIO (CTCPIPUnixDrvr* pTCPIPSystem, IDL_char* wbuffer, IDL_long write_count
 	if (wheader.compress_ind == COMP_YES  && write_count > MIN_LENGTH_FOR_COMPRESSION)
 		DoCompression(pTCPIPSystem, wheader, (unsigned char*)wbuffer, (unsigned int&)write_count);
 	else
-		wheader.compress_type = 0;
+		wheader.compress_type = COMP_NO_COMPRESSION;
 
 #ifdef TRACE_COMPRESSION
 	if(gDrvrGlobal.gTraceCompression)
 	{
-		printf("sending bytes number: %d\n",write_count);
+		printf("%d,sending bytes number: %d\n",wheader.compress_type,write_count);
 	}
 #endif
 	wcount = write_count;
@@ -559,7 +559,7 @@ bool DoIO (CTCPIPUnixDrvr* pTCPIPSystem, IDL_char* wbuffer, IDL_long write_count
 // the server returns total length in the header
 
 	memcpy(&pTCPIPSystem->m_rheader, prheader, sizeof(HEADER));
-	if (prheader->compress_ind == COMP_YES && prheader->compress_type != 0)
+	if (prheader->compress_ind == COMP_YES && prheader->compress_type != COMP_NO_COMPRESSION)
 		rcount = prheader->cmp_length;
 	else
 		rcount = prheader->total_length;
@@ -603,10 +603,10 @@ bool DoIO (CTCPIPUnixDrvr* pTCPIPSystem, IDL_char* wbuffer, IDL_long write_count
 #ifdef TRACE_COMPRESSION
 	if(gDrvrGlobal.gTraceCompression)
 	{
-		printf("receiving bytes number: %d\n",read_count);
+		printf("%d,receiving bytes number: %d\n",pTCPIPSystem->m_rheader.compress_type,read_count);
 	}
 #endif
-	if (pTCPIPSystem->m_rheader.compress_ind == COMP_YES && pTCPIPSystem->m_rheader.compress_type != 0)
+	if (pTCPIPSystem->m_rheader.compress_ind == COMP_YES && pTCPIPSystem->m_rheader.compress_type != COMP_NO_COMPRESSION)
 	{
 		bok = DoExpand(pTCPIPSystem, pTCPIPSystem->m_rheader, (unsigned char*)rbuffer, (unsigned int&)read_count);
 		if (bok)
@@ -632,8 +632,7 @@ void DoCompression(CTCPIPUnixDrvr* pTCPIPSystem, HEADER& wheader, unsigned char*
 	if (retcode == false)
 	{
 		delete[] cmp_buf;
-		wheader.compress_ind = COMP_NO;
-		wheader.compress_type = 0;
+		wheader.compress_type = COMP_NO_COMPRESSION;
 		wheader.cmp_length = 0;
 		write_count = inCmpCount;
 		return;
@@ -686,7 +685,7 @@ bool DoExpand(CTCPIPUnixDrvr* pTCPIPSystem, HEADER& rheader, unsigned char* ibuf
 		return false;
 	}
 	pTCPIPSystem->r_assign((char*)obuffer, output_size);
-	rheader.compress_ind = COMP_NO;
+	rheader.compress_type = COMP_NO_COMPRESSION;
 	rheader.cmp_length = 0;
 	return true;
 }

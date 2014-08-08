@@ -57,7 +57,15 @@ bool CCompression::compress(unsigned char *input, unsigned long input_size, int 
 	ret = deflate(&strm, flush);
 	deflateEnd(&strm);
 	if(ret == Z_STREAM_END)  /* have to be Z_STREAM_END */
+	{
+		if((output_size-strm.avail_out)>=input_size)
+		{
+			*output=NULL;
+			return false;
+		}
+		output_size-=strm.avail_out;
 		return true;
+	}
 	else
 		return false;
 }

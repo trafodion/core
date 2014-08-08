@@ -19,7 +19,7 @@
 #ifndef COMPRESSION_H
 #define COMPRESSION_H
 
-#define MIN_LENGTH_FOR_COMPRESSION 10000
+#define MIN_LENGTH_FOR_COMPRESSION 1000
 
 class CCompression 
 {
