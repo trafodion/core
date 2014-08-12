@@ -9037,8 +9037,13 @@ RelExpr *Insert::bindNode(BindWA *bindWA)
     
       const NAType& assignSrcType = assign->getSource().getType();
       if ( source != assign->getSource() && 
-          assignSrcType.getTypeQualifier() == NA_CHARACTER_TYPE &&
-          sourceType.getTypeQualifier() == NA_CHARACTER_TYPE &&
+           (assignSrcType.getTypeQualifier() == NA_CHARACTER_TYPE &&
+            sourceType.getTypeQualifier() == NA_CHARACTER_TYPE 
+            ||
+            // If we allow incompatible type assignments, also include the
+            // added cast into the updateToSelectMap
+            assignSrcType.getTypeQualifier() !=  sourceType.getTypeQualifier() &&
+            CmpCommon::getDefault(ALLOW_INCOMPATIBLE_ASSIGNMENT) == DF_ON) &&
            ((assign->getSource().getItemExpr()->getOperatorType() == ITM_CAST &&
              sourceType.errorsCanOccur(assignSrcType) && 
              sourceType.getNominalSize() > 
