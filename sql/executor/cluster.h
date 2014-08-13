@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1994-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1996-2014 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -91,8 +91,6 @@ NA_EIDPROC
               CollHeap *heap,
 	      ClusterDB * clusterDb,
               ExeErrorCode * rc);
-
-
 #endif
 
 NA_EIDPROC
@@ -167,7 +165,7 @@ private:
 // inline functions of HashBufferHeader
 /////////////////////////////////////////////////////////////////////////////
 inline ULng32 HashBuffer::getMaxRowLength() const {
-  return maxRowLength_; 
+  return maxRowLength_;
 };
 
 inline HashBuffer * HashBuffer::getPrev() const {
@@ -260,7 +258,7 @@ public:
 
   // The serial interface to the HashBuffers.  Rows can be accessed in
   // order (series) from the start of the buffer to the end.  Rows cannot be
-  // accessed randomly (via a row index or number) 
+  // accessed randomly (via a row index or number)
 
 NA_EIDPROC
   inline void setRowCount(ULng32 cnt);
@@ -284,25 +282,27 @@ NA_EIDPROC
 #endif
 
   // Methods for accessing rows in series based on an internal cursor (currRow_)
+
 NA_EIDPROC
   inline void positionOnFirstRow();
+
   // return the next row in the buffer
 NA_EIDPROC
   inline HashRow *getCurrentRowAndAdvance();
 
-
 NA_EIDPROC
   inline HashRow *getCurrentRow();
+
 
   // Methods for accessing rows in series based on an external cursor (the previous row)
 
   // Return a pointer to the first row,
 NA_EIDPROC
   inline HashRow *getFirstRow() const;
+
   // Get the next row after 'currentRow' based on the length of currentRow
 NA_EIDPROC
   inline HashRow *getNextRow(HashRow *currentRow) const;
-
 
   // Allocate a row of size maxRowLength_ from this HashBuffer
 NA_EIDPROC
@@ -319,6 +319,7 @@ NA_EIDPROC
   // on maxRowLength_
 NA_EIDPROC
   inline ULng32 getRowLength(HashRow *row) const;
+
   // Set the row length in the row.  If row is fixed length, this method does nothing
 NA_EIDPROC
   inline void setRowLength(HashRow *row, UInt32 len);
@@ -328,7 +329,6 @@ NA_EIDPROC
 
 NA_EIDPROC
   void fixup();
-
 
 };
 
@@ -377,7 +377,7 @@ inline void HashBufferSerial::clearRowCount() {
 
 // The serial interface to the HashBuffers.  Rows can be accessed in
 // order (series) from the start of the buffer to the end.  Rows cannot be
-// accessed randomly (via a row index or number) 
+// accessed randomly (via a row index or number)
 
 
 // Methods dealing with how many rows can fit in a buffer
@@ -395,14 +395,14 @@ inline ULng32 HashBufferSerial::getRemainingNumFullRows() const {
 };
 
 // Is this buffer full?
-inline NABoolean HashBufferSerial::notFull() const 
+inline NABoolean HashBufferSerial::notFull() const
 {
   return (freeSpace_ >= maxRowLength_);
 };
 #endif
 
 // Methods for accessing rows in series based on an internal cursor (currRow_)
-inline void HashBufferSerial::positionOnFirstRow() 
+inline void HashBufferSerial::positionOnFirstRow()
 {
   currRow_ = (char *)getFirstRow();
 };
@@ -485,7 +485,7 @@ inline HashRow *HashBufferSerial::getFreeRow() {
 // Allocate a row of size a given length from this HashBuffer
 inline HashRow *HashBufferSerial::getFreeRow(ULng32 spaceNeeded)
 {
-  spaceNeeded = ROUND4(spaceNeeded);  
+  spaceNeeded = ROUND4(spaceNeeded);
 
   if (freeSpace_ >= spaceNeeded)
   {
@@ -624,7 +624,7 @@ public:
     UNIQUE_HASH_JOIN,
     HASH_GROUP_BY,
     CROSS_PRODUCT,
-    SEQUENCE_OLAP // not a hash operator; but uses ClusterDB and Cluster 
+    SEQUENCE_OLAP // not a hash operator; but uses ClusterDB and Cluster
   };
 NA_EIDPROC
   ClusterDB (HashOperator hashOperator,
@@ -665,7 +665,7 @@ NA_EIDPROC
 
 	     ULng32 minMemBeforePressureCheck = 0, // min before check
 	     Float32 bmoCitizenshipFactor = 0,
-	     Int32  pMemoryContingencyMB = 0, 
+	     Int32  pMemoryContingencyMB = 0,
 	     Float32 estimateErrorPenalty = 0,
 	     Float32 hashMemEstInMbPerCpu = 0,
 
@@ -719,7 +719,7 @@ NA_EIDPROC
 NA_EIDPROC
   ScratchOverflowMode getScratchOverflowMode(void)
   { return overFlowMode_;}
-  
+
 #ifndef __EID
 
   void chooseClusterToFlush(Cluster * lastResort);
@@ -731,7 +731,7 @@ NA_EIDPROC
   inline Int64 totalPhase3TimeNoHL() { return totalPhase3TimeNoHL_; }
   inline Int64 maxPhase3Time() { return maxPhase3Time_; }
   inline Int64 minPhase3Time() { return minPhase3Time_; }
-  inline ULng32 numClustersNoHashLoop() 
+  inline ULng32 numClustersNoHashLoop()
   { return numClustersNoHashLoop_; }
 
   void updatePhase3Time(Int64 someClusterTime);
@@ -745,7 +745,7 @@ NA_EIDPROC
   NABoolean checkQuotaOrYield(UInt32 numFlushed, UInt32 maxSizeMB);
 
   // Yield un-needed memory quota
-  void yieldUnusedMemoryQuota(Cluster * theOFList = NULL, 
+  void yieldUnusedMemoryQuota(Cluster * theOFList = NULL,
 			 ULng32 extraBuffers = 1);
 
   ULng32 memoryQuotaMB() { return memoryQuotaMB_ ; }
@@ -753,19 +753,19 @@ NA_EIDPROC
   // each cluster overflows into another sequence; sometimes a cluster needs
   // several sequences (after cluster-split, or for DISTINCT HGB)
   UInt32 generateSequenceID() { return ++sequenceGenerator_; }
-  
+
   void getScratchErrorDetail(Lng32 &scratchError,
                     Lng32 &scratchSysError,
                     Lng32 &scratchSysErrorDetail,
                     char *errorMsg);
-  
+
 
   static ULng32 roundUpToPrime(ULng32 noOfClusters);
-  
+
 #endif
 
 NA_EIDPROC
-  NABoolean enoughMemory(ULng32 size, NABoolean checkCompilerHints = FALSE);  
+  NABoolean enoughMemory(ULng32 size, NABoolean checkCompilerHints = FALSE);
 
 private:
 
@@ -775,21 +775,21 @@ NA_EIDPROC
   void updateIOStats();
 #endif
 
-  HashOperator hashOperator_;         // indicates the type of the tcb
+  HashOperator hashOperator_;	      // indicates the type of the tcb
 				      // using this clusterDB
-  NABoolean hashLoop_;                // are we in a hash loop (PHASE_3)
-  NABoolean isPartialGroupBy_;        // for hash grouping
-  NABoolean noOverFlow_;              // if true, we do not overflow
+  NABoolean hashLoop_;		      // are we in a hash loop (PHASE_3)
+  NABoolean isPartialGroupBy_;	      // for hash grouping
+  NABoolean noOverFlow_;	      // if true, we do not overflow
 				      // if set, all memory related info is
 				      // ignored and we always try to allocate
 				      // new buffers in main memory. If the
 				      // allocation is not sucessfull, we die
-  ULng32 bufferSize_;          // global size of hash buffers
-  NAHeap * bufferHeap_;               // keep the I/O buffers for all the
-                                      // clusters in a seperate heap. This
+  ULng32 bufferSize_;		      // global size of hash buffers
+  NAHeap * bufferHeap_;		      // keep the I/O buffers for all the
+				      // clusters in a separate heap. This
 				      // should help to reduce fragmentation.
-  atp_struct * workAtp_;              // global work Atp
-  Lng32 explainNodeId_;                // add to any EMS RT messages.
+  atp_struct * workAtp_;	      // global work Atp
+  Lng32 explainNodeId_;		      // add to any EMS RT messages.
 
   // the following three data members are only used for hash join and hash
   // table materialize. They are required for sorted insert of a row into
@@ -822,7 +822,7 @@ NA_EIDPROC
   Cluster * clusterList_;             // list of all clusters
 #ifndef __EID
   HashScratchSpace * tempFile_;           // for overflow handling
-  ExSubtask *ioEventHandler_;     
+  ExSubtask *ioEventHandler_;
   ex_tcb * callingTcb_;
   UInt16 scratchThresholdPct_;
   UInt32 sequenceGenerator_;          // to generate unique IDs for clusters
@@ -832,17 +832,17 @@ NA_EIDPROC
   // for testing/regressions only !!
   UInt16 forceOverflowEvery_;  // deny memory after every so many requests
   UInt16 forceOverflowCounter_;  // dynamic counter to track when to deny
-  UInt16 forceHashLoopAfterNumBuffers_;  // After #buffers were read from o/f 
+  UInt16 forceHashLoopAfterNumBuffers_;  // After #buffers were read from o/f
   UInt16 forceClusterSplitAfterMB_; // split after cluster reached such size
 
   NABoolean doLog_;       // log to EMS major overflow events
   NABoolean bufferedWrites_;  // use bufferred writes
   NABoolean disableCmpHintsOverflow_;
-  ULng32 memoryQuotaMB_ ; // can't use more than that (0 = no limit) 
+  ULng32 memoryQuotaMB_ ; // can't use more than that (0 = no limit)
   ULng32 minMemoryQuotaMB_ ; // don't go below the minimum
   ULng32 minMemBeforePressureCheck_; // no pressure/hints checks below that
   Float32 bmoCitizenshipFactor_;
-  Int32  pMemoryContingencyMB_; 
+  Int32  pMemoryContingencyMB_;
   Float32 estimateErrorPenalty_;
   Float32 hashMemEstInMbPerCpu_;
 
@@ -852,7 +852,7 @@ NA_EIDPROC
   ULng32 numClustersNoHashLoop_;
   ULng32 bmoMaxMemThresholdMB_;
 
-  NABoolean earlyOverflowStarted_;  // if o/f based on compiler hints 
+  NABoolean earlyOverflowStarted_;  // if o/f based on compiler hints
 #endif
 
   // These fields are used to ensure that #buckets and #hash-table-entries
@@ -874,8 +874,6 @@ NA_EIDPROC
   Int32 scratchIOVectorSize_;
   ScratchOverflowMode overFlowMode_;
   ExBMOStats *bmoStats_;
-
-
 
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -970,12 +968,12 @@ NA_EIDPROC
 	  NABoolean isInner,                   // is this an inner Cluster?
           NABoolean bitMapEnable,              // Enable bitmap allocation for
                                                // left outer join and semi join
-                                               // 
+                                               //
                                                // A bitmap is allocated for the
                                                // outer cluster in Phase 3
-                                               // when the inner cluster 
+                                               // when the inner cluster
                                                // cannot be read in memory
-                                               // in full. 
+                                               // in full.
 	  Cluster * next,                      // next cluster in list
 	  ExeErrorCode *rc,
 	  HashBuffer * bufferPool = NULL);     // an already existing buffer
@@ -1022,8 +1020,8 @@ NA_EIDPROC
 NA_EIDPROC
   inline void setNext(Cluster * next);
 NA_EIDPROC
-  void positionOnFirstRowInBuffer() 
-  {    // position on the first row in main memory 
+  void positionOnFirstRowInBuffer()
+  {    // position on the first row in main memory
     scanPosition_ = bufferPool_;
     scanPosition_->castToSerial()->positionOnFirstRow();
   };
@@ -1045,8 +1043,8 @@ NA_EIDPROC
 		   NABoolean skipMemoryCheck = FALSE);
 
 #ifndef __EID
-  void positionOnFirstRowInFirstOuterBuffer() 
-  {  // position on the first row in the first outer buffer in memory 
+  void positionOnFirstRowInFirstOuterBuffer()
+  {  // position on the first row in the first outer buffer in memory
 
     for ( HashBuffer * tmpB = clusterDb_->outerReadBuffers_; tmpB ; tmpB = tmpB->getNext() )
       tmpB->castToSerial()->fixup();
@@ -1065,12 +1063,12 @@ NA_EIDPROC
   NABoolean spill(ExeErrorCode * rc,
 		  NABoolean noAggregates = FALSE );
 
-  // read the Cluster. If the reading is not complete yet (I/Os pending) 
+  // read the Cluster. If the reading is not complete yet (I/Os pending)
   // read() returns FALSE. Otherwise TRUE. If the Cluster is an inner
   // Cluster read() reads as many buffers as possible. If it is an outer
   // Cluster, read() reads just one bufffer.
   NABoolean read(ExeErrorCode * rc);
- 
+
   // create a hash table for this Cluster and chain all rows of the Cluster
   // into this hash table.
   NABoolean chain(NABoolean forceChaining, ExeErrorCode * rc);
@@ -1105,7 +1103,7 @@ NA_EIDPROC
   // return next row from buffer
 NA_EIDPROC
   HashRow * advance();
-  
+
 NA_EIDPROC
   HashRow * getCurrentRow();
 
@@ -1116,7 +1114,7 @@ NA_EIDPROC
   // Internal utility: Calculate memory and create a hash table
   HashTable * createHashTable(UInt32 memForHashTable,
 			      ExeErrorCode * rc,
-			      // skip mem check for HGB; it starts at min HT 
+			      // skip mem check for HGB; it starts at min HT
 			      NABoolean checkMemory = FALSE );
 
   NA_EIDPROC
@@ -1134,10 +1132,10 @@ private:
   HashBuffer * lastSqueezedBuffer_ ; // last buffer "squeezed"
   NABoolean dontSplit_; // don't split this cluster (e.g., it's skewed)
 
-  // Normaly every cluster keeps its sequence ID in seqID_[0]. But for HJ
+  // Normally every cluster keeps its sequence ID in seqID_[0]. But for HJ
   // after every split, the cluster gets a new sequence ID (like a stack
   // seqID_[1}, and last seqID_[2]). HGB DISTINCT uses seqID_[1] when it needs
-  // to keep seperately 2 sequences, of returned and not-returned rows. 
+  // to keep seperately 2 sequences, of returned and not-returned rows.
   UInt32 seqID_[3];    // 3 = log( bucketsPerCluster , 2 ) + 1
   UInt16 seqIDIndex_;  // current seq-ID (between 0 and the top of the stack)
   UInt16 maxSeqIDIndex_;  // the max seq-ID, at the top of the stack
@@ -1151,8 +1149,8 @@ private:
 
   ClusterState state_;
   ClusterDB * clusterDb_;
-  Bucket * buckets_;               // the buckets of this Cluster
-  ULng32 bucketCount_;      // # of buckets of the Cluster
+  Bucket * buckets_;		// the buckets of this Cluster
+  ULng32 bucketCount_;		// # of buckets of the Cluster
   ULng32 rowLength_;
   NABoolean useVariableLength_;
   NABoolean considerBufferDefrag_;
@@ -1191,7 +1189,7 @@ private:
 
   // for concurrent writing of multiple buffers, need to know which is next
   HashBuffer * nextBufferToFlush_;
-  // For OLAP - when reading buffers from overflow for "bounded following", 
+  // For OLAP - when reading buffers from overflow for "bounded following",
   // where Cluster::read() may need to jump back to first buffer in the list.
   HashBuffer * firstBufferInList_;
   // Usually NULL; only OLAP sets this pointer at the last flush (for that
@@ -1218,14 +1216,14 @@ private:
   NABoolean setHashLoop(ExeErrorCode * rc);
   NABoolean squeezeOutRowsOfOtherClusters(ExeErrorCode * rc);
 
-  inline NABoolean IONotReady(ExeErrorCode * rc, 
+  inline NABoolean IONotReady(ExeErrorCode * rc,
 			      UInt32 readSeqID = 0, // non-zero only for read
 			      NABoolean checkAll = FALSE );
 
   inline NABoolean IONotComplete(ExeErrorCode * rc)
   { return IONotReady(rc, 0, TRUE); };
 
-  NABoolean completeCurrentRead_ ; // synch buffers read so far 
+  NABoolean completeCurrentRead_ ; // synch buffers read so far
   Int16 buffersRead_ ;
 
 #endif
@@ -1276,16 +1274,16 @@ inline NABoolean Cluster::endOfCluster() {
     return seqIDIndex_ == 0 && readHandle_->endOfSequence() ;
 
   ex_assert( !isInner_ , "Can not handle a cluster that was split");
-  
+
   // below: only for HGB distinct
   //  Check returnOverflowRows_ because this variable indicates that some read
   // has completed at sequence index 0. Otherwise the rest of the condition is
   // also true before we start reading that sequence.
-  return returnOverflowRows_ && 
+  return returnOverflowRows_ &&
     seqIDIndex_ == 0 && readHandle_->endOfSequence() ;
 };
 
-inline NABoolean Cluster::IONotReady(ExeErrorCode * rc, 
+inline NABoolean Cluster::IONotReady(ExeErrorCode * rc,
 				     UInt32 readSeqID,
 				     NABoolean checkAll )
 {
@@ -1306,8 +1304,6 @@ inline NABoolean Cluster::IONotReady(ExeErrorCode * rc,
   }
   return FALSE; // IO is ready
 }
-
-
 #endif
 
 inline NABoolean Cluster::bitMapEnable() const {
@@ -1367,22 +1363,21 @@ inline NABoolean Bucket::insert(atp_struct * newEntry,
 };
 
 
-
-class IOTimer 
+class IOTimer
 {
 public:
-  NA_EIDPROC 
+  NA_EIDPROC
   IOTimer () ;
 
-  NA_EIDPROC 
+  NA_EIDPROC
   void resetTimer();             // re-zero the elapsed time (not needed on first use)
 
-  NA_EIDPROC 
+  NA_EIDPROC
   NABoolean startTimer();        // do nothing, return FALSE is already started
 
-  NA_EIDPROC 
+  NA_EIDPROC
   Int64 endTimer();              // Return elapsed time.
-  
+
 private:
   NABoolean ioStarted_;
   Int64 startTime_;
@@ -1396,15 +1391,3 @@ inline IOTimer::IOTimer () :
   {};
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
