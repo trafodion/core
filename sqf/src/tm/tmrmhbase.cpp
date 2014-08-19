@@ -60,7 +60,7 @@ int32 RM_Info_HBASE::num_rm_failed(CTmTxBase *pp_txn)
    }
    else
    {
-      TMTrace(1, ("RM_Info_HBASE::num_rm_failed : ENTRY : Get the total number of failed RMs.\n"));
+      TMTrace(2, ("RM_Info_HBASE::num_rm_failed : ENTRY : Get the total number of failed RMs.\n"));
       lv_count = gv_HbaseTM.failedRegions(0);
    }
 

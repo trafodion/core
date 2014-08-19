@@ -26,6 +26,9 @@
 #include "tmlibmsg.h"
 #include "tmlibtxn.h"
 #include "tmlibglobal.h"
+#include "tmseqnum.h"
+#include "javaobjectinterfacetm.h"
+
 //
 // TM handle information 
 //
@@ -35,10 +38,15 @@ typedef struct _tmlib_h_as_0 {
   short  iv_open;
 } tmlib_tmhandle;
 
+extern __thread JNIEnv* _tlp_jenv;
+extern __thread bool  _tlv_jenv_set;
+
 //
 // process specific information
 //
-class TMLIB
+extern bool gv_tmlib_initialized;
+
+class TMLIB : public JavaObjectInterfaceTM
 {
    private:
         TRANSACTION_DISTRIBUTION iv_txn_distribute;
@@ -49,6 +57,32 @@ class TMLIB
         tmlib_tmhandle ia_tm_phandle[MAX_NODES];
         bool ia_is_enlisted[MAX_NODES];
         bool iv_initialized;
+        CtmSeqNum *ip_seqNum;
+        int32 iv_seqNum_blockSize;
+        bool iv_localBegin;
+        
+        // JNI interface
+        char rminterface_classname[1024];
+        char hbasetxclient_classname[1024];
+
+        enum JAVA_METHODS {
+               //
+               JM_CTOR= 0,
+               JM_INIT1,  
+               JM_ABORT,
+               JM_TRYCOMMIT,
+               JM_LAST_HBASETXCLIENT,
+               //RMInterface
+               JM_CLEARTRANSACTIONSTATES,
+               JM_LAST
+        };
+
+        JavaMethodInit TMLibJavaMethods_[JM_LAST];
+        static jclass  javaClass_;
+        jclass  iv_RMInterface_class;
+        bool iv_enableCleanupRMInterface;
+
+        short setupJNI();
 
     public:
         TMLIB();
@@ -70,9 +104,40 @@ class TMLIB
         void enlist (int32 pv_node) {ia_is_enlisted[pv_node] = true;}
         bool reinstate_tx(TM_Transid *pv_transid, bool pv_settx = false);
 
+        static TMLIB *newTMLIB() {
+           TMLIB *lp_tmlib = NULL;
+           if (gv_tmlib_initialized) {
+              fprintf(stderr,"Error TMLIB already instantiated.\n");
+              fflush(stderr);
+              abort();
+           }
+           else {
+              //printf("Initializing TMLIB.\n");
+              lp_tmlib = new TMLIB();
+              if (lp_tmlib) {
+                 //printf("Initialized TMLIB.\n");
+                 lp_tmlib->initialize();
+                 gv_tmlib_initialized = true;
+              }
+              else {
+                 fprintf(stderr,"Error instantiating TMLIB.\n");
+                 fflush(stderr);
+                 abort();
+              }
+           }
+           return lp_tmlib;
+        }
         void initialize();
         bool is_initialized() {return iv_initialized;}
         void is_initialized(bool pv_init) {iv_initialized = pv_init;}
+
+        CtmSeqNum *seqNum() {return ip_seqNum;}
+        bool localBegin() {return iv_localBegin;}
+        void localBegin(bool pv_localBegin) {iv_localBegin=pv_localBegin;}
+        int32 seqNum_blockSize() {return iv_seqNum_blockSize;}
+        void seqNum_blockSize(int32 pv_blockSize) {iv_seqNum_blockSize=pv_blockSize;}
+        bool enableCleanupRMInterface() {return iv_enableCleanupRMInterface;}
+        void enableCleanupRMInterface(bool pv_bool) {iv_enableCleanupRMInterface=pv_bool;}
 
         bool open_tm(int pv_node, bool pv_startup = false);
         short send_tm(Tm_Req_Msg_Type *pp_req, Tm_Rsp_Msg_Type *pp_rsp, 
@@ -84,6 +149,12 @@ class TMLIB
 
         int beginner_nid();
         unsigned int new_tag();
+
+        // Local transaction methods
+        short initConnection(short pv_nid);
+        short abortTransactionLocal(long transactionID);
+        short endTransactionLocal(long transactionID);
+        void cleanupTransactionLocal(long transactionID);
 };
 
 // helper methods, C style 
@@ -92,6 +163,7 @@ short tmlib_check_active_tx ( );
 short tmlib_check_miss_param( void * pp_param);
 short tmlib_send_suspend(TM_Transid pv_transid, bool pv_coord_role, int pv_pid);
 short tmlib_check_outstanding_ios();
+short HBasetoTxnError(short pv_HBerr);
 
 //extern TMLIB_ThreadTxn_Object        gp_trans_thr;
 extern __thread TMLIB_ThreadTxn_Object *gp_trans_thr;
