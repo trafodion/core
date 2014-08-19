@@ -70,6 +70,8 @@ private:
     bool       iv_server;
     TM_Transid iv_transid;
     unsigned int iv_tag;
+    int iv_abort_timeout;
+    int64 iv_transactiontype;
 
     short begin(int abort_timeout, int64 transactiontype_bits);
     short join(bool pv_coordinator_role);
