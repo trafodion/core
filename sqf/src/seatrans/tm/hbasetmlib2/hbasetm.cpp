@@ -49,8 +49,35 @@ static int tm_rtsigblock_proc() {
     return 0;
 }
 
+short HBasetoTxnError(short pv_HBerr) 
+{
+   switch (pv_HBerr)
+   {
+   case RET_OK: return FEOK;
+   case RET_NOTX: return FENOTRANSID;
+   case RET_READONLY: return FEOK; //Read-only reply is ok
+   case RET_ADD_PARAM: return FEBOUNDSERR;
+   case RET_EXCEPTION: return FETRANSEXCEPTION;
+   case RET_HASCONFLICT: return FELOCKED; //Change to FEHASCONFLICT?
+   case RET_IOEXCEPTION: return FETRANSIOEXCEPTION;
+   case RET_NOCOMMITEX: return FEABORTEDTRANSID;
+   default: return FETRANSERRUNKNOWN;
+   }
+}
+
 // ---------------------------------------------------------------
 // HbaseTM_initialize
+// Purpose - Initialize HBase-trx in a client.
+// ---------------------------------------------------------------
+int HbaseTM_initialize (short pv_nid)
+{
+   int lv_error = gv_HbaseTM.initialize(pv_nid);
+   return lv_error;
+}
+
+
+// ---------------------------------------------------------------
+// HbaseTM_initialize (2)
 // Purpose - Initialize the HBase-trx TM Library.
 // ---------------------------------------------------------------
 int HbaseTM_initialize (bool pp_tracing, bool pv_tm_stats, CTmTimer *pp_tmTimer, short pv_nid)
@@ -146,8 +173,9 @@ CHbaseTM::CHbaseTM() : JavaObjectInterfaceTM()
    unlock();
 
    // Need to check return and handle error
-   if(initJVM()) {
-      cout << "Error on initJVM()\n";
+   int lv_result = initJVM();
+   if(lv_result != JOI_OK) {
+      cout << "CHbaseTM constructor encountered JOI error " << lv_result << " from call to initJVM()."  << endl;
       abort();
    }
 }
@@ -198,6 +226,8 @@ int CHbaseTM::initJVM()
   JavaMethods_[JM_PRECOMMIT  ].jm_signature = "(J)S";
   JavaMethods_[JM_DOCOMMIT   ].jm_name      = "doCommit";
   JavaMethods_[JM_DOCOMMIT   ].jm_signature = "(J)S";
+  JavaMethods_[JM_TRYCOMMIT  ].jm_name      = "tryCommit";
+  JavaMethods_[JM_TRYCOMMIT  ].jm_signature = "(J)S";
   JavaMethods_[JM_COMPLETEREQUEST].jm_name      = "completeRequest";
   JavaMethods_[JM_COMPLETEREQUEST].jm_signature = "(J)S";
   JavaMethods_[JM_REGREGION  ].jm_name      = "callRegisterRegion";
@@ -205,7 +235,7 @@ int CHbaseTM::initJVM()
   JavaMethods_[JM_PARREGION  ].jm_name      = "participatingRegions";
   JavaMethods_[JM_PARREGION  ].jm_signature = "(J)I";
   JavaMethods_[JM_CNTPOINT   ].jm_name      = "addControlPoint";
-  JavaMethods_[JM_CNTPOINT   ].jm_signature = "()J";
+  JavaMethods_[JM_CNTPOINT   ].jm_signature = "()Z";
   JavaMethods_[JM_STALL      ].jm_name      = "stall";
   JavaMethods_[JM_STALL      ].jm_signature = "(I)S";
   JavaMethods_[JM_RQREGINFO  ].jm_name      = "callRequestRegionInfo";
@@ -213,6 +243,7 @@ int CHbaseTM::initJVM()
 
 
   char className[]="org/trafodion/dtm/HBaseTxClient";
+  sleep(30);
   return (HBTM_RetCode)JavaObjectInterfaceTM::init(className, javaClass_, (JavaMethodInit*)&JavaMethods_, (int)JM_LAST, false);
 }
 
@@ -250,16 +281,11 @@ short CHbaseTM::addControlPoint(){
     abort();
   }
 
-  jlong jresult = _tlp_jenv->CallLongMethod(javaObj_, JavaMethods_[JM_CNTPOINT].methodID);
+  _tlp_jenv->CallBooleanMethod(javaObj_, JavaMethods_[JM_CNTPOINT].methodID);
   exc = _tlp_jenv->ExceptionOccurred();
   if(exc) {
-    printf("JavaObjectInterfaceTM::JavaMethods_[JM_CNTPOINT].methodID returned Exception\n");
-    fflush(stdout);
     _tlp_jenv->ExceptionDescribe();
     _tlp_jenv->ExceptionClear();
-    return RET_EXCEPTION;
-  }
-  if (jresult == 0L) {
     return RET_EXCEPTION;
   }
   return RET_OK;
@@ -305,17 +331,14 @@ short CHbaseTM::abortTransaction(int64 pv_transid) {
     return RET_EXCEPTION;
   }
 
-  if (jresult == 1)
+  //  RET_NOTX means the transaction wasn't found by the HBase client code (trx).  This is ok here, it
+  //  simply means the transaction hasn't been seen by the HBase client code, so no work was done on it.
+  if (jresult == RET_NOTX)
   {
-    // jresult from abort java method - 1 is error
-    return RET_ADD_PARAM;
-  }
-  
-  // For building
-  if(pv_transid) {
     return RET_OK;
-  }
-  return RET_OK;
+  } 
+
+  return jresult;
 }
 
 
@@ -376,6 +399,34 @@ short CHbaseTM::doCommit(int64 pv_transid) {
     return RET_OK;
   }
   return RET_OK;
+}
+
+
+short CHbaseTM::tryCommit(int64 pv_transid) {
+  jlong   jlv_transid = pv_transid;
+  JOI_RetCode lv_joi_retcode = JOI_OK;
+  lv_joi_retcode = JavaObjectInterfaceTM::initJVM();
+  if (lv_joi_retcode != JOI_OK) {
+    printf("JavaObjectInterfaceTM::initJVM returned: %d\n", lv_joi_retcode);
+    fflush(stdout);
+    abort();
+  }
+
+  jshort jresult = _tlp_jenv->CallShortMethod(javaObj_, JavaMethods_[JM_TRYCOMMIT].methodID, jlv_transid);
+  if(_tlp_jenv->ExceptionOccurred()){
+    _tlp_jenv->ExceptionDescribe();
+    _tlp_jenv->ExceptionClear();
+    return RET_EXCEPTION;
+  }
+
+  //  RET_NOTX means the transaction wasn't found by the HBase client code (trx).  This is ok here, it
+  //  simply means the transaction hasn't been seen by the HBase client code, so no work was done on it.
+  if (jresult == RET_NOTX)
+  {
+    return RET_OK;
+  } 
+
+  return jresult;
 }
 
 
@@ -440,6 +491,15 @@ inline int CHbaseTM::setAndGetNid()
    unlock();
    return my_nid();
 } //setAndGetNid
+
+
+// CHbaseTM::initialize
+// Initialize the CHbaseTM object
+// 
+int CHbaseTM::initialize(short pv_nid)
+{
+    return initialize(HBASETM_TraceOff, false, NULL, pv_nid);
+}
 
 
 // CHbaseTM::initialize
@@ -786,7 +846,7 @@ HMN_RetCode HashMapArray::init()
       return HMN_OK;
 
    if (JavaMethods_)
-      return (HMN_RetCode)JavaObjectInterfaceTM::init(className, javaClass_, JavaMethods_, (Int32)JM_LAST, true);
+      return (HMN_RetCode)JavaObjectInterfaceTM::init(className, javaClass_, JavaMethods_, (int32)JM_LAST, true);
    else
    {
       JavaMethods_ = new JavaMethodInit[JM_LAST];
@@ -810,7 +870,7 @@ HMN_RetCode HashMapArray::init()
       JavaMethods_[JM_GET_PORT       ].jm_name       = "getPort";
       JavaMethods_[JM_GET_PORT       ].jm_signature  = "(I)Ljava/lang/String;";
 
-      return (HMN_RetCode)JavaObjectInterfaceTM::init(className, javaClass_, JavaMethods_, (Int32)JM_LAST, false);
+      return (HMN_RetCode)JavaObjectInterfaceTM::init(className, javaClass_, JavaMethods_, (int32)JM_LAST, false);
     }
 }
 

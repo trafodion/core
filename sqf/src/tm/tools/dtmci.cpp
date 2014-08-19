@@ -1360,7 +1360,7 @@ int main(int argc, char *argv[])
        }
     }
 
-    //sleep(60);
+    //sleep(30);
     if (!lv_singleCommand)
        cout << "DTM Command line interface. " << ga_timestamp << endl;
 
@@ -1472,6 +1472,14 @@ int main(int argc, char *argv[])
             }
             cout << "BEGINTRANSACTION returned error " << lv_begin_error
                 << ", tag " << lv_tag << endl;
+
+            int32 lv_node, lv_seqnum;
+            bool lv_local = DTM_LOCALTRANSACTION(&lv_node, &lv_seqnum);
+            if (lv_local) 
+               cout << "Beginning local transaction (" << lv_node << "," << lv_seqnum << ")." << endl;
+            else
+               cout << "Beginning global transaction (" << lv_node << "," << lv_seqnum << ")." << endl;
+
             //set gettimeofday beginning struct here
             gettimeofday(&lv_begintime, NULL);
             lv_timeset = true;
