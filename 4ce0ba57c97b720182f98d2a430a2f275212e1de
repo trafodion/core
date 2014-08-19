@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Qifan Chen <qifan.chen@hp.com>
+Workflow+1: Qifan Chen <qifan.chen@hp.com>
+Code-Review+2: Suresh Subbiah <suresh.subbiah@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 19 Aug 2014 23:25:50 +0000
+Reviewed-on: https://review.trafodion.org/271
+Project: trafodion/core
+Branch: refs/heads/master
