@@ -17,6 +17,8 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.HRegionLocation;
+import org.apache.hadoop.hbase.client.transactional.TransState;
+
 
 /**
  * Holds client-side transaction information. Client's use them as opaque objects passed around to transaction
@@ -26,29 +28,8 @@ public class TransactionState {
 
     static final Log LOG = LogFactory.getLog(TransactionState.class);
 
-/** Current status. */
-    public static final int TM_TX_STATE_NOTX = 0; //S0 - NOTX
-    public static final int TM_TX_STATE_ACTIVE = 1; //S1 - ACTIVE
-    public static final int TM_TX_STATE_FORGOTTEN = 2; //N/A
-    public static final int TM_TX_STATE_COMMITTED = 3; //N/A
-    public static final int TM_TX_STATE_ABORTING = 4; //S4 - ROLLBACK
-    public static final int TM_TX_STATE_ABORTED = 5; //S4 - ROLLBACK
-    public static final int TM_TX_STATE_COMMITTING = 6; //S3 - PREPARED
-    public static final int TM_TX_STATE_PREPARING = 7; //S2 - IDLE
-    public static final int TM_TX_STATE_FORGETTING = 8; //N/A
-    public static final int TM_TX_STATE_PREPARED = 9; //S3 - PREPARED XARM Branches only!
-    public static final int TM_TX_STATE_FORGETTING_HEUR = 10; //S5 - HEURISTIC
-    public static final int TM_TX_STATE_BEGINNING = 11; //S1 - ACTIVE
-    public static final int TM_TX_STATE_HUNGCOMMITTED = 12; //N/A
-    public static final int TM_TX_STATE_HUNGABORTED = 13; //S4 - ROLLBACK
-    public static final int TM_TX_STATE_IDLE = 14; //S2 - IDLE XARM Branches only!
-    public static final int TM_TX_STATE_FORGOTTEN_HEUR = 15; //S5 - HEURISTIC - Waiting Superior TM xa_forget request
-    public static final int TM_TX_STATE_ABORTING_PART2 = 16; // Internal State
-    public static final int TM_TX_STATE_TERMINATING = 17;
-    public static final int TM_TX_STATE_LAST = 17;
-
     private final long transactionId;
-    private int status;
+    private TransState status;
     
     /**
      * 
@@ -65,6 +46,7 @@ public class TransactionState {
     private boolean commitSendDone;
     private Object commitSendLock;
     private boolean hasError;
+    private boolean localTransaction;
     
     public Set<String> tableNames = Collections.synchronizedSet(new HashSet<String>());
     public Set<TransactionRegionLocation> participatingRegions = Collections.synchronizedSet(new HashSet<TransactionRegionLocation>());
@@ -73,15 +55,29 @@ public class TransactionState {
      */
     private Set<TransactionRegionLocation> regionsToIgnore = Collections.synchronizedSet(new HashSet<TransactionRegionLocation>());
 
+    public boolean islocalTransaction() {
+      return localTransaction;
+    }
+    
     public TransactionState(final long transactionId) {
         this.transactionId = transactionId;
-        setStatus(TM_TX_STATE_ACTIVE);
-	countLock = new Object();
-	commitSendLock = new Object();
-	requestPendingCount = 0;
-	requestReceivedCount = 0;
-	commitSendDone = false;
+        setStatus(TransState.STATE_ACTIVE);
+      	countLock = new Object();
+      	commitSendLock = new Object();
+      	requestPendingCount = 0;
+      	requestReceivedCount = 0;
+      	commitSendDone = false;
         hasError = false;
+        String localTxns = System.getenv("DTM_LOCAL_TRANSACTIONS");
+        if (localTxns != null) {
+          localTransaction = (Integer.parseInt(localTxns)==0)?false:true;
+          //System.out.println("TS begin local txn id " + transactionId);
+          LOG.trace("TransactionState local transaction begun." + transactionId);
+        }
+        else {
+          localTransaction = false;
+          LOG.trace("TransactionState global transaction begun." + transactionId);
+        }
     }
     
     public boolean addTableName(final String table) {
@@ -272,23 +268,10 @@ public class TransactionState {
     }
 
     public String getStatus() {
-       String localStatus;
-      switch (status) {
-         case TM_TX_STATE_COMMITTED:
-            localStatus = new String("COMMITTED");
-            break;
-         case TM_TX_STATE_ABORTED:
-            localStatus = new String("ABORTED");
-            break;
-         default:
-            localStatus = new String("ACTIVE");
-            break;
-      }
-      return localStatus;
- 
+      return status.toString();
     }
 
-    public void setStatus(final int status) {
+    public void setStatus(final TransState status) {
       this.status = status;
     }
 
