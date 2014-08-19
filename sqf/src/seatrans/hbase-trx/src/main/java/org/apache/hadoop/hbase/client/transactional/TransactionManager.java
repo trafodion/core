@@ -158,6 +158,7 @@ public class TransactionManager {
                   return TM_COMMIT_FALSE_CONFLICT;
              return TM_COMMIT_FALSE;
          }
+
               
          if (readOnly)
              return TM_COMMIT_READ_ONLY;
@@ -264,6 +265,12 @@ public class TransactionManager {
     public int prepareCommit(final TransactionState transactionState) throws CommitUnsuccessfulException, IOException {
         boolean allReadOnly = true;
         int loopCount = 0;
+        if (transactionState.islocalTransaction()){
+          //System.out.println("prepare islocal");
+          LOG.trace("TransactionManager.prepareCommit local transaction " + transactionState.getTransactionId());
+        }
+        else
+          LOG.trace("TransactionManager.prepareCommit global transaction " + transactionState.getTransactionId());
         
         // (need one CompletionService per request for thread safety, can share pool of threads
     	CompletionService<Integer> compPool;

@@ -39,6 +39,7 @@ static const char* const joiErrorEnumStr[] =
  ,"JNI FindClass() failed"
  ,"JNI GetMethodID() failed"
  ,"JNI NewObject() failed"
+ ,"Error Unknown"
 };
 
 __thread JNIEnv* _tlp_jenv = 0;
@@ -49,7 +50,14 @@ __thread bool  _tlv_jenv_set = false;
 //////////////////////////////////////////////////////////////////////////////
 char* JavaObjectInterfaceTM::getErrorText(JOI_RetCode errEnum)
 {
-  return (char*)joiErrorEnumStr[errEnum];
+   if (errEnum >= JOI_LAST) {
+      fprintf(stderr,"getErrorText called with out of bounds index %d.\n",errEnum);
+      fflush(stderr);
+      abort();
+      //return (char*)joiErrorEnumStr[JOI_LAST];
+   }
+   else
+      return (char*)joiErrorEnumStr[errEnum];
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,7 +65,8 @@ char* JavaObjectInterfaceTM::getErrorText(JOI_RetCode errEnum)
 //////////////////////////////////////////////////////////////////////////////
 JavaObjectInterfaceTM::~JavaObjectInterfaceTM()
 {
-  _tlp_jenv->DeleteGlobalRef(javaObj_);
+   if (javaObj_)
+      _tlp_jenv->DeleteGlobalRef(javaObj_);
 }
  
 //////////////////////////////////////////////////////////////////////////////
@@ -66,7 +75,7 @@ JavaObjectInterfaceTM::~JavaObjectInterfaceTM()
 char* JavaObjectInterfaceTM::buildClassPath()
 {
   char* classPath = getenv("CLASSPATH");
-  Int32 size = strlen(classPath) + 1024;
+  int32 size = strlen(classPath) + 1024;
   char* classPathBuffer = (char*)malloc(size);
   
   strcpy(classPathBuffer, "-Djava.class.path=");
@@ -108,7 +117,7 @@ int JavaObjectInterfaceTM::createJVM()
   char debugOptions[300];
   int numJVMOptions = 0;
 
-  printf("In JavaObjectInterfaceTM::createJVM\n");
+  //printf("In JavaObjectInterfaceTM::createJVM\n");
 
   const char *maxHeapSize = getenv("DTM_JVM_MAX_HEAP_SIZE_MB");  
   char heapOptions[100];  
@@ -216,13 +225,13 @@ JOI_RetCode JavaObjectInterfaceTM::initJVM()
       break;
     
     case JNI_EDETACHED:
-      printf("initJVM: Detached, Try 2 attach\n");
+      fprintf(stderr,"initJVM: Detached, Try 2 attach\n");
       result = jvm_->AttachCurrentThread((void**) &_tlp_jenv, NULL);   
       if (result != JNI_OK)
-	{
-	  printf("initJVM: Error in attaching\n");
-	  return JOI_ERROR_ATTACH_JVM;
-	}
+      {
+        fprintf(stderr,"initJVM: Error in attaching\n");
+        return JOI_ERROR_ATTACH_JVM;
+      }
       
       needToDetach_ = true;
       break;
@@ -247,7 +256,7 @@ JOI_RetCode JavaObjectInterfaceTM::initJVM()
 JOI_RetCode JavaObjectInterfaceTM::init(char*           className, 
                                       jclass          &javaClass,
                                       JavaMethodInit* JavaMethods, 
-                                      Int32           howManyMethods,
+                                      int32           howManyMethods,
                                       bool            methodsInitialized)
 {
   if (isInitialized_)
@@ -263,9 +272,11 @@ JOI_RetCode JavaObjectInterfaceTM::init(char*           className,
   if (methodsInitialized == false || javaObj_ == NULL)
   {
     // Initialize the class pointer
+    //jclass javaClass = _tlp_jenv->FindClass(className);  TODO: old code - does this workaround a problem?
     jclass javaClass = _tlp_jenv->FindClass(className); 
     if (_tlp_jenv->ExceptionCheck()) 
     {
+      fprintf(stderr,"FindClass failed. javaClass %p.\n", javaClass);
       _tlp_jenv->ExceptionDescribe();
       _tlp_jenv->ExceptionClear();
       return JOI_ERROR_FINDCLASS;
@@ -286,6 +297,9 @@ JOI_RetCode JavaObjectInterfaceTM::init(char*           className,
                                                      JavaMethods[i].jm_signature.data());
         if (JavaMethods[i].methodID == 0 || _tlp_jenv->ExceptionCheck())
         { 
+          fprintf(stderr,"GetMethodID failed returning error. javaClass %p, i %d, "
+                 "name %s, signature %s.\n", javaClass, i, 
+                 JavaMethods[i].jm_name.data(), JavaMethods[i].jm_signature.data());
           _tlp_jenv->ExceptionDescribe();
           _tlp_jenv->ExceptionClear();
           _tlp_jenv->DeleteLocalRef(javaClass);  

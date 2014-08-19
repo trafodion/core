@@ -179,8 +179,6 @@ public:
    void cancelControlpointEvent();
    void addStatsEvent(int32 pv_interval);
    void cancelStatsEvent();
-   void addSonarHBEvent(int32 pv_interval);
-   void cancelSonarHBEvent();
    void addRMRetryEvent(int32 pv_interval);
    void cancelRMRetryEvent();
 }; //CTmTimer

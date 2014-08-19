@@ -26,7 +26,8 @@
 #include <iostream>
 
 #include "jni.h"
-#include "Platform.h"
+//#include "Platform.h"
+#include "dtm/tm_util.h"
 
 extern __thread JNIEnv* _tlp_jenv;
 
@@ -103,7 +104,7 @@ protected:
   
   // Initialize JVM and all the JNI configuration.
   // Must be called.
-  JOI_RetCode    init(char* className, jclass &javaclass,  JavaMethodInit* JavaMethods, Int32 howManyMethods, bool methodsInitialized);
+  JOI_RetCode    init(char* className, jclass &javaclass,  JavaMethodInit* JavaMethods, int32 howManyMethods, bool methodsInitialized);
 
   // Get the error description.
   virtual char* getErrorText(JOI_RetCode errEnum);

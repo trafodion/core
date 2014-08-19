@@ -259,6 +259,7 @@ typedef struct TM_HBASEREGIONINFO {
 #define TM_MAX_REGIONSERVER_STRING 2048 
 extern "C" short REGISTERREGION(int port, char *hostname, int hostname_length, char *regionInfo, int regionInfo_Length);
 extern "C" short HBASETM_REQUESTREGIONINFO(TM_HBASEREGIONINFO pa_trans[], short *pp_count);
+extern "C" short DTM_GETNEXTSEQNUMBLOCK(unsigned int &pp_seqNum_start, unsigned int &pp_seqNum_count);
 // Trafodion end //
 //
 extern "C" short ABORTTRANSACTION();
@@ -276,6 +277,8 @@ extern "C" short JOINTRANSACTION(int64 transid);
 extern "C" short TMF_GETTXHANDLE_(short *handle);
 extern "C" short TMF_SETTXHANDLE_(short *handle);
 extern "C" short TMWAIT();
+extern "C" short DTM_GETNEXTSEQNUMBLOCK(unsigned int &pp_seqNum_start, unsigned int &pp_seqNum_count);
+extern "C" bool DTM_LOCALTRANSACTION(int32 *pp_node, int32 *pp_seqnum);
 
 // Extended API
 extern "C" short GETTRANSID_EXT (TM_Transid_Type *transid);

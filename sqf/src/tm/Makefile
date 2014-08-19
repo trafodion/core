@@ -16,7 +16,7 @@
 #
 # @@@ END COPYRIGHT @@@
 
-PROGS          = $(OUTDIR)/tm
+PROGS          = $(OUTDIR)/tm $(OUTDIR)/dtmci
 ###########################################################################
 
 include ../../macros.gmk
@@ -28,7 +28,8 @@ HBASE_TRX_LOC    = $(MY_SQROOT)/src/seatrans/hbase-trx
 DEBUG		=
 DEFINES		= -DDEBUG -DxUSE_FILE_AUDIT 
 
-   LIBJVM        = -I. -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -L$(JAVA_HOME)/jre/lib/amd64/server -ljvm
+   LIBJVM        = -I. -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -L$(JAVA_HOME)/jre/lib/amd64/server \
+				   -ljvm -ljsig
    LIBSBMS       = -L$(LIBEXPDIR) -lsbms
 
 ifeq ($(USE_THREADED_IO),1)
@@ -53,7 +54,8 @@ LIBSTMOBJS = $(OUTDIR)/tmtransid.o \
 			 $(OUTDIR)/tmmap.o \
 			 $(OUTDIR)/tmmutex.o \
 			 $(OUTDIR)/tmregisterregion.o \
-			 $(OUTDIR)/versstmlib.o 
+			 $(OUTDIR)/versstmlib.o \
+			 $(OUTDIR)/javaobjectinterfacetm.o
 LIBSXATMOBJS  = $(OUTDIR)/tmmap.o \
 				$(OUTDIR)/tmmmap.o \
                 $(OUTDIR)/tmmutex.o \
@@ -138,13 +140,11 @@ ifeq ($(USE_THREADED_IO),1)
 LIBSTM		+= $(LIBSTHX)
 endif
 
-all:  $(LIBEXPDIR)/libstmlib.so cp_trx_jar
+#all:  $(LIBEXPDIR)/libstmlib.so cp_trx_jar
 
-cp_trx_jar:
-	cd $(HBASE_TRX_LOC); make
-
-all:  $(LIBEXPDIR)/libsxatmlib.so $(LIBEXPDIR)/libstmlib.so $(PROGS) $(LIBEXPDIR)/libxarm.so
-	cd tools; $(MAKE)
+all:  $(LIBEXPDIR)/libsxatmlib.so $(LIBEXPDIR)/libstmlib.so $(PROGS) \
+	  $(LIBEXPDIR)/libxarm.so $(LIBEXPDIR)/libshbasetmlib.so cp_trx_jar
+#	cd tools; $(MAKE)
 
 $(OUTDIR)/tm: $(TMOBJS) $(LIBEXPDIR)/libsxatmlib.so $(LIBEXPDIR)/libshbasetmlib.so $(PROGS) $(LIBEXPDIR)/libxarm.so cp_trx_jar
 	@echo "USE_THREADED_IO = " $(USE_THREADED_IO)
@@ -155,23 +155,39 @@ $(OUTDIR)/tm: $(TMOBJS) $(LIBEXPDIR)/libsxatmlib.so $(LIBEXPDIR)/libshbasetmlib.
 $(OUTDIR)/ra: $(RAOBJS) 
 	$(CXX) $(LNK_FLGS) -o $@ $(RAOBJS) $(LIBSTM) 
 
-$(LIBEXPDIR)/libstmlib.so: $(LIBSTMOBJS) 
+#$(LIBEXPDIR)/libstmlib.so: $(LIBSTMOBJS) $(LIBEXPDIR)/libsjoitmlib.so
+$(LIBEXPDIR)/libstmlib.so: $(LIBSTMOBJS) cp_trx_jar
 	$(CXX) $(DTMOBJS) $(LNK_FLGS) $(LIBSBMSX) $(LIBJVM) -shared -o $@ $(LIBSTMOBJS)  
 
 $(LIBEXPDIR)/libsxatmlib.so: $(LIBSXATMOBJS) 
 	$(CXX) $(LNK_FLGS) -shared -o $@ $(LIBSXATMOBJS)  $(LIBSTMX) $(LIBQPID)  $(LIBSEAPILOT)
 
-$(LIBEXPDIR)/libshbasetmlib.so: $(LIBSXATMOBJS) cp_trx_jar
+$(LIBEXPDIR)/libshbasetmlib.so: cp_trx_jar
 	cd $(HBASETMLIB); $(MAKE)
+
+$(LIBEXPDIR)/libsjoitmlib.so: cp_trx_jar
+	cd $(HBASETMLIB); $(MAKE)
+
+cp_trx_jar:
+	cd $(HBASE_TRX_LOC); make
+
 
 
 $(LIBEXPDIR)/libxarm.so: $(LIBXARMOBJS) 
 	$(CXX) $(LNK_FLGS) -shared -o $@ $(LIBXARMOBJS)$(LIBQPID)  $(LIBSEAPILOT) -DXARM_BUILD_
 
+$(OUTDIR)/dtmci: $(LIBEXPDIR)/libstmlib.so
+	cd tools; $(MAKE)
+
 hbasetmlib:
 	cd $(HBASETMLIB); $(MAKE)
 
 setup:
+	@echo "tm make environment:"
+	@echo "INCLUDES = " $(INCLUDES)
+	@echo "OUTDIR = " $(OUTDIR)
+	@echo "HBASETMLIB = " $(HBASETMLIB)
+	@echo ""
 	cd tools; $(MAKE) setup
 	@echo "HBASETMLIB = " $(HBASETMLIB)
 	cd $(HBASETMLIB); $(MAKE) setup
