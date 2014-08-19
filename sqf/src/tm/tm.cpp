@@ -203,10 +203,10 @@ void tm_start_timerThread()
    {
       gv_tm_info.tmTimer(lp_timer);
       gv_startTime = lp_timer->startTime();
-      lp_timer->addControlpointEvent(gv_tm_info.cp_interval());
       if (gv_tm_info.lead_tm())
       {
           TMTrace(2, ("tm_start_timerThread lead DTM, adding timer events\n")); 
+         lp_timer->addControlpointEvent(gv_tm_info.cp_interval());
          lp_timer->addStatsEvent(gv_tm_info.stats_interval());
       }
      lp_timer->addRMRetryEvent(gv_tm_info.RMRetry_interval());
@@ -488,6 +488,30 @@ void tm_process_req_requestregioninfo(CTmTxMessage * pp_msg)
 
    TMTrace(2, ("tm_process_req_requestregioninfo EXIT\n"));
 }
+
+
+// ----------------------------------------------------------------
+// tm_process_req_GetNextSeqNum
+// Purpose : Retrieve the next transaction sequence number
+// block.  This is used to implement local transactions
+// in Trafodion.
+// ----------------------------------------------------------------
+void tm_process_req_GetNextSeqNum(CTmTxMessage * pp_msg)
+{
+    TMTrace(2, ("tm_process_req_GetNextSeqNum ENTRY.\n")); 
+    
+    gv_tm_info.lock();
+    gv_tm_info.tm_new_seqNumBlock(pp_msg->request()->u.iv_GetNextSeqNum.iv_block_size,
+                                  &pp_msg->response()->u.iv_GetNextSeqNum.iv_seqNumBlock_start,
+                                  &pp_msg->response()->u.iv_GetNextSeqNum.iv_seqNumBlock_count);
+    gv_tm_info.unlock();
+    pp_msg->reply(FEOK);
+
+    TMTrace(2, ("tm_process_req_GetNextSeqNum EXIT returning Next seqNum start %d, block size %d\n",
+            pp_msg->response()->u.iv_GetNextSeqNum.iv_seqNumBlock_start, 
+            pp_msg->response()->u.iv_GetNextSeqNum.iv_seqNumBlock_count)); 
+    delete pp_msg;
+} // tm_process_req_GetNextSeqNum
 
 
 // ----------------------------------------------------------------
@@ -1756,8 +1780,8 @@ void tm_get_leader_info()
             gv_tm_info.lead_tm_takeover(true);
             gv_tm_info.open_other_tms();
             // Add a Checkpoint event to drive cp processing
-//            gv_tm_info.tmTimer()->cancelControlpointEvent();
-//            gv_tm_info.tmTimer()->addControlpointEvent(gv_tm_info.cp_interval());
+            gv_tm_info.tmTimer()->cancelControlpointEvent();
+            gv_tm_info.tmTimer()->addControlpointEvent(gv_tm_info.cp_interval());
             // Add a stats event
             gv_tm_info.tmTimer()->cancelStatsEvent();
             gv_tm_info.tmTimer()->addStatsEvent(gv_tm_info.stats_interval());
@@ -2280,8 +2304,11 @@ void tm_process_registry_change(MS_Mon_Change_def *pp_change )
           // Cancel the TmTimer control point event and re-add with the
           // new interval.
           gv_tm_info.cp_interval(lv_value);
-          gv_tm_info.tmTimer()->cancelControlpointEvent();
-          gv_tm_info.tmTimer()->addControlpointEvent(lv_value);
+          if (gv_tm_info.lead_tm())
+          {
+            gv_tm_info.tmTimer()->cancelControlpointEvent();
+            gv_tm_info.tmTimer()->addControlpointEvent(lv_value);
+          }
         }
     }
     else if (strcmp(pp_change->key, DTM_STATS_INTERVAL) == 0)
@@ -3089,7 +3116,10 @@ void tm_process_msg(BMS_SRE *pp_sre)
         break;
    case TM_MSG_TYPE_REQUESTREGIONINFO:
         tm_process_req_requestregioninfo(lp_msg);
-   break;
+        break;
+   case TM_MSG_TYPE_GETNEXTSEQNUMBLOCK:
+        tm_process_req_GetNextSeqNum(lp_msg);
+        break;
    default:
 
         // EMS message here, DTM_INVALID_MESSAGE_TYPE
