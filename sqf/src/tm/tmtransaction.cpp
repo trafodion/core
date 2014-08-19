@@ -18,10 +18,15 @@
 
 // dtm includes
 #include "tmlib.h"
+#include "hbasetm.h"
 #include "tmlogging.h"
+#include "tmtxkey.h"
 
 // seabed includes
 #include "seabed/trace.h"
+
+extern TMLIB *gp_tmlib;
+
 
 // --------------------------------------------------------------------------
 // TM_Transaction::TM_Transaction
@@ -38,6 +43,8 @@ TM_Transaction::TM_Transaction(int abort_timeout, int64 transactiontype_bits)
     iv_coordinator = true;
     iv_last_error = 0;
     iv_server = false;
+    iv_abort_timeout = abort_timeout;
+    iv_transactiontype = transactiontype_bits;
     begin (abort_timeout, transactiontype_bits);
 }
 
@@ -53,6 +60,8 @@ TM_Transaction::TM_Transaction(TM_Transid pv_transid, bool pv_server_tx)
     iv_coordinator = false;
     iv_server = pv_server_tx;
     iv_last_error = 0;
+    iv_abort_timeout = 0;
+    iv_transactiontype = 0;
     join (iv_coordinator);
 }
 
@@ -74,12 +83,12 @@ short  TM_Transaction::register_region(int port, char *hostName, int hostname_Le
 
     TMlibTrace(("TMLIB_TRACE : TM_Transaction::register_region ENTRY\n"), 2);
 
-    if (!gv_tmlib.is_initialized())
-         gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+         gp_tmlib = TMLIB::newTMLIB();
 
     tmlib_init_req_hdr(TM_MSG_TYPE_REGISTERREGION, &lv_req);
-    lv_req.u.iv_register_region.iv_pid = gv_tmlib.iv_my_pid;
-    lv_req.u.iv_register_region.iv_nid = gv_tmlib.iv_my_nid;
+    lv_req.u.iv_register_region.iv_pid = gp_tmlib->iv_my_pid;
+    lv_req.u.iv_register_region.iv_nid = gp_tmlib->iv_my_nid;
     iv_transid.set_external_data_type(&lv_req.u.iv_register_region.iv_transid);
     lv_req.u.iv_register_region.iv_port = port;
     memcpy (lv_req.u.iv_register_region.ia_hostname, hostName, hostname_Length);
@@ -88,7 +97,7 @@ short  TM_Transaction::register_region(int port, char *hostName, int hostname_Le
     memcpy (lv_req.u.iv_register_region.ia_regioninfo2, regionInfo, regionInfo_Length);
     lv_req.u.iv_register_region.iv_regioninfo_length = regionInfo_Length;
 
-    iv_last_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
+    iv_last_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
     if  (iv_last_error)
     {
         TMlibTrace(("TMLIB_TRACE : TM_Transaction::register_region returning error %d\n", iv_last_error), 1);
@@ -107,6 +116,7 @@ short  TM_Transaction::register_region(int port, char *hostName, int hostname_Le
 // --------------------------------------------------------------------------
 // TM_Transaction::begin
 // -- begin transaction, private method
+// Added local transaction support for Trafodion
 // --------------------------------------------------------------------------
 short TM_Transaction::begin(int abort_timeout, int64 transactiontype_bits)
 {
@@ -125,37 +135,46 @@ short TM_Transaction::begin(int abort_timeout, int64 transactiontype_bits)
 
     // We don't validate transactiontype flags
 
-    if (!gv_tmlib.is_initialized())
-         gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+         gp_tmlib = TMLIB::newTMLIB();
 
     // if there is already an active tx, switch it out
     // allows user to do multiple BEGINS
     if (gp_trans_thr->get_current() != NULL)
         gp_trans_thr->get_current()->release();
     
-    tmlib_init_req_hdr(TM_MSG_TYPE_BEGINTRANSACTION, &lv_req);
-    lv_req.u.iv_begin_trans.iv_pid = gv_tmlib.iv_my_pid;
-    lv_req.u.iv_begin_trans.iv_nid = gv_tmlib.iv_my_nid;
-    lv_req.u.iv_begin_trans.iv_abort_timeout = abort_timeout;
-    lv_req.u.iv_begin_trans.iv_transactiontype_bits = transactiontype_bits;
-
-    iv_last_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, gv_tmlib.beginner_nid());
-    if  (iv_last_error)
-    {
-        TMlibTrace(("TMLIB_TRACE : TM_Transaction::begin returning error %d\n", iv_last_error), 1);
-        return iv_last_error;
+    // Bypass BEGINTRANSACTION call for Trafodion local transactions.
+    if (gp_tmlib->localBegin()) {
+       CTmTxKey *lp_txid = new CTmTxKey(gp_tmlib->iv_my_nid, gp_tmlib->seqNum()->nextSeqNum());
+       iv_transid = iv_tag = lp_txid->id();
+       gp_trans_thr->add_trans(this);
+       //printf("Local begin bypassing begin txn (%d,%d)\n", lp_txid->node(), lp_txid->seqnum());
     }
+    else { //Begin in TM
+       tmlib_init_req_hdr(TM_MSG_TYPE_BEGINTRANSACTION, &lv_req);
+       lv_req.u.iv_begin_trans.iv_pid = gp_tmlib->iv_my_pid;
+       lv_req.u.iv_begin_trans.iv_nid = gp_tmlib->iv_my_nid;
+       lv_req.u.iv_begin_trans.iv_abort_timeout = abort_timeout;
+       lv_req.u.iv_begin_trans.iv_transactiontype_bits = transactiontype_bits;
 
-    // record tag in our param, if an error occurred, this
-    // will be -1, so we can do a blind copy here
-    iv_last_error = lv_rsp.iv_msg_hdr.miv_err.error;
+       iv_last_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, gp_tmlib->beginner_nid());
+       if  (iv_last_error)
+       {
+           TMlibTrace(("TMLIB_TRACE : TM_Transaction::begin returning error %d\n", iv_last_error), 1);
+           return iv_last_error;
+       }
+
+       // record tag in our param, if an error occurred, this
+       // will be -1, so we can do a blind copy here
+       iv_last_error = lv_rsp.iv_msg_hdr.miv_err.error;
        
-    if (!iv_last_error)
-    {    
-        // record as the active tx
-        iv_transid = lv_rsp.u.iv_begin_trans.iv_transid;  
-        iv_tag = gv_tmlib.new_tag();
-        gp_trans_thr->add_trans(this);
+       if (!iv_last_error)
+       {    
+           // record as the active tx
+           iv_transid = lv_rsp.u.iv_begin_trans.iv_transid;  
+           iv_tag = gp_tmlib->new_tag();
+           gp_trans_thr->add_trans(this);
+       }
     }
 
     TMlibTrace(("TMLIB_TRACE : TM_Transaction::begin (seq num %d, tag %d) EXIT\n", 
@@ -164,9 +183,11 @@ short TM_Transaction::begin(int abort_timeout, int64 transactiontype_bits)
     return iv_last_error; 
 }
 
+
 // --------------------------------------------------------------------------
 // TM_Transaction::end
 // -- end transaction
+// Trafodion: added support for local transactions.
 // --------------------------------------------------------------------------
 short TM_Transaction::end()
 {
@@ -189,43 +210,57 @@ short TM_Transaction::end()
         return iv_last_error;    
     } 
 
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
-
-    tmlib_init_req_hdr(TM_MSG_TYPE_ENDTRANSACTION, &lv_req);
-    lv_req.u.iv_end_trans.iv_tag = iv_transid.get_seq_num();
-    lv_req.u.iv_end_trans.iv_pid = gv_tmlib.iv_my_pid;
-    lv_req.u.iv_end_trans.iv_nid = gv_tmlib.iv_my_nid;
-    iv_transid.set_external_data_type(&lv_req.u.iv_end_trans.iv_transid);
-
-    iv_last_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
-    if (iv_last_error)
-    {
-        TMlibTrace(("TMLIB_TRACE : TM_Transaction::end returning error %d \n", iv_last_error), 1);
-        return iv_last_error;    
+    if (gp_tmlib->localBegin()) {
+       //printf("Local begin ENDTRANSACTION %d\n", iv_transid.get_seq_num());
+       short lv_HBerror = gp_tmlib->endTransactionLocal((int64) iv_transid.get_native_type());
+       iv_last_error = HBasetoTxnError(lv_HBerror);
+       if (iv_last_error)
+       {
+           printf("TM_Transaction::end returning error (%d,%d)\n",iv_last_error, lv_HBerror);
+           TMlibTrace(("TMLIB_TRACE : TM_Transaction::end local txn returning error (%d, %d).\n", iv_last_error, lv_HBerror), 1);
+           return iv_last_error;    
+       }
     }
+    else {
+       tmlib_init_req_hdr(TM_MSG_TYPE_ENDTRANSACTION, &lv_req);
+       lv_req.u.iv_end_trans.iv_tag = iv_transid.get_seq_num();
+       lv_req.u.iv_end_trans.iv_pid = gp_tmlib->iv_my_pid;
+       lv_req.u.iv_end_trans.iv_nid = gp_tmlib->iv_my_nid;
+       iv_transid.set_external_data_type(&lv_req.u.iv_end_trans.iv_transid);
 
-    // so far, FEJOINSOUSTANDING is the only retryable error
-    // We want to clean up for things like FEOK, FENOTRANSID, FEINVTRANSID
-    // if its FEDEVICEDOWNFORTMF, then it will get aborted as that means the
-    // owner TM is down.
-    // FEABORTEDTRANSID & FEENDEDTRANSID is ok, 
-     if  ((lv_rsp.iv_msg_hdr.miv_err.error == FEINVTRANSID) ||
-         (lv_rsp.iv_msg_hdr.miv_err.error == FENOTRANSID) ||
-         (lv_rsp.iv_msg_hdr.miv_err.error == FEOK)  ||
-         (lv_rsp.iv_msg_hdr.miv_err.error == FEABORTEDTRANSID) ||
-         (lv_rsp.iv_msg_hdr.miv_err.error == FEENDEDTRANSID))
-     {
-        gv_tmlib.clear_entry (iv_transid , false, true);
-        gp_trans_thr->remove_trans (this);
-    }
+       iv_last_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
+       
+       if (iv_last_error)
+       {
+           TMlibTrace(("TMLIB_TRACE : TM_Transaction::end returning error %d \n", iv_last_error), 1);
+           return iv_last_error;    
+       }
+
+       // so far, FEJOINSOUSTANDING is the only retryable error
+       // We want to clean up for things like FEOK, FENOTRANSID, FEINVTRANSID
+       // if its FEDEVICEDOWNFORTMF, then it will get aborted as that means the
+       // owner TM is down.
+       // FEABORTEDTRANSID & FEENDEDTRANSID is ok, 
+        if  ((lv_rsp.iv_msg_hdr.miv_err.error == FEINVTRANSID) ||
+            (lv_rsp.iv_msg_hdr.miv_err.error == FENOTRANSID) ||
+            (lv_rsp.iv_msg_hdr.miv_err.error == FEOK)  ||
+            (lv_rsp.iv_msg_hdr.miv_err.error == FEABORTEDTRANSID) ||
+            (lv_rsp.iv_msg_hdr.miv_err.error == FEENDEDTRANSID))
+        {
+           gp_tmlib->clear_entry (iv_transid , false, true);
+           gp_trans_thr->remove_trans (this);
+       }
     
-    iv_last_error = lv_rsp.iv_msg_hdr.miv_err.error;
+       iv_last_error = lv_rsp.iv_msg_hdr.miv_err.error;
+    }
     TMlibTrace(("TMLIB_TRACE : TM_Transaction::end  (seq num %d) EXIT\n", iv_transid.get_seq_num()), 2);
 
     return iv_last_error;
 }
+
 
 // --------------------------------------------------------------------------
 // TM_Transaction::abort
@@ -253,45 +288,57 @@ short TM_Transaction::abort(bool pv_doom)
         return iv_last_error;   
    */
 
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
-    if (pv_doom)
-        tmlib_init_req_hdr(TM_MSG_TYPE_DOOMTX, &lv_req);
-    else
-        tmlib_init_req_hdr(TM_MSG_TYPE_ABORTTRANSACTION, &lv_req);
+    if (gp_tmlib->localBegin()) {
+       //printf("Local begin ABORTTRANSACTION %d\n", iv_transid.get_seq_num());
+       short lv_HBerror = gp_tmlib->abortTransactionLocal((int64) iv_transid.get_native_type());
+       iv_last_error = HBasetoTxnError(lv_HBerror);
+       if (iv_last_error)
+       {
+           TMlibTrace(("TMLIB_TRACE : TM_Transaction::abort local txn returning error (%d, %d).\n", iv_last_error, lv_HBerror), 1);
+           return iv_last_error;    
+       }
+    }
+    else {
+       if (pv_doom)
+           tmlib_init_req_hdr(TM_MSG_TYPE_DOOMTX, &lv_req);
+       else
+           tmlib_init_req_hdr(TM_MSG_TYPE_ABORTTRANSACTION, &lv_req);
 
-    lv_req.u.iv_abort_trans.iv_tag =  iv_transid.get_seq_num();
-    lv_req.u.iv_abort_trans.iv_nid = gv_tmlib.iv_my_nid;
-    lv_req.u.iv_abort_trans.iv_pid = gv_tmlib.iv_my_pid;
-    iv_transid.set_external_data_type (&lv_req.u.iv_abort_trans.iv_transid);
+       lv_req.u.iv_abort_trans.iv_tag =  iv_transid.get_seq_num();
+       lv_req.u.iv_abort_trans.iv_nid = gp_tmlib->iv_my_nid;
+       lv_req.u.iv_abort_trans.iv_pid = gp_tmlib->iv_my_pid;
+       iv_transid.set_external_data_type (&lv_req.u.iv_abort_trans.iv_transid);
  
-    iv_last_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
-    if (iv_last_error)
-    {
-        TMlibTrace(("TMLIB_TRACE : TM_Transaction::abort returning error %d \n", iv_last_error), 1);
-        return iv_last_error;    
-    }
+       iv_last_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
+       if (iv_last_error)
+       {
+           TMlibTrace(("TMLIB_TRACE : TM_Transaction::abort returning error %d \n", iv_last_error), 1);
+           return iv_last_error;    
+       }
 
-    // so far, FEJOINSOUSTANDING is the only retryable error
-    // We want to clean up for things like FEOK, FENOTRANSID, FEINVTRANSID
-    // if its FEDEVICEDOWNFORTMF, then it will get aborted as that means the
-    // owner TM is down.
-    // FEABORTEDTRANSID & FEENDEDTRANSID is ok, 
-    if  ((lv_rsp.iv_msg_hdr.miv_err.error == FEINVTRANSID) ||
-        (lv_rsp.iv_msg_hdr.miv_err.error == FENOTRANSID) ||
-        (lv_rsp.iv_msg_hdr.miv_err.error == FEOK) ||
-        (lv_rsp.iv_msg_hdr.miv_err.error == FEABORTEDTRANSID) ||
-        (lv_rsp.iv_msg_hdr.miv_err.error == FEENDEDTRANSID))
-    {
-        if (!pv_doom)
-        {
-            gv_tmlib.clear_entry(iv_transid, false, true);
-            gp_trans_thr->remove_trans (this);
-        }
-    }
+       // so far, FEJOINSOUSTANDING is the only retryable error
+       // We want to clean up for things like FEOK, FENOTRANSID, FEINVTRANSID
+       // if its FEDEVICEDOWNFORTMF, then it will get aborted as that means the
+       // owner TM is down.
+       // FEABORTEDTRANSID & FEENDEDTRANSID is ok, 
+       if  ((lv_rsp.iv_msg_hdr.miv_err.error == FEINVTRANSID) ||
+           (lv_rsp.iv_msg_hdr.miv_err.error == FENOTRANSID) ||
+           (lv_rsp.iv_msg_hdr.miv_err.error == FEOK) ||
+           (lv_rsp.iv_msg_hdr.miv_err.error == FEABORTEDTRANSID) ||
+           (lv_rsp.iv_msg_hdr.miv_err.error == FEENDEDTRANSID))
+       {
+           if (!pv_doom)
+           {
+               gp_tmlib->clear_entry(iv_transid, false, true);
+               gp_trans_thr->remove_trans (this);
+           }
+       }
 
-    iv_last_error = lv_rsp.iv_msg_hdr.miv_err.error;
+       iv_last_error = lv_rsp.iv_msg_hdr.miv_err.error;
+    }
     TMlibTrace(("TMLIB_TRACE : TM_Transaction::abort (seq num %d) EXIT\n", iv_transid.get_seq_num()), 2);
     return iv_last_error;
 }
@@ -307,8 +354,8 @@ short TM_Transaction::join(bool pv_coordinator_role)
 
     TMlibTrace(("TMLIB_TRACE : TM_Transaction::join ENTRY\n"), 2);
 
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // if there is already an active tx, switch it out
     // allows user to do multiple JOINS
@@ -329,7 +376,7 @@ short TM_Transaction::join(bool pv_coordinator_role)
     if (iv_server)
     {
          iv_last_error = FEOK;
-         iv_tag = gv_tmlib.new_tag();
+         iv_tag = gp_tmlib->new_tag();
          gp_trans_thr->add_trans(this);
          TMlibTrace(("TMLIB_TRACE : TM_Transaction::join, server EXIT\n"), 2);
          return iv_last_error;
@@ -339,9 +386,9 @@ short TM_Transaction::join(bool pv_coordinator_role)
     tmlib_init_req_hdr(TM_MSG_TYPE_JOINTRANSACTION, &lv_req);
     iv_transid.set_external_data_type(&lv_req.u.iv_join_trans.iv_transid);
     lv_req.u.iv_join_trans.iv_coord_role = pv_coordinator_role;
-    lv_req.u.iv_join_trans.iv_pid = gv_tmlib.iv_my_pid;
-    lv_req.u.iv_join_trans.iv_nid = gv_tmlib.iv_my_nid;
-    iv_last_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
+    lv_req.u.iv_join_trans.iv_pid = gp_tmlib->iv_my_pid;
+    lv_req.u.iv_join_trans.iv_nid = gp_tmlib->iv_my_nid;
+    iv_last_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
     if (iv_last_error)
     {
         TMlibTrace(("TMLIB_TRACE : JOINTRANSACTION_EXT returning error %d for seq num %d\n", 
@@ -360,9 +407,9 @@ short TM_Transaction::join(bool pv_coordinator_role)
 
     iv_coordinator = pv_coordinator_role;
 
-    iv_tag = gv_tmlib.new_tag();
+    iv_tag = gp_tmlib->new_tag();
     gp_trans_thr->add_trans(this);
-    if (!gv_tmlib.is_enlisted (iv_transid.get_node()))
+    if (!gp_tmlib->is_enlisted (iv_transid.get_node()))
     {
         TMlibTrace(("TMLIB_TRACE : TM_transaction::join, adding enlist for node %d\n", iv_transid.get_node()), 3);
         TM_Transid_Type lv_null_transid;
@@ -370,7 +417,7 @@ short TM_Transaction::join(bool pv_coordinator_role)
                                 lv_null_transid.id[3] = 0;
         msg_mon_trans_enlist (iv_transid.get_node(), lv_rsp.u.iv_join_trans.iv_tm_pid,
                                lv_null_transid);
-        gv_tmlib.enlist(iv_transid.get_node());
+        gp_tmlib->enlist(iv_transid.get_node());
     }
 
 
@@ -417,9 +464,9 @@ short TM_Transaction::suspend(TM_Transid *pp_transid, bool pv_coordinator_role)
         //return iv_last_error;
     }
 
-    if (!gv_tmlib.is_initialized())
+    if (gp_tmlib == NULL)
     {
-        gv_tmlib.initialize();
+        gp_tmlib = TMLIB::newTMLIB();
     }
 
      // they did not join and hence cannot suspend
@@ -449,14 +496,14 @@ short TM_Transaction::suspend(TM_Transid *pp_transid, bool pv_coordinator_role)
      if (isEnder())
      {
          gp_trans_thr->set_current_suspended(true);
-         gv_tmlib.clear_entry (iv_transid, false,  true);
+         gp_tmlib->clear_entry (iv_transid, false,  true);
      }
      else 
      {
-         lv_error = tmlib_send_suspend(iv_transid, pv_coordinator_role,gv_tmlib.iv_my_pid);
+         lv_error = tmlib_send_suspend(iv_transid, pv_coordinator_role,gp_tmlib->iv_my_pid);
          if (gp_trans_thr->get_current_ios() == 0)
          {
-            gv_tmlib.clear_entry (iv_transid, false,  true);
+            gp_tmlib->clear_entry (iv_transid, false,  true);
             gp_trans_thr->remove_trans (this);
          }
          else
@@ -541,9 +588,9 @@ short TM_Transaction::status(short *pp_status)
         return iv_last_error;
     }
 
-    if (!gv_tmlib.is_initialized())
+    if (gp_tmlib == NULL)
     {
-        gv_tmlib.initialize();
+        gp_tmlib = TMLIB::newTMLIB();
     }
 
     // if the use passed in a transid, we must use that and make sure
@@ -559,7 +606,7 @@ short TM_Transaction::status(short *pp_status)
 
     tmlib_init_req_hdr(TM_MSG_TYPE_STATUSTRANSACTION, &lv_req);
     iv_transid.set_external_data_type(&lv_req.u.iv_status_trans.iv_transid);
-    iv_last_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
+    iv_last_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, iv_transid.get_node());
     if (iv_last_error)
         return iv_last_error;
 

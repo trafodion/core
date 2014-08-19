@@ -20,12 +20,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
 // seabed includes
 #include "seabed/ms.h"
 #include "seabed/fs.h"
 #include "seabed/trace.h"
 #include "seabed/thread.h"
+#include "javaobjectinterfacetm.h"
 
 // tm includes  
 #include "dtm/tm_util.h"
@@ -33,181 +35,82 @@
 #include "tmlib.h"
 #include "tmlogging.h"
 
+//extern int HbaseTM_initiate_stall(int where);  Shouldn't need these here.
+//extern HashMapArray* HbaseTM_process_request_regions_info();
+
+
 //==== For the JNI call to RMInterface.cleartransaction - begin
 #include <iostream>
 #include "jni.h"
 
-JavaVM* _tmlib_jvm_  = NULL;
-__thread JNIEnv* _tlp_jenv = 0;
-__thread bool  _tlv_jenv_set = false;
+jclass TMLIB::javaClass_ = 0;
 
-struct JavaMethodInit {
-  std::string   jm_name;       // The method name.
-  std::string   jm_signature;  // The method signature.
-  jmethodID     methodID;      // The JNI methodID
+
+// ==============================================================
+// === HBaseTM return codes
+// ==============================================================
+enum HBTM_RetCode {
+   RET_OK = 0,
+   RET_NOTX,
+   RET_READONLY,
+   RET_ADD_PARAM,
+   RET_EXCEPTION,
+   RET_HASCONFLICT,
+   RET_IOEXCEPTION,
+   RET_NOCOMMITEX,
+   RET_LAST
 };
 
-enum JAVA_METHODS {
-  JM_CLEARTRANSACTIONSTATES=0,
-  JM_LAST
-};
-
-JavaMethodInit TMLibJavaMethods_[JM_LAST];
-
-typedef enum {
-  JOI_OK = 0
- ,JOI_ERROR_CHECK_JVM           // Cannot check existing JVMs
- ,JOI_ERROR_JVM_VERSION         // Attaching to JVM of wrong version.
- ,JOI_ERROR_ATTACH_JVM          // Cannot attach to an existing JVM
- ,JOI_ERROR_CREATE_JVM          // Cannot create JVM
- ,JOI_ERROR_FINDCLASS           // JNI FindClass() failed
- ,JOI_ERROR_GETMETHOD           // JNI GetMethodID() failed
- ,JOI_ERROR_NEWOBJ              // JNI NewObject() failed
- ,JOI_LAST
-} JOI_RetCode;
-
-short initJVM()
-{
-  jint result;
-
-  if ((_tlp_jenv != 0) && (_tlv_jenv_set)) {
-    return JOI_OK;
-  }
-
-  if (_tmlib_jvm_ == NULL)
-  {
-    jsize jvm_count = 0;
-    // Is there an existing JVM?
-    result = JNI_GetCreatedJavaVMs (&_tmlib_jvm_, 1, &jvm_count);
-    if (result != JNI_OK)
-      return JOI_ERROR_CHECK_JVM;
-      
-    if (jvm_count == 0)
-    {
-      return 0;
-    }
-  }
-
-  // We found a JVM, can we use it?
-  result = _tmlib_jvm_->GetEnv((void**) &_tlp_jenv, JNI_VERSION_1_6);
-  switch (result)
-  {
-    case JNI_OK:
-      break;
-    
-    case JNI_EDETACHED:
-      printf("initJVM: Detached, Try 2 attach\n");
-      result = _tmlib_jvm_->AttachCurrentThread((void**) &_tlp_jenv, NULL);   
-      if (result != JNI_OK)
-	{
-	  printf("initJVM: Error in attaching\n");
-	  return JOI_ERROR_ATTACH_JVM;
-	}
-      
-      break;
-       
-    case JNI_EVERSION:
-      return JOI_ERROR_JVM_VERSION;
-      break;
-      
-    default:
-      return JOI_ERROR_ATTACH_JVM;
-      break;
-  }
-
-  _tlv_jenv_set = true;
-
-  return JOI_OK;
-}
-
-void cleanupTransactionLocal(long transactionID)
-{
-  static bool sv_class_initialized = false;
-  static bool sv_methods_initialized = false;
-  static jclass sv_jclass_rminterface;
-  static bool sv_enable_cleanup_rminterface = true;
-  static bool sv_envvar_checked = false;
-
-  if (!sv_envvar_checked) {
-    const char *envvar_enable_cleanup  = getenv("TMLIB_ENABLE_CLEANUP");
-    if (envvar_enable_cleanup && strcmp(envvar_enable_cleanup, "0")) {
-      sv_enable_cleanup_rminterface = false;
-    }
-    sv_envvar_checked = true;
-  }
-
-  if (! sv_enable_cleanup_rminterface) {
-    return;
-  }
-
-  char lv_rminterface_name[] = "org/apache/hadoop/hbase/client/transactional/RMInterface";
-  jthrowable jexception;
-
-  if (initJVM() != JOI_OK) {
-    return;
-  }
-  
-  if (! sv_class_initialized) {
-
-    sv_jclass_rminterface = _tlp_jenv->FindClass(lv_rminterface_name); 
-
-    if (_tlp_jenv->ExceptionCheck()) {
-      _tlp_jenv->ExceptionDescribe();
-      _tlp_jenv->ExceptionClear();
-      return;
-    }
-  
-    if (sv_jclass_rminterface == 0) {
-      return;
-    }
-
-    sv_class_initialized = true;
-
-  }
-
-  if (! sv_methods_initialized) {
-
-    TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].jm_name      = "clearTransactionStates";
-    TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].jm_signature = "(J)V";
-    TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].methodID     = 
-      _tlp_jenv->GetStaticMethodID(sv_jclass_rminterface,
-				   TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].jm_name.data(),
-				   TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].jm_signature.data());
-
-    if (TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].methodID == 0 || _tlp_jenv->ExceptionCheck()) { 
-      _tlp_jenv->ExceptionDescribe();
-      _tlp_jenv->ExceptionClear();
-      return;
-    }      
-
-    sv_methods_initialized = true;
-  }
-
-  jlong j_tid = transactionID;
-  _tlp_jenv->CallStaticVoidMethod(sv_jclass_rminterface,
-				  TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].methodID,
-				  j_tid);
-  jexception = _tlp_jenv->ExceptionOccurred();
-  if(jexception) {
-    _tlp_jenv->ExceptionDescribe();
-    _tlp_jenv->ExceptionClear();
-  }
-  
-}
-
-//==== For the JNI call to RMInterface.cleartransaction - end
 
 // global externsTMLIB_ThreadTxn_Object
 __thread  TMLIB_ThreadTxn_Object *gp_trans_thr;
-TMLIB                           gv_tmlib;
+TMLIB *gp_tmlib = NULL;
+bool gv_tmlib_initialized = false;
 
 // --------------------------------------------------------------------
 // Helper methods
 // --------------------------------------------------------------------
 
+// block signal 60 as soon as possible upon starting
+#define SQ_LIO_SIGNAL_REQUEST_REPLY (SIGRTMAX - 4)
+static int tm_rtsigblock_proc() {
+    sigset_t lv_sig_set;
+    // Setup signal handling
+    sigemptyset(&lv_sig_set);
+    sigaddset(&lv_sig_set, SQ_LIO_SIGNAL_REQUEST_REPLY);
+    int err = pthread_sigmask(SIG_BLOCK, &lv_sig_set, NULL);
+    if (err)
+        abort();
+    fprintf(stderr,"Blocked signal %d.\n",SQ_LIO_SIGNAL_REQUEST_REPLY);
+    fflush(stderr);
+    return 0;
+}
+
+//----------------------------------------------------------------------------
+// Map HBase-trx error to DTM
+//----------------------------------------------------------------------------
+short HBasetoTxnError(short pv_HBerr) 
+{
+   switch (pv_HBerr)
+   {
+   case RET_OK: return FEOK;
+   case RET_NOTX: return FENOTRANSID;
+   case RET_READONLY: return FEOK; //Read-only reply is ok
+   case RET_ADD_PARAM: return FEBOUNDSERR;
+   case RET_EXCEPTION: return FETRANSEXCEPTION;
+   case RET_HASCONFLICT: return FELOCKED; //Change to FEHASCONFLICT?
+   case RET_IOEXCEPTION: return FETRANSIOEXCEPTION;
+   case RET_NOCOMMITEX: return FEABORTEDTRANSID;
+   default: 
+      printf("Unknown error %d encountered, returning FETRANSERRUNKNOWN\n.", pv_HBerr);
+      return FETRANSERRUNKNOWN;
+   }
+}
+
+
 // -------------------------------------------------------------------
 // tmlib_trace_enabled
-// -- will return if tracing is enabled, and will intialize if not 
+// -- will return if tracing is enabled, and will initialize if not 
 //    already done
 // -------------------------------------------------------------------
 bool tmlib_trace_enabled(int pv_level)
@@ -311,8 +214,8 @@ void tmlib_set_ms_from_transid(TM_Transid_Type pp_transid, MS_Mon_Transid_Type *
 // ------------------------------------------------------------
 short tmlib_check_active_tx ( )
 {
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
      if (gp_trans_thr->get_current() == NULL)
      {
@@ -329,8 +232,8 @@ short tmlib_check_active_tx ( )
 // ----------------------------------------------------------
 short tmlib_check_miss_param( void * pp_param)
 {
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // make sure there is space for pp_status
     if (pp_param == NULL)
@@ -347,8 +250,8 @@ short tmlib_check_miss_param( void * pp_param)
 // -----------------------------------------------------------
 short tmlib_check_outstanding_ios()
 {
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
     
     // make sure there is space for pp_status
     if (gp_trans_thr->get_current_ios())
@@ -368,18 +271,18 @@ short tmlib_send_suspend(TM_Transid pv_transid, bool pv_coord_role, int pv_pid)
 
     TMlibTrace(("TMLIB_TRACE : tmlib_send_suspend ENTRY\n"), 2);
 
-    if (!gv_tmlib.is_initialized())
+    if (gp_tmlib == NULL)
     {
-        gv_tmlib.initialize();
+        gp_tmlib = TMLIB::newTMLIB();
     }
 
     tmlib_init_req_hdr(TM_MSG_TYPE_SUSPENDTRANSACTION, &lv_req);
     pv_transid.set_external_data_type (&lv_req.u.iv_suspend_trans.iv_transid);
     lv_req.u.iv_suspend_trans.iv_coord_role = pv_coord_role;
     lv_req.u.iv_suspend_trans.iv_pid = pv_pid;
-    lv_req.u.iv_suspend_trans.iv_nid = gv_tmlib.iv_my_nid;
+    lv_req.u.iv_suspend_trans.iv_nid = gp_tmlib->iv_my_nid;
 
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, pv_transid.get_node());
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, pv_transid.get_node());
 
     TMlibTrace(("TMLIB_TRACE : tmlib_send_suspend (seq num %d) EXIT returning %d\n", 
         pv_transid.get_seq_num(), lv_error), 2);
@@ -408,8 +311,8 @@ int tmlib_callback (MS_Mon_Tmlib_Fun_Type pv_fun,
    TMlibTrace(("TMLIB_TRACE : tmlib_callback ENTRY with function %d \n",
                      pv_fun), 2);
 
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -457,7 +360,7 @@ int tmlib_callback (MS_Mon_Tmlib_Fun_Type pv_fun,
         else
         {
             // if its not active, add it if need be
-            lv_return = gv_tmlib.add_or_update(lv_transid);
+            lv_return = gp_tmlib->add_or_update(lv_transid);
          }
         break;
     }
@@ -487,12 +390,12 @@ int tmlib_callback (MS_Mon_Tmlib_Fun_Type pv_fun,
                       la_buf), 1);
                 
                 TM_Transaction *lp_saveTrans = gp_trans_thr->get_current();
-                gv_tmlib.reinstate_tx (&lv_transid);
-                gv_tmlib.clear_entry(lv_transid, true /*server*/, false);
+                gp_tmlib->reinstate_tx (&lv_transid);
+                gp_tmlib->clear_entry(lv_transid, true /*server*/, false);
                 gp_trans_thr->set_current(lp_saveTrans);
             }
             else
-               gv_tmlib.clear_entry (lv_transid, true /*server*/, false);
+               gp_tmlib->clear_entry (lv_transid, true /*server*/, false);
         }
         break;
     }
@@ -509,7 +412,7 @@ int tmlib_callback (MS_Mon_Tmlib_Fun_Type pv_fun,
                 lv_return = FEINVTRANSID;
          } 
          else
-             gv_tmlib.reinstate_tx (&lv_transid);
+             gp_tmlib->reinstate_tx (&lv_transid);
 
         /* We have to allow this for aborts with outstanding I/Os.
          if (!(gp_trans_thr->get_current()))
@@ -554,7 +457,7 @@ short REGISTERREGION(int pv_port, char *pa_hostname, int pv_hostname_length, cha
 
    TMlibTrace(("TMLIB_TRACE : REGISTERREGION ENTRY: txid: %d\n", lp_trans->getTransid()->get_seq_num()), 1);
    TMlibTrace(("TMLIB_TRACE : ENTER REGISTERREGION port: %d, hostname %s, length: %d, regionInfo: %s, length: %d\n",
- 	      pv_port, pa_hostname, pv_hostname_length, pa_regionInfo, pv_regionInfo_length), 2);
+         pv_port, pa_hostname, pv_hostname_length, pa_regionInfo, pv_regionInfo_length), 2);
    if (lp_trans == NULL)
    {
        TMlibTrace(("TMLIB_TRACE : REGISTERREGION returning with error %d\n",
@@ -566,7 +469,7 @@ short REGISTERREGION(int pv_port, char *pa_hostname, int pv_hostname_length, cha
 
     TMlibTrace(("TMLIB_TRACE : REGISTERREGION EXIT: txid: %d\n", lp_trans->getTransid()->get_seq_num()), 1);
     TMlibTrace(("TMLIB_TRACE : EXIT REGISTERREGION return code %d\n",
-		lv_error), 2);
+      lv_error), 2);
    return lv_error;
 } //REGISTERREGION
 
@@ -579,8 +482,8 @@ short HBASETM_REQUESTREGIONINFO(TM_HBASEREGIONINFO pa_trans[], short *pp_count)
     Tm_Rsp_Msg_Type lv_rsp;
 
     TMlibTrace(("TMLIB_TRACE : REQUESTREGIONINFO entry\n"), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     if (gp_trans_thr == NULL)
        gp_trans_thr = new TMLIB_ThreadTxn_Object();
@@ -598,7 +501,7 @@ short HBASETM_REQUESTREGIONINFO(TM_HBASEREGIONINFO pa_trans[], short *pp_count)
         return lv_error;
 
     tmlib_init_req_hdr(TM_MSG_TYPE_REQUESTREGIONINFO, &lv_req);
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, gv_tmlib.iv_my_nid);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, gp_tmlib->iv_my_nid);
     if (lv_error)
     {
         *pp_count = 0;
@@ -647,12 +550,12 @@ short ABORTTRANSACTION()
          (lv_error == FEABORTEDTRANSID) ||
          (lv_error == FEENDEDTRANSID))
      {
-     // abort removes the tx from the list and deletes the
+         // abort removes the tx from the list and deletes the
          // enlistment object.  We simply need to delete the trans 
          gp_trans_thr->set_current(NULL);
-	 TM_Native_Type lv_native_type_txid = lp_trans->getTransid()->get_native_type();
-	 cleanupTransactionLocal(lv_native_type_txid);
-
+         TM_Native_Type lv_native_type_txid = lp_trans->getTransid()->get_native_type();
+         if (gp_tmlib->localBegin())
+            gp_tmlib->cleanupTransactionLocal(lv_native_type_txid);
          delete lp_trans; 
      }
 
@@ -766,9 +669,9 @@ short ENDTRANSACTION()
          // end removes the tx from the list and deletes the
          // enlistment object.  We simply need to delete the trans 
          gp_trans_thr->set_current(NULL);
-	 TM_Native_Type lv_native_type_txid = lp_trans->getTransid()->get_native_type();
-	 cleanupTransactionLocal(lv_native_type_txid);
-
+         TM_Native_Type lv_native_type_txid = lp_trans->getTransid()->get_native_type();
+         if (gp_tmlib->localBegin())
+            gp_tmlib->cleanupTransactionLocal(lv_native_type_txid);
          delete lp_trans;
      }
 
@@ -1012,8 +915,8 @@ short STATUSTRANSACTION(short *pp_status, int64 pv_transid)
     if (gp_trans_thr == NULL)
        gp_trans_thr = new TMLIB_ThreadTxn_Object();
 
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
     
    // we don't know about this tx, which is ok, just send it on to the DTM
    if (pv_transid != 0)
@@ -1025,7 +928,7 @@ short STATUSTRANSACTION(short *pp_status, int64 pv_transid)
 
         tmlib_init_req_hdr(TM_MSG_TYPE_STATUSTRANSACTION, &lv_req);
         lv_transid.set_external_data_type(&lv_req.u.iv_status_trans.iv_transid);
-        lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, lv_transid.get_node());
+        lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, lv_transid.get_node());
         if (lv_error)
         {
             TMlibTrace(("TMLIB_TRACE : STATUSTRANSACTION EXIT with error %d\n", lv_error), 1);
@@ -1056,8 +959,8 @@ short LISTTRANSACTION(TM_LIST_TRANS pa_trans[], short *pp_count, int pv_node)
     Tm_Rsp_Msg_Type lv_rsp;
 
     TMlibTrace(("TMLIB_TRACE : LISTTRANSACTION ENTRY\n"), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1072,7 +975,7 @@ short LISTTRANSACTION(TM_LIST_TRANS pa_trans[], short *pp_count, int pv_node)
         return lv_error;
 
     tmlib_init_req_hdr(TM_MSG_TYPE_LISTTRANSACTION, &lv_req);
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, pv_node);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, pv_node);
     if (lv_error)
     {
         *pp_count = 0;
@@ -1098,8 +1001,8 @@ short TMSTATS(int pv_node, TM_TMSTATS *pp_tmstats, bool pv_reset)
     Tm_Req_Msg_Type lv_req;
     Tm_Rsp_Msg_Type lv_rsp;
 
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1111,7 +1014,7 @@ short TMSTATS(int pv_node, TM_TMSTATS *pp_tmstats, bool pv_reset)
 
     tmlib_init_req_hdr(TM_MSG_TYPE_TMSTATS, &lv_req);
     lv_req.u.iv_tmstats.iv_reset = pv_reset;
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, pv_node);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, pv_node);
     if (!lv_error)
     {
       memcpy (pp_tmstats, &lv_rsp.u.iv_tmstats, sizeof (Tmstats_Rsp_Type));
@@ -1119,6 +1022,39 @@ short TMSTATS(int pv_node, TM_TMSTATS *pp_tmstats, bool pv_reset)
     }
     return lv_error;
 }
+
+
+// -----------------------------------------------------------------
+// DTM_GETNEXTSEQNUMBLOCK
+//  Retrieves the next block of transaction sequence 
+//  numbers.
+// -----------------------------------------------------------------
+short DTM_GETNEXTSEQNUMBLOCK(unsigned int &pp_seqNum_start, unsigned int &pp_seqNum_count)
+{
+    short lv_error = FEOK;
+    Tm_Req_Msg_Type lv_req;
+    Tm_Rsp_Msg_Type lv_rsp;
+
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
+
+    // instantiate a gp_trans_thr object for this thread if needed.
+    if (gp_trans_thr == NULL)
+       gp_trans_thr = new TMLIB_ThreadTxn_Object();
+
+    tmlib_init_req_hdr(TM_MSG_TYPE_GETNEXTSEQNUMBLOCK, &lv_req);
+    lv_req.u.iv_GetNextSeqNum.iv_block_size =  gp_tmlib->seqNum_blockSize();
+
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, gp_tmlib->beginner_nid());
+    if (!lv_error)
+    {
+      pp_seqNum_start = lv_rsp.u.iv_GetNextSeqNum.iv_seqNumBlock_start;
+      pp_seqNum_count = lv_rsp.u.iv_GetNextSeqNum.iv_seqNumBlock_count;
+      lv_error = lv_rsp.iv_msg_hdr.miv_err.error;
+    }
+    return lv_error;
+}
+
 
 // -------------------------------------------------------------------
 // SUSPENDTRANSACTION
@@ -1162,11 +1098,11 @@ short SUSPENDTRANSACTION(short *pp_transid)
     {
         gp_trans_thr->set_current(NULL);
         if(!lp_trans->isEnder()) {
-	  TM_Native_Type lv_native_type_txid = lp_trans->getTransid()->get_native_type();
-	  cleanupTransactionLocal(lv_native_type_txid);
-	  
-	  delete lp_trans;
-	}
+          TM_Native_Type lv_native_type_txid = lp_trans->getTransid()->get_native_type();
+          if (gp_tmlib->localBegin())
+             gp_tmlib->cleanupTransactionLocal(lv_native_type_txid);
+          delete lp_trans;
+        }
     }
     return lv_error;
 }
@@ -1229,7 +1165,7 @@ short TMF_SETTXHANDLE_(short *pp_handle)
     if (pp_handle && !tmlib_zero_transid(lp_tx_type))
     {
         lv_tx = *lp_tx_type;
-        if (! gv_tmlib.reinstate_tx (&lv_tx, true))
+        if (! gp_tmlib->reinstate_tx (&lv_tx, true))
         {
             gp_trans_thr->set_current(lp_trans_old); 
             TMlibTrace(("TMLIB_TRACE : TMF_SETTXHANDLE_ EXIT with error %d\n", FEINVALIDTXHANDLE), 1); 
@@ -1291,8 +1227,8 @@ short DTM_STATUSSYSTEM(TM_STATUSSYS *pp_status)
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_STATUSSYS ENTRY"), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1304,7 +1240,7 @@ short DTM_STATUSSYSTEM(TM_STATUSSYS *pp_status)
 
     tmlib_init_req_hdr(TM_MSG_TYPE_CALLSTATUSSYSTEM, &lv_req);
 
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, gv_tmlib.iv_my_nid);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, gp_tmlib->iv_my_nid);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_STATUSSYS EXIT with error %d\n", lv_error), 1);
@@ -1332,8 +1268,8 @@ short DTM_ATTACHRM(short pv_node, char *pp_rmname)
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_ATTACHRM ENTRY, node %d\n", pv_node), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1346,7 +1282,7 @@ short DTM_ATTACHRM(short pv_node, char *pp_rmname)
     tmlib_init_req_hdr(TM_MSG_TYPE_ATTACHRM, &lv_req);
     strcpy(lv_req.u.iv_attachrm.ia_rmname, pp_rmname);
 
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, pv_node);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, pv_node);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_ATTACHRM EXIT with error %d\n", lv_error), 1);
@@ -1373,8 +1309,8 @@ short DTM_STATUSTM(short pv_node, TMSTATUS *pp_tmstatus)
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_STATUSTM ENTRY, node %d\n", pv_node), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1385,7 +1321,7 @@ short DTM_STATUSTM(short pv_node, TMSTATUS *pp_tmstatus)
         return lv_error;
 
     tmlib_init_req_hdr(TM_MSG_TYPE_STATUSTM, &lv_req);
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, pv_node);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, pv_node);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_STATUSTM EXIT with error %d\n", lv_error), 1);
@@ -1419,8 +1355,8 @@ short DTM_STATUSTRANSACTION(int64 pv_transid, TM_STATUS_TRANS *pp_trans)
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_STATUSTRANSACTION ENTRY, transid " PFLL "\n", pv_transid), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1440,7 +1376,7 @@ short DTM_STATUSTRANSACTION(int64 pv_transid, TM_STATUS_TRANS *pp_trans)
         tmlib_init_req_hdr(TM_MSG_TYPE_STATUSTRANSMGMT, &lv_req);
         //setting the response
         lv_transid.set_external_data_type(&lv_req.u.iv_status_transm.iv_transid);
-        lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, lv_transid.get_node());
+        lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, lv_transid.get_node());
         if (lv_error)
         {
             TMlibTrace(("TMLIB_TRACE : DTM_STATUSTRANSMGMT EXIT with error %d\n", lv_error), 1);
@@ -1475,8 +1411,8 @@ short DTM_STATUSALLTRANS(TM_STATUS_ALL_TRANS pa_trans[], short *pp_count, int pv
    Tm_Rsp_Msg_Type lv_rsp;
 
    TMlibTrace(("TMLIB_TRACE : DTM_STATUSALLTRANS ENTRY\n"),2);
-   if(!gv_tmlib.is_initialized())
-      gv_tmlib.initialize();
+   if(gp_tmlib == NULL)
+      gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1491,7 +1427,7 @@ short DTM_STATUSALLTRANS(TM_STATUS_ALL_TRANS pa_trans[], short *pp_count, int pv
         return lv_error;
 
    tmlib_init_req_hdr(TM_MSG_TYPE_STATUSALLTRANSMGT, &lv_req);
-   lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, pv_node);
+   lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, pv_node);
    if(lv_error)
    {
       *pp_count = 0;
@@ -1529,8 +1465,8 @@ short DTM_GETTRANSINFO(int64 pv_transid,
     short           lv_error = FEOK;
 
     TMlibTrace(("TMLIB_TRACE : DTM_GETTRANSINFO ENTRY, transid " PFLL "\n", pv_transid), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1591,8 +1527,8 @@ short DTM_GETTRANSINFO_EXT(TM_Transid_Type pv_transid,
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_GETTRANSINFO_EXT ENTRY\n"), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1604,7 +1540,7 @@ short DTM_GETTRANSINFO_EXT(TM_Transid_Type pv_transid,
         tmlib_init_req_hdr(TM_MSG_TYPE_GETTRANSINFO, &lv_req);
         //setting the response
         lv_transid.set_external_data_type(&lv_req.u.iv_status_transm.iv_transid);
-        lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, lv_transid.get_node());
+        lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, lv_transid.get_node());
         if (lv_error)
         {
             TMlibTrace(("TMLIB_TRACE : DTM_GETTRANSINFO_EXT EXIT with error %d\n", lv_error), 1);
@@ -1742,8 +1678,8 @@ short DTM_ENABLETRANSACTIONS()
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_ENABLETRANSACTIONS ENTRY.\n"), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1751,7 +1687,7 @@ short DTM_ENABLETRANSACTIONS()
 
     // First get the Lead TM node number.
     tmlib_init_req_hdr(TM_MSG_TYPE_LEADTM, &lv_req);
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, gv_tmlib.iv_my_nid);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, gp_tmlib->iv_my_nid);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_ENABLETRANSACTIONS EXIT - Get LeadTM returned error %d\n", lv_error), 1);
@@ -1762,7 +1698,7 @@ short DTM_ENABLETRANSACTIONS()
 
     // Now we can send the enable txns request to the Lead TM
     tmlib_init_req_hdr(TM_MSG_TYPE_ENABLETRANS, &lv_req);
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, lv_leadTM);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, lv_leadTM);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_ENABLETRANSACTIONS EXIT returned error %d\n", lv_error), 1);
@@ -1794,8 +1730,8 @@ short DTM_DISABLETRANSACTIONS(int32 pv_shutdown_level)
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_DISABLETRANSACTIONS ENTRY shutdown level %d\n", pv_shutdown_level), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1812,7 +1748,7 @@ short DTM_DISABLETRANSACTIONS(int32 pv_shutdown_level)
 
     // First get the Lead TM node number.
     tmlib_init_req_hdr(TM_MSG_TYPE_LEADTM, &lv_req);
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, gv_tmlib.iv_my_nid);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, gp_tmlib->iv_my_nid);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_DISABLETRANSACTIONS EXIT - Get LeadTM returned error %d\n", lv_error), 1);
@@ -1825,7 +1761,7 @@ short DTM_DISABLETRANSACTIONS(int32 pv_shutdown_level)
     tmlib_init_req_hdr(TM_MSG_TYPE_DISABLETRANS, &lv_req);
     lv_req.u.iv_disabletrans.iv_shutdown_level = pv_shutdown_level;
 
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, lv_leadTM);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, lv_leadTM);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_DISABLETRANSACTIONS EXIT returned error %d\n", lv_error), 1);
@@ -1855,8 +1791,8 @@ short DTM_DRAINTRANSACTIONS(int32 pv_node, bool pv_immediate=false)
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_DRAINTRANSACTIONS ENTRY node %d, immediate=%d.\n", pv_node, pv_immediate), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1865,7 +1801,7 @@ short DTM_DRAINTRANSACTIONS(int32 pv_node, bool pv_immediate=false)
     tmlib_init_req_hdr(TM_MSG_TYPE_DRAINTRANS, &lv_req);
     lv_req.u.iv_draintrans.iv_immediate = pv_immediate;
 
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, pv_node);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, pv_node);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_DRAINTRANSACTIONS EXIT returned error %d\n", lv_error), 1);
@@ -1894,8 +1830,8 @@ short DTM_QUIESCE(int32 pv_node)
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_QUIESCE ENTRY node %d.\n", pv_node), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1904,7 +1840,7 @@ short DTM_QUIESCE(int32 pv_node)
     tmlib_init_req_hdr(TM_MSG_TYPE_QUIESCE, &lv_req);
     lv_req.u.iv_quiesce.iv_stop = false;
 
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, pv_node);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, pv_node);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_QUIESCE EXIT returned error %d\n", lv_error), 1);
@@ -1933,8 +1869,8 @@ short DTM_UNQUIESCE(int32 pv_node)
     memset(&lv_rsp, 0, sizeof(lv_rsp));
 
     TMlibTrace(("TMLIB_TRACE : DTM_QUIESCE ENTRY node %d.\n", pv_node), 2);
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
 
     // instantiate a gp_trans_thr object for this thread if needed.
     if (gp_trans_thr == NULL)
@@ -1943,7 +1879,7 @@ short DTM_UNQUIESCE(int32 pv_node)
     tmlib_init_req_hdr(TM_MSG_TYPE_QUIESCE, &lv_req);
     lv_req.u.iv_quiesce.iv_stop = true;
 
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, pv_node);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, pv_node);
     if (lv_error)
     {
         TMlibTrace(("TMLIB_TRACE : DTM_QUIESCE EXIT returned error %d\n", lv_error), 1);
@@ -2146,9 +2082,9 @@ short TEST_TX_COUNT()
 
     TMlibTrace(("TMLIB_TRACE : TEST_TC_COUNT ENTRY \n"), 2);
 
-    if (!gv_tmlib.is_initialized())
+    if (gp_tmlib == NULL)
     {
-        gv_tmlib.initialize();
+        gp_tmlib = TMLIB::newTMLIB();
     }
 
     // instantiate a gp_trans_thr object for this thread if needed.
@@ -2156,14 +2092,14 @@ short TEST_TX_COUNT()
        gp_trans_thr = new TMLIB_ThreadTxn_Object();
 
     tmlib_init_req_hdr(TM_MSG_TYPE_TEST_TX_COUNT, &lv_req);
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, gv_tmlib.iv_my_nid);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, gp_tmlib->iv_my_nid);
     if (lv_error)
         return lv_error;
 
     int lv_count = lv_rsp.u.iv_count.iv_count;
  
     TMlibTrace(("TMLIB_TRACE : TEST_TX_COUNT is %d, for node %d EXIT\n", 
-                      lv_count, gv_tmlib.iv_my_nid), 2); 
+                      lv_count, gp_tmlib->iv_my_nid), 2); 
     return (short) lv_count;
 
 }
@@ -2182,17 +2118,17 @@ int16 TMWAIT()
 
     TMlibTrace(("TMLIB_TRACE : TMWAIT ENTRY\n"), 2);
 
-    if (!gv_tmlib.is_initialized())
-        gv_tmlib.initialize();
+    if (gp_tmlib == NULL)
+        gp_tmlib = TMLIB::newTMLIB();
     
-    if (!gv_tmlib.open_tm(gv_tmlib.iv_my_nid))
+    if (!gp_tmlib->open_tm(gp_tmlib->iv_my_nid))
     {
          TMlibTrace(("TMLIB_TRACE : TMWAIT returning FETMFNOTRUNNING\n"), 1);
          return FETMFNOTRUNNING;
     }
 
     tmlib_init_req_hdr(TM_MSG_TYPE_WAIT_TMUP, &lv_req);
-    lv_error = gv_tmlib.send_tm(&lv_req, &lv_rsp, gv_tmlib.iv_my_nid);
+    lv_error = gp_tmlib->send_tm(&lv_req, &lv_rsp, gp_tmlib->iv_my_nid);
 
     TMlibTrace(("TMLIB_TRACE : TMWAIT EXIT, feerror=%d, error=%d\n",
                 lv_error, lv_rsp.iv_msg_hdr.miv_err.error), 2);
@@ -2211,10 +2147,12 @@ int16 TMWAIT()
 
 // ------------------------------------------------------------------
 // TMLIB
-// Purpose - sole purpose is to register callback with seabed!
+// Purpose - Register callback with seabed!
+// Also need to get any configuration values.
 // ------------------------------------------------------------------
 TMLIB::TMLIB()
 {
+    tm_rtsigblock_proc();  
     iv_initialized = false;
     msg_mon_trans_register_tmlib (tmlib_callback);
 
@@ -2230,7 +2168,20 @@ TMLIB::TMLIB()
     iv_next_tag = 1;
     iv_my_nid = iv_my_pid = iv_node_count = iv_tm_pid = 0;
     iv_txn_distribute = DIST_NOT_SET;
-}
+
+    localBegin(false);
+    ms_getenv_bool("DTM_LOCAL_TRANSACTIONS", &iv_localBegin);
+
+    seqNum_blockSize(1000);
+    ms_getenv_int("DTM_LOCAL_BLOCKSIZE", &iv_seqNum_blockSize);
+
+    enableCleanupRMInterface(true);
+    ms_getenv_bool("TMLIB_ENABLE_CLEANUP", &iv_enableCleanupRMInterface);
+
+    ip_seqNum = new CtmSeqNum();
+    strcpy(rminterface_classname,"org/apache/hadoop/hbase/client/transactional/RMInterface");
+    strcpy(hbasetxclient_classname,"org/trafodion/dtm/HBaseTxClient");
+} //TMLIB::TMLIB
 
 
 // -----------------------------------------------------------------
@@ -2418,22 +2369,44 @@ void TMLIB::phandle_set (TPT_PTR(pp_phandle), int pv_node)
 
 void TMLIB::initialize()
 {
-    msg_mon_get_process_info (NULL, &gv_tmlib.iv_my_nid, 
-                                    &gv_tmlib.iv_my_pid);
+    int lv_err = 0;
+    msg_mon_get_process_info (NULL, &iv_my_nid, 
+                                    &iv_my_pid);
 
-    open_tm(gv_tmlib.iv_my_nid, true);
+    open_tm(iv_my_nid, true);
 
     TMlibTrace(("TMLIB_TRACE : TMLIB::initialize : my nid,pid (%d, %d)\n",
-        gv_tmlib.iv_my_nid, gv_tmlib.iv_my_pid ), 1);
+               iv_my_nid, iv_my_pid ), 1);
 
     //TODO: switch the following call to msg_mon_get_node_info2 when available.
     // This call has been changed so that the node count includes spare nodes, so 
     // will give the wrong value for iv_node_count.
-    int lv_ret = msg_mon_get_node_info(&iv_node_count, MAX_NODES, NULL);
-    lv_ret = lv_ret; // avoids compiler warning
+    lv_err = msg_mon_get_node_info(&iv_node_count, MAX_NODES, NULL);
+    
+    //sleep(30);
+    short lv_result = setupJNI();
+    if (lv_result) {
+       fprintf(stderr,"setupJNI returned error %d. Exiting.\n", lv_result);
+       fflush(stderr);
+       abort();
+    }
 
+    if (localBegin()) {
+       lv_err = initConnection(iv_my_nid);
+       if (lv_err)
+       {
+         TMlibTrace(("TMLIB_TRACE : TMLIB::initialize: TMLIB::initConnection failed with error %d.\n", lv_err), 1);
+         printf("initConnection failed with error %d.\n", lv_err);
+         //tm_log_event(DTM_HBASE_INIT_FAILED, SQ_LOG_CRIT, "DTM_HBASE_INIT_FAILED", lv_error);
+         abort();
+       }
+       else
+         TMlibTrace(("TMLIB_TRACE : TMLIB::initialize: CHbaseTM::initConnection succeeded.\n"), 1);
+    }
     is_initialized(true);
 }
+
+
 // -------------------------------------------------------------------
 // open_tm
 // Purpose : open a TM on the given node
@@ -2456,7 +2429,7 @@ bool TMLIB::open_tm(int pv_node, bool pv_startup)
         initialize();
     
     // get the phandle
-    if (gv_tmlib.phandle_get(&lv_phandle, pv_node) == true)
+    if (phandle_get(&lv_phandle, pv_node) == true)
      {
         TMlibTrace(("TMLIB_TRACE : open_tm, TM for node %d already open\n", 
                           pv_node), 3);
@@ -2476,15 +2449,15 @@ bool TMLIB::open_tm(int pv_node, bool pv_startup)
         if (!lv_error)
         {
             // set phandle under mutex
-            gv_tmlib.phandle_set(&lv_phandle, pv_node);
+            phandle_set(&lv_phandle, pv_node);
  
             lv_null_transid.id[0] = lv_null_transid.id[1] = 
             lv_null_transid.id[2] = lv_null_transid.id[3] = 0;
-            msg_mon_trans_enlist (pv_node, gv_tmlib.ia_tm_phandle[pv_node].iv_pid,
+            msg_mon_trans_enlist (pv_node, ia_tm_phandle[pv_node].iv_pid,
                                lv_null_transid);
             
             TMlibTrace(("TMLIB_TRACE : open_tm EXIT, successfully opened TM (%d,%d)\n",
-                             pv_node, gv_tmlib.ia_tm_phandle[pv_node].iv_pid), 2);
+                             pv_node, ia_tm_phandle[pv_node].iv_pid), 2);
             return true;
         }
         else
@@ -2520,7 +2493,7 @@ short TMLIB::send_tm(Tm_Req_Msg_Type *pp_req, Tm_Rsp_Msg_Type *pp_rsp,
 
     TMlibTrace(("TMLIB_TRACE : send_tm (node %d) ENTRY\n", pv_node), 2);
 
-    if (!gv_tmlib.open_tm(pv_node))
+    if (!gp_tmlib->open_tm(pv_node))
     {
          TMlibTrace(("TMLIB_TRACE : returning FETMFNOTRUNNING\n"), 1);
          return FETMFNOTRUNNING;
@@ -2528,7 +2501,7 @@ short TMLIB::send_tm(Tm_Req_Msg_Type *pp_req, Tm_Rsp_Msg_Type *pp_rsp,
 
     // get phandle and (FOR NOW) abort.  if we get into this
     // method, we should have already opened and stored the tm
-    gv_tmlib.phandle_get(&lv_phandle, pv_node);
+    gp_tmlib->phandle_get(&lv_phandle, pv_node);
 
     do {
        lv_ret = BMSG_LINK_(&lv_phandle,                  // phandle
@@ -2595,7 +2568,7 @@ short TMLIB::send_tm(Tm_Req_Msg_Type *pp_req, Tm_Rsp_Msg_Type *pp_rsp,
 // ---------------------------------------------------------
 int TMLIB::beginner_nid()
 {
-    int lv_nid = gv_tmlib.iv_my_nid;
+    int lv_nid = gp_tmlib->iv_my_nid;
     
     // First time through work out the txn distribution algorithm.
     if (iv_txn_distribute == DIST_NOT_SET)
@@ -2610,13 +2583,13 @@ int TMLIB::beginner_nid()
                iv_txn_distribute), 2);
    }
 
-    if (gv_tmlib.iv_txn_distribute == CLUSTER_WIDE_BEGINS)
+    if (gp_tmlib->iv_txn_distribute == CLUSTER_WIDE_BEGINS)
     {
-        lv_nid = gv_tmlib.iv_next_nid;
+        lv_nid = gp_tmlib->iv_next_nid;
         // distribution algorightm is a simple round-robin for now
-        gv_tmlib.iv_next_nid++;
-        if (gv_tmlib.iv_next_nid >= gv_tmlib.iv_node_count)
-            gv_tmlib.iv_next_nid = 0;
+        gp_tmlib->iv_next_nid++;
+        if (gp_tmlib->iv_next_nid >= gp_tmlib->iv_node_count)
+            gp_tmlib->iv_next_nid = 0;
     }
 
     TMlibTrace(("TMLIB_TRACE : TMLIB::beginner_nid : Beginning transaction on node %d\n",
@@ -2636,4 +2609,191 @@ unsigned int TMLIB::new_tag()
     TMlibTrace(("TMLIB_TRACE : TMLIB::new_tag : Allocating tag %d, next tag %d.\n", 
         lv_tag, iv_next_tag), 3);
     return lv_tag;
+}
+
+
+short TMLIB::setupJNI()
+{
+   //printf("setupJNI.\n");
+   TMLibJavaMethods_[JM_CTOR                  ].jm_name      = "<init>";
+   TMLibJavaMethods_[JM_CTOR                  ].jm_signature = "()V";
+   TMLibJavaMethods_[JM_INIT1                 ].jm_name      = "init";
+   TMLibJavaMethods_[JM_INIT1                 ].jm_signature = "(S)Z";
+   TMLibJavaMethods_[JM_ABORT                 ].jm_name      = "abortTransaction";
+   TMLibJavaMethods_[JM_ABORT                 ].jm_signature = "(J)S";
+   TMLibJavaMethods_[JM_TRYCOMMIT             ].jm_name      = "tryCommit";
+   TMLibJavaMethods_[JM_TRYCOMMIT             ].jm_signature = "(J)S";
+   TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].jm_name      = "clearTransactionStates";
+   TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].jm_signature = "(J)V";
+   
+   //sleep(30);
+   short ret = JavaObjectInterfaceTM::init(hbasetxclient_classname, javaClass_, 
+                                           (JavaMethodInit*)&TMLibJavaMethods_, JM_LAST_HBASETXCLIENT, false);
+   if (ret == JOI_OK) {
+      if (enableCleanupRMInterface()) {
+         // Setup call to RMInterface.clearTransactionStates
+         iv_RMInterface_class = _tlp_jenv->FindClass(rminterface_classname); 
+         if (iv_RMInterface_class != NULL) {
+            TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].methodID =
+                     _tlp_jenv->GetStaticMethodID(iv_RMInterface_class,
+                                                  TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].jm_name.data(),
+                                                  TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].jm_signature.data());
+         }
+         else {
+            fprintf(stderr,"FindClass for class name %s failed. Aborting.\n",rminterface_classname);
+            fflush(stderr);
+            abort();
+         }
+      }
+   }
+   else {
+      fprintf(stderr,"JavaObjectInterfaceTM::init returned error %d. Aborting.\n",ret);
+      fflush(stderr);
+      abort();
+   }
+   return ret;
+} //setupJNI
+
+
+///////////////////////////////////////////////
+//                 JNI Methods                              //
+///////////////////////////////////////////////
+short TMLIB::initConnection(short pv_nid)
+{
+   jboolean jresult = 0;
+  jthrowable exc;
+  jshort   jdtmid = pv_nid;
+  //sleep(30);
+  jresult = _tlp_jenv->CallBooleanMethod(javaObj_, TMLibJavaMethods_[JM_INIT1].methodID, jdtmid);
+  exc = _tlp_jenv->ExceptionOccurred();
+  if(exc) {
+    _tlp_jenv->ExceptionDescribe();
+    _tlp_jenv->ExceptionClear();
+    return RET_EXCEPTION;
+  }
+  // Ignore result and return JOI_OK
+  return JOI_OK;
+}
+
+
+void TMLIB::cleanupTransactionLocal(long transactionID)
+{
+  jlong   jlv_transid = transactionID;
+  JOI_RetCode lv_joi_retcode = JOI_OK;
+  lv_joi_retcode = JavaObjectInterfaceTM::initJVM();
+  if (lv_joi_retcode != JOI_OK) {
+    printf("JavaObjectInterfaceTM::initJVM returned: %d\n", lv_joi_retcode);
+    fflush(stdout);
+    abort();
+  }
+
+  _tlp_jenv->CallStaticVoidMethod(iv_RMInterface_class, TMLibJavaMethods_[JM_CLEARTRANSACTIONSTATES].methodID, jlv_transid);
+  if(_tlp_jenv->ExceptionOccurred()){
+    _tlp_jenv->ExceptionDescribe();
+    _tlp_jenv->ExceptionClear();
+    fprintf(stderr,"clearTransactionStates raised an exception!\n");
+    fflush(stderr);
+    abort();
+  }
+  return;
+} //cleanupTransactionLocal
+
+
+short TMLIB::endTransactionLocal(long transactionID)
+{
+  jlong   jlv_transid = transactionID;
+  JOI_RetCode lv_joi_retcode = JOI_OK;
+  lv_joi_retcode = JavaObjectInterfaceTM::initJVM();
+  if (lv_joi_retcode != JOI_OK) {
+    printf("JavaObjectInterfaceTM::initJVM returned: %d\n", lv_joi_retcode);
+    fflush(stdout);
+    abort();
+  }
+
+  jshort jresult = _tlp_jenv->CallShortMethod(javaObj_, TMLibJavaMethods_[JM_TRYCOMMIT].methodID, jlv_transid);
+  if(_tlp_jenv->ExceptionOccurred()){
+    _tlp_jenv->ExceptionDescribe();
+    _tlp_jenv->ExceptionClear();
+    return RET_EXCEPTION;
+  }
+
+  //  RET_NOTX means the transaction wasn't found by the HBase client code (trx).  This is ok here, it
+  //  simply means the transaction hasn't been seen by the HBase client code, so no work was done on it.
+  if (jresult == RET_NOTX)
+  {
+    return RET_OK;
+  } 
+
+  return jresult;
+} //endTransactionLocal
+
+
+short TMLIB::abortTransactionLocal(long transactionID)
+{
+  jlong   jlv_transid = transactionID;
+  JOI_RetCode lv_joi_retcode = JOI_OK;
+  lv_joi_retcode = JavaObjectInterfaceTM::initJVM();
+  if (lv_joi_retcode != JOI_OK) {
+    printf("JavaObjectInterfaceTM::initJVM returned: %d\n", lv_joi_retcode);
+    fflush(stdout);
+    abort();
+  }
+
+  jshort jresult = _tlp_jenv->CallShortMethod(javaObj_, TMLibJavaMethods_[JM_ABORT].methodID, jlv_transid);
+  if(_tlp_jenv->ExceptionOccurred()){
+    _tlp_jenv->ExceptionDescribe();
+    _tlp_jenv->ExceptionClear();
+    return RET_EXCEPTION;
+  }
+
+  //  RET_NOTX means the transaction wasn't found by the HBase client code (trx).  This is ok here, it
+  //  simply means the transaction hasn't been seen by the HBase client code, so no work was done on it.
+  if (jresult == RET_NOTX)
+  {
+    return RET_OK;
+  } 
+
+  return jresult;
+} //abortTransactionLocal
+
+
+//----------------------------------------------------------------------------
+// DTM_LOCALTRANSACTION
+// Purpose: Returns true if local transactions are
+// supported, otherwise false.
+// Also returns the current transid
+//----------------------------------------------------------------------------
+bool DTM_LOCALTRANSACTION(int32 *pp_node, int32 *pp_seqnum)
+{
+
+   // instantiate a gp_trans_thr object for this thread if needed.
+   if (gp_trans_thr == NULL)
+      gp_trans_thr = new TMLIB_ThreadTxn_Object();
+
+   if (gp_tmlib == NULL)
+      gp_tmlib = TMLIB::newTMLIB();
+
+   bool lv_local = gp_tmlib->localBegin();
+   TM_Transid     *lp_transid = NULL;
+
+   // instantiate a gp_trans_thr object for this thread if needed.
+   if (gp_trans_thr == NULL)
+      gp_trans_thr = new TMLIB_ThreadTxn_Object();
+    
+   short lv_error = tmlib_check_active_tx();
+   if (lv_error) {
+      TMlibTrace(("TMLIB_TRACE : DTM_LOCALTRANSACTION returning with error %d\n",
+                  lv_error), 2);
+      *pp_node = *pp_seqnum = -1;
+      return false;
+   }
+   lp_transid = gp_trans_thr->get_current()->getTransid();
+
+   if (lp_transid == NULL) {
+      TMlibTrace(("TMLIB_TRACE : DTM_LOCALTRANSACTION failed, aborting\n"), 1);
+      abort();
+   }
+   *pp_node = lp_transid->get_node();
+   *pp_seqnum = lp_transid->get_seq_num();
+   return lv_local;
 }
