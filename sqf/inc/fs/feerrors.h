@@ -390,38 +390,45 @@ enum {
 //
 //----------------------------------------------------------------------------
   FERMALREADYREGISTERED        = fe_base + 712,   // The resource manager is already registered
-	FERMOUTSTANDINGTRANS				 = fe_base + 713,	  // An attempt was made to remove a recoverable resource manager which still has unresolved transactions
-	FEINVALIDPROTOCOL					   = fe_base + 714,	  // Invalid or unsupported protocol option
-	FEINVALIDTXHANDLE					   = fe_base + 715,	  // Invalid Transaction handle specified
-	FETXSUSPENDREJECTED				   = fe_base + 716,	  // The suspend operation is rejected because process is not the beginner of the transaction nor did it resume the transaction
-	FETXNOTSUSPENDED					   = fe_base + 717,   // The transaction has not been suspended
-	FEINVALIDSIGNAL					     = fe_base + 718,	  // Invalid signal supplied
-	FEDATASIZEEXCEEDED				   = fe_base + 719,	  // The branch data exceeded the maximum allowable limit
-	FERMWRONGSESSION					   = fe_base + 720,	  // There is a mismatch in the session between the resource manager and CLOSE/RECOVER messages
-	FEBEGINTXNOTCOMPLETED			   = fe_base + 721,	  // Begin transaction is not yet complete
-	FENOMORERMCBS						     = fe_base + 722,	  // There are no more empty resource manager control blocks
-	FENOMOREBCBS						     = fe_base + 723,	  // There are no more empty branch control blocks
-	FENOTNOWAITTFILE					   = fe_base + 724,	  // The TFILE is not opened in nowait mode
-	FEIMPORTINVALOP					     = fe_base + 725,	  // Invalid operation on an imported transaction ( for example, calling ENDTRANSACTION )
-	FEINVALIDTUBADDR					   = fe_base + 726,	  // Invalid TUB address specified for the branch
-	FETOOMANYRECRMS					     = fe_base + 727,	  // The total allowable recoverable resource managers for a system has been exceeded
-	FESETTXHANDLEINVALOP				 = fe_base + 728,	  // The volatile resource manager has already prepared the branch. If the volatile resource manager has to do more work on the transaction, it must export a transaction branch
-	FEBRANCHISPREPARED				   = fe_base + 729,	  // After a transaction branch is prepared, its branch data will not be allowed to be updated
-	FEJOINSOUTSTANDING				   = fe_base + 730,	  // There are outstanding JOINs for the process. This error is given during ENDTRANSACTION processing
-	FEALREADYJOINED					     = fe_base + 731,	  // The transaction is already joined by the process
-	FEALREADYRESUMED					   = fe_base + 732,	  // The transaction is already resumed by the process
-	FEBRANCHISFAILED					   = fe_base + 733,	  // The transaction branch has already failed. This error is given if branch data is updated while transaction is being aborted
+   FERMOUTSTANDINGTRANS				 = fe_base + 713,	  // An attempt was made to remove a recoverable resource manager which still has unresolved transactions
+   FEINVALIDPROTOCOL					   = fe_base + 714,	  // Invalid or unsupported protocol option
+   FEINVALIDTXHANDLE					   = fe_base + 715,	  // Invalid Transaction handle specified
+   FETXSUSPENDREJECTED				   = fe_base + 716,	  // The suspend operation is rejected because process is not the beginner of the transaction nor did it resume the transaction
+   FETXNOTSUSPENDED					   = fe_base + 717,   // The transaction has not been suspended
+   FEINVALIDSIGNAL					     = fe_base + 718,	  // Invalid signal supplied
+   FEDATASIZEEXCEEDED				   = fe_base + 719,	  // The branch data exceeded the maximum allowable limit
+   FERMWRONGSESSION					   = fe_base + 720,	  // There is a mismatch in the session between the resource manager and CLOSE/RECOVER messages
+   FEBEGINTXNOTCOMPLETED			   = fe_base + 721,	  // Begin transaction is not yet complete
+   FENOMORERMCBS						     = fe_base + 722,	  // There are no more empty resource manager control blocks
+   FENOMOREBCBS						     = fe_base + 723,	  // There are no more empty branch control blocks
+   FENOTNOWAITTFILE					   = fe_base + 724,	  // The TFILE is not opened in nowait mode
+   FEIMPORTINVALOP					     = fe_base + 725,	  // Invalid operation on an imported transaction ( for example, calling ENDTRANSACTION )
+   FEINVALIDTUBADDR					   = fe_base + 726,	  // Invalid TUB address specified for the branch
+   FETOOMANYRECRMS					     = fe_base + 727,	  // The total allowable recoverable resource managers for a system has been exceeded
+   FESETTXHANDLEINVALOP				 = fe_base + 728,	  // The volatile resource manager has already prepared the branch. If the volatile resource manager has to do more work on the transaction, it must export a transaction branch
+   FEBRANCHISPREPARED				   = fe_base + 729,	  // After a transaction branch is prepared, its branch data will not be allowed to be updated
+   FEJOINSOUTSTANDING				   = fe_base + 730,	  // There are outstanding JOINs for the process. This error is given during ENDTRANSACTION processing
+   FEALREADYJOINED					     = fe_base + 731,	  // The transaction is already joined by the process
+   FEALREADYRESUMED					   = fe_base + 732,	  // The transaction is already resumed by the process
+   FEBRANCHISFAILED					   = fe_base + 733,	  // The transaction branch has already failed. This error is given if branch data is updated while transaction is being aborted
+//----------------------------------------------------------------------------
+//                Trafodion transaction errors
+//----------------------------------------------------------------------------
+   FETRANSEXCEPTION     = fe_base + 734,	// The transaction operation failed with exception.
+   FETRANSIOEXCEPTION	= fe_base + 735,	// The transaction operation failed with I/O exception.
+   FEHASCONFLICT        = fe_base + 736,	// MVCC Conflict detected in transaction during prepare.
+   FETRANSERRUNKNOWN    = fe_base + 737,	// An unknown transaction error occurred.
 
 //----------------------------------------------------------------------------
 //
 //				TRANSACTION INTERNET PROTOCOL (TIP) ERRORS
 //
 //----------------------------------------------------------------------------
-	FETRANSNOTPUSHED					   = fe_base + 751,	  // Transaction not pushed
-	FETRANSNOTPULLED					   = fe_base + 752,	  // Transaction not pulled
-	FETRANSALREADYPULLED				 = fe_base + 753,	  // Transaction was already pulled
-	FESERVICEDISABLED					   = fe_base + 754,	  // Service disabled
-	FERETRY								       = fe_base + 755,	  // Retry the operation
+   FETRANSNOTPUSHED	   = fe_base + 751,	  // Transaction not pushed
+   FETRANSNOTPULLED	   = fe_base + 752,	  // Transaction not pulled
+   FETRANSALREADYPULLED    = fe_base + 753,	  // Transaction was already pulled
+   FESERVICEDISABLED	   = fe_base + 754,	  // Service disabled
+   FERETRY                 = fe_base + 755,	  // Retry the operation
 
       //  Error numbers 900 - 950 are reserved for use by PATHSEND
       

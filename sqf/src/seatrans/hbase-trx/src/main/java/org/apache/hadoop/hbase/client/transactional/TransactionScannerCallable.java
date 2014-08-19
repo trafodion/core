@@ -41,9 +41,8 @@ class TransactionScannerCallable extends ScannerCallable {
   @Override
   protected long openScanner() throws IOException {
 	  if (transactionState.addRegion(location)) {
-			// ((TransactionalRegionInterface)
-			// server).beginTransaction(transactionState
-			// .getTransactionId(), location.getRegionInfo().getRegionName());
+	    // Register the transaction with the TM
+	    transactionState.registerLocation(location);
 	  }
 	  long id = ((TransactionalRegionInterface)this.server).openScanner(transactionState.getTransactionId(),
 				this.location.getRegionInfo().getRegionName(), this.getScan());

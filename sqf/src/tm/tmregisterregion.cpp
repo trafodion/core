@@ -23,11 +23,11 @@
 using namespace std;
 
 /*
- * Class:     org_apache_hadoop_hbase_client_transactional_RMInterface
+ * Class:     org_apache_hadoop_hbase_client_transactional_TransactionState
  * Method:    registerRegion2
  * Signature: (I[B[B)V   
  */
-JNIEXPORT void JNICALL Java_org_apache_hadoop_hbase_client_transactional_RMInterface_registerRegion
+JNIEXPORT void JNICALL Java_org_apache_hadoop_hbase_client_transactional_TransactionState_registerRegion
 (JNIEnv *pp_env, jobject pv_object, jint pv_port, jbyteArray pv_hostname, jbyteArray pv_dos)
 {
    short lv_ret;

@@ -72,27 +72,28 @@ public class TransactionManager {
 	 * Purpose : Call commit for a given regionserver  
 	 */
     public Integer doCommitX(final byte[] regionName, final long transactionId) throws CommitUnsuccessfulException {
-        try {
-	    transactionRS.commit(regionName,transactionId);
-	}catch (Exception e) { 
-	        LOG.error("exception in doCommitX for transaciton: " + transactionId + ": " + e);
-		// We have received our reply in the form of an exception,
-	        // so decrement outstanding count and wake up waiters to avoid
-	        // getting hung forever
-		transactionState.requestPendingCountDec(true);
-                throw new CommitUnsuccessfulException(e);
-        }
+      try {
+         LOG.info("doCommitX Entry. Transid [" + transactionId + "], name " + this.toString());
+         transactionRS.commit(regionName,transactionId);
+      } catch (Exception e) { 
+        LOG.error("exception in doCommitX for transaciton: " + transactionId + ": " + e);
+        // We have received our reply in the form of an exception,
+        // so decrement outstanding count and wake up waiters to avoid
+        // getting hung forever
+        transactionState.requestPendingCountDec(true);
+        throw new CommitUnsuccessfulException(e);
+      }
 			
-	// We have received our reply so decrement outstanding count
-	transactionState.requestPendingCountDec(false);
-   			
-	// forget the transaction if all replies have been received. otherwise another thread
-	// will do it.
-	if (transactionState.requestAllComplete())
-	{
-		transactionLogger.forgetTransaction(transactionState.getTransactionId());
-	}
-	return 0;
+    	// We have received our reply so decrement outstanding count
+    	transactionState.requestPendingCountDec(false);
+       			
+    	// forget the transaction if all replies have been received. otherwise another thread
+    	// will do it.
+    	if (transactionState.requestAllComplete())
+    	{
+    		transactionLogger.forgetTransaction(transactionState.getTransactionId());
+    	}
+	    return 0;
     }
 		
 	/**
@@ -158,6 +159,7 @@ public class TransactionManager {
                   return TM_COMMIT_FALSE_CONFLICT;
              return TM_COMMIT_FALSE;
          }
+
               
          if (readOnly)
              return TM_COMMIT_READ_ONLY;
@@ -211,7 +213,8 @@ public class TransactionManager {
         String numThreads = System.getenv("TM_JAVA_THREAD_POOL_SIZE");
         if (numThreads != null)
             intThreads = Integer.parseInt(numThreads);
-        threadPool = Executors.newFixedThreadPool(intThreads);
+        // threadPool = Executors.newFixedThreadPool(intThreads);
+        threadPool = Executors.newCachedThreadPool();
     }
 
     /**
@@ -264,6 +267,12 @@ public class TransactionManager {
     public int prepareCommit(final TransactionState transactionState) throws CommitUnsuccessfulException, IOException {
         boolean allReadOnly = true;
         int loopCount = 0;
+        if (transactionState.islocalTransaction()){
+          //System.out.println("prepare islocal");
+          LOG.trace("TransactionManager.prepareCommit local transaction " + transactionState.getTransactionId());
+        }
+        else
+          LOG.trace("TransactionManager.prepareCommit global transaction " + transactionState.getTransactionId());
         
         // (need one CompletionService per request for thread safety, can share pool of threads
     	CompletionService<Integer> compPool;
@@ -360,49 +369,47 @@ public class TransactionManager {
      */
     public void doCommit(final TransactionState transactionState) throws CommitUnsuccessfulException {
     	int loopCount = 0;
-        try {
-            LOG.trace("Committing [" + transactionState.getTransactionId() + "]");
-
-            transactionLogger.setStatusForTransaction(transactionState.getTransactionId(),
-                TransactionLogger.TransactionStatus.COMMITTED);
-
-            // (Asynchronously send commit
-            for (TransactionRegionLocation location : transactionState.getParticipatingRegions()) {
-                if (transactionState.getRegionsToIngore().contains(location)) {
-                    continue;
-                }
-
-                loopCount++;
-            	final byte[] regionName = location.getRegionInfo().getRegionName();              
-                TransactionalRegionInterface transactionalRegionServer = (TransactionalRegionInterface) connection
-                        .getHRegionConnection(location.getServerAddress());
-                    
-                threadPool.submit(new TransactionManagerCallable(transactionState, transactionalRegionServer) {
-    			public Integer call() throws CommitUnsuccessfulException {
-    			return doCommitX(regionName, transactionState.getTransactionId());
-    			}
-                });
-                
-                
-            }
-        } catch (Exception e) {
-	    LOG.error("exception in doCommit : " + e);
-            LOG.info("Commit of transaction [" + transactionState.getTransactionId() + "] was unsucsessful", e);
-            // This happens on a NSRE that is triggered by a split
-/*            try {
-                abort(transactionState);
-            } catch (Exception abortException) {
-
-                LOG.warn("Exeption during abort", abortException);
-            }
-*/
-            throw new CommitUnsuccessfulException(e);
-        }
+      try {
+        LOG.trace("Committing [" + transactionState.getTransactionId() + "]");
+  
+        transactionLogger.setStatusForTransaction(transactionState.getTransactionId(),
+                                                  TransactionLogger.TransactionStatus.COMMITTED);
+  
+        // (Asynchronously send commit
+        for (TransactionRegionLocation location : transactionState.getParticipatingRegions()) {
+          if (transactionState.getRegionsToIngore().contains(location)) {
+              continue;
+          }
         
-        // all requests sent at this point, can record the count
-		transactionState.completeSendInvoke(loopCount);
-
-    }
+          loopCount++;
+          final byte[] regionName = location.getRegionInfo().getRegionName();              
+          TransactionalRegionInterface transactionalRegionServer = (TransactionalRegionInterface) connection
+                            .getHRegionConnection(location.getServerAddress());
+              
+          threadPool.submit(new TransactionManagerCallable(transactionState, transactionalRegionServer) {
+        			public Integer call() throws CommitUnsuccessfulException {
+        			return doCommitX(regionName, transactionState.getTransactionId());
+        			}
+          });
+                
+                
+        }
+      } catch (Exception e) {
+	    LOG.error("exception in doCommit : " + e);
+      LOG.info("Commit of transaction [" + transactionState.getTransactionId() + "] was unsucsessful. ", e);
+      // This happens on a NSRE that is triggered by a split
+/*    try {
+        abort(transactionState);
+      } catch (Exception abortException) {
+        LOG.warn("Exeption during abort. ", abortException);
+      }
+*/
+        throw new CommitUnsuccessfulException(e);
+      }
+        
+      // all requests sent at this point, can record the count
+  		transactionState.completeSendInvoke(loopCount);
+    } //doCommit
 
     /**
      * Abort a s transaction.
@@ -457,11 +464,12 @@ public class TransactionManager {
     }
     
     public void registerRegion(final TransactionState transactionState, TransactionRegionLocation location)throws IOException{
-        LOG.trace("registerRegion ENTRY, transactioState:" + transactionState);
+      LOG.trace("registerRegion ENTRY, transactioState:" + transactionState);
     	if(transactionState.addRegion(location)){
-	    LOG.trace("registerRegion -- adding region: " + location.getRegionInfo().getRegionNameAsString());
+    	  LOG.trace("registerRegion -- adding region: [" + location.getRegionInfo().getRegionNameAsString() + "] for transid [" 
+	                + transactionState.getTransactionId() + "]");
     	}
-        LOG.trace("registerRegion EXIT");
+      LOG.trace("registerRegion EXIT");
     }
     
     /**
