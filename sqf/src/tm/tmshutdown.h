@@ -49,7 +49,7 @@ class TMShutdown
       void        wait_for_all_txs_to_end();
       void        abort_all_active_txs();
       int32       close_all_rms_for_shutdown(bool pv_leadTM, bool pv_clean);
-      int32       send_shutdown_msg_to_opened_TMs();  //YCC
+      int32       send_shutdown_msg_to_opened_TMs();  
       bool        send_shutdown_msg_to_AMP();
       void        stop_all_other_TMs();
       void        stop_all_TSEs();

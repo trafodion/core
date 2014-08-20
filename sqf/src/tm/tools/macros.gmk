@@ -27,6 +27,7 @@ IOPTS           = -Wall -Werror -wd177 -wd981 -wd1418 -wd1419 -wd383 -wd869 -wd8
 INCMONDIR	= ../../../monitor/linux
 
 #tm
+#LIBSTM         =  -L$(LIBEXPDIR) -lshbasetmlib -lutil -lsbms -lsbfs -levlsq -lstmlib -lreadline -lcurses -L../../seabed/test -L../../seabed/test -L../../seabed/test $(LIBS) $(DEBUG) 
 LIBSTM         =  -L$(LIBEXPDIR) -lutil -lsbms -lsbfs -levlsq -lstmlib -lreadline -lcurses -L../../seabed/test -L../../seabed/test -L../../seabed/test $(LIBS) $(DEBUG) 
 
 #tmtselib
