@@ -2534,7 +2534,6 @@ Lng32 SQLCLI_ProcessRetryQuery(
   ComCondition * cc = NULL;
   ComCondition * errCond = NULL;
   Lng32 aqrDelay = 0;
-  Lng32 aqrType = 0;
   Lng32 aqrCmpInfo = 0;
   while (NOT done)
     {
@@ -2598,7 +2597,6 @@ Lng32 SQLCLI_ProcessRetryQuery(
 		}
 
 	      aqrDelay = delay;
-	      aqrType = type;
 	      aqrCmpInfo = cmpInfo;
 	    }
 
@@ -2606,6 +2604,8 @@ Lng32 SQLCLI_ProcessRetryQuery(
 	    {
 	      if (type == AQRInfo::RETRY_WITH_ESP_CLEANUP)
 		aqr->setEspCleanup(TRUE);
+              else if (type == AQRInfo::RETRY_DECACHE_HTABLE)
+                currContext->flushHtableCache();
 
 	      // Before deallocating the statement, set an indication in the 
 	      // master stats for this query id to indicate that AQR is being 
