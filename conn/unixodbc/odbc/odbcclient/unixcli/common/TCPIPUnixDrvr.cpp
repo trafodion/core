@@ -620,23 +620,24 @@ void DoCompression(CTCPIPUnixDrvr* pTCPIPSystem, HEADER& wheader, unsigned char*
 {
 	bool retcode = true;
 	unsigned long inCmpCount = write_count; // // In number of bytes 
-
+	unsigned long output_size = write_count;
 	unsigned char* cmp_buf = NULL;
 
 	retcode = pTCPIPSystem->m_compression.compress((unsigned char*)wbuffer,  // input buffer (data to be compressed)
 																  (unsigned int)inCmpCount,              // input number of bytes
 																  (int)wheader.compress_type,
 	                                               (unsigned char**)&cmp_buf,                 // output buffer containing compressed output
-																  (unsigned long&)write_count);            // input/output param - input == max size, on output contains compressed size
+																  (unsigned long&)output_size);            // input/output param - input == max size, on output contains compressed size
+
 
 	if (retcode == false)
 	{
 		delete[] cmp_buf;
 		wheader.compress_type = COMP_NO_COMPRESSION;
 		wheader.cmp_length = 0;
-		write_count = inCmpCount;
 		return;
 	}
+	write_count = output_size;
 	memcpy(wbuffer, cmp_buf, write_count);
 
 	delete[] cmp_buf; //allocated in m_compression.compress();
