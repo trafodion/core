@@ -960,6 +960,21 @@ static SQLRETURN ReadRow(SRVR_STMT_HDL *pSrvrStmt,
 	CLI_DEBUG_RETURN_SQL((SQLRETURN)retcode);
 }
 
+void setTM_enable_cleanup ()
+{
+
+  static bool sv_envvar_setup = false;
+
+  if (sv_envvar_setup) {
+    return;
+  }
+
+  putenv("TMLIB_ENABLE_CLEANUP=0");
+  sv_envvar_setup = true;
+
+}
+
+
 /* ***********************************************************************************************
 * FUNCTION: EXECUTE
 *
@@ -989,6 +1004,8 @@ SQLRETURN EXECUTE(SRVR_STMT_HDL* pSrvrStmt)
 		("pSrvrStmt=0x%08x",
 		pSrvrStmt));
 
+	
+
 	CLI_DEBUG_SHOW_SERVER_STATEMENT(pSrvrStmt);
 
 	long retcode = SQL_SUCCESS;
@@ -1007,6 +1024,9 @@ SQLRETURN EXECUTE(SRVR_STMT_HDL* pSrvrStmt)
 	SQLValue_def	*SQLValue;
 	BOOL			sqlWarning = FALSE;
 	int				rtn = 0;
+
+	setTM_enable_cleanup();
+
 	pSrvrStmt->isSPJRS = FALSE;
 	pStmt = &pSrvrStmt->stmt;
 	pSrvrStmt->endOfData = FALSE;		// true=return code 100 from CLI call (no data found)
