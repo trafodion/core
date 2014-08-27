@@ -437,16 +437,16 @@ short CDataSource::readDSValues(char *DSName,CConnect* pConnection)
 		if (stricmp(keyValueBuf, SYSTEM_DEFAULT) == 0){
 			m_DSIOCompression = 0;
 		}
-		else if(strcmp(keyValueBuf,"no compression")==0){
+		else if(strcasecmp(keyValueBuf,"no compression")==0){
 			m_DSIOCompression = COMP_NO_COMPRESSION;
 		}
-		else if(strcmp(keyValueBuf,"best speed")==0){
+		else if(strcasecmp(keyValueBuf,"best speed")==0){
 			m_DSIOCompression = COMP_BEST_SPEED;
 		}
-		else if(strcmp(keyValueBuf,"best compression")==0){
+		else if(strcasecmp(keyValueBuf,"best compression")==0){
 			m_DSIOCompression = COMP_BEST_COMPRESSION;
 		}
-		else if(strcmp(keyValueBuf,"balance")==0){
+		else if(strcasecmp(keyValueBuf,"balance")==0){
 			m_DSIOCompression = COMP_DEFAULT;
 		}
 		else{
