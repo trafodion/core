@@ -453,7 +453,7 @@ ExWorkProcRetcode ExHbaseScanSQTaskTcb::work(short &rc)
 
 	case SCAN_FETCH_NEXT_ROW:
 	  {
-	    retcode = tcb_->ehi_->fetchNextRow();
+	    retcode = tcb_->ehi_->nextRow();
 	    if (retcode == HBASE_ACCESS_EOD)
 	      {
 		step_ = SCAN_CLOSE;
@@ -462,29 +462,12 @@ ExWorkProcRetcode ExHbaseScanSQTaskTcb::work(short &rc)
 	    if (tcb_->setupError(retcode, "ExpHbaseInterface::fetchNextRow"))
                step_ = HANDLE_ERROR; 
             else
-	       step_ = SCAN_FETCH_ROW_VEC;
+	       step_ = CREATE_ROW;
 	  }
 	  break;
-
-	case SCAN_FETCH_ROW_VEC:
-	  {
-	    retcode = tcb_->fetchRowVec();
-	    if ( (retcode == HBASE_ACCESS_EOD) || (retcode == HBASE_ACCESS_EOR) )
-	      {
-		step_ = SCAN_FETCH_NEXT_ROW;
-		break;
-	      }
-
-	    if (tcb_->setupError(retcode, "ExpHbaseInterface::fetchRowVec"))
-	      step_ = HANDLE_ERROR;
-	    else
-	      step_ = CREATE_ROW;
-	  }
-	  break;
-
 	case CREATE_ROW:
 	  {
-	    rc = tcb_->createSQRow();
+	    rc = tcb_->createSQRowDirect();
 	    if (rc < 0)
 	      {
 		if (rc != -1)
@@ -508,7 +491,7 @@ ExWorkProcRetcode ExHbaseScanSQTaskTcb::work(short &rc)
 	    else if (rc == -1)
 	      step_ = HANDLE_ERROR;
 	    else
-	      step_ = SCAN_FETCH_ROW_VEC;
+              step_ = SCAN_FETCH_NEXT_ROW;
 	  }
 	  break;
 
@@ -528,7 +511,7 @@ ExWorkProcRetcode ExHbaseScanSQTaskTcb::work(short &rc)
 		break;
 	      }
 
-	    step_ = SCAN_FETCH_ROW_VEC;
+            step_ = SCAN_FETCH_NEXT_ROW;
 	  }
 	  break;
 
@@ -579,25 +562,18 @@ Lng32 ExHbaseScanSQTaskTcb::getProbeResult(char* &keyData)
       goto label_return;
     }
   
-  retcode = tcb_->ehi_->fetchNextRow();
+  retcode = tcb_->ehi_->nextRow();
   if (retcode == HBASE_ACCESS_EOD)
     {
       rc = 1; // no row found
       goto label_return;
     }
-  retcode = tcb_->fetchRowVec();
-  if ( (retcode == HBASE_ACCESS_EOD) || (retcode == HBASE_ACCESS_EOR) )
-    {
-      rc = 1; // no row found
-      goto label_return;
-    }
-
   if (tcb_->setupError(retcode, "ExpHbaseInterface::fetchRow"))
     {
       rc = -1;
       goto label_return;
     }
-  rc = tcb_->createSQRow();
+  rc = tcb_->createSQRowDirect();
   if (rc < 0)
     {
       if (rc != -1)
@@ -669,7 +645,7 @@ ExWorkProcRetcode ExHbaseGetTaskTcb::work(short &rc)
 	    if (tcb_->rowIds_.size() == 1)
 	      {
 		retcode = tcb_->ehi_->getRowOpen(tcb_->table_, tcb_->rowIds_[0],
-					     tcb_->columns_, -1);
+					     tcb_->columns_, -1, FALSE);
 		if (tcb_->setupError(retcode, "ExpHbaseInterface::getRowOpen"))
 		  step_ = HANDLE_ERROR;
 		else
@@ -678,7 +654,7 @@ ExWorkProcRetcode ExHbaseGetTaskTcb::work(short &rc)
 	    else
 	      {
 		retcode = tcb_->ehi_->getRowsOpen(tcb_->table_, tcb_->rowIds_,
-					     tcb_->columns_, -1);
+					     tcb_->columns_, -1, FALSE);
 		if (tcb_->setupError(retcode, "ExpHbaseInterface::getRowsOpen"))
 		  step_ = HANDLE_ERROR;
 		else
@@ -827,7 +803,7 @@ ExWorkProcRetcode ExHbaseGetRowwiseTaskTcb::work(short &rc)
 	    if (tcb_->rowIds_.size() == 1)
 	      {
 		retcode = tcb_->ehi_->getRowOpen(tcb_->table_, tcb_->rowIds_[0],
-					     tcb_->columns_, -1);
+					     tcb_->columns_, -1, FALSE);
 		if (tcb_->setupError(retcode, "ExpHbaseInterface::getRowOpen"))
 		  step_ = HANDLE_ERROR;
 		else
@@ -836,7 +812,7 @@ ExWorkProcRetcode ExHbaseGetRowwiseTaskTcb::work(short &rc)
 	    else
 	      {
 		retcode = tcb_->ehi_->getRowsOpen(tcb_->table_, tcb_->rowIds_,
-					     tcb_->columns_, -1);
+					     tcb_->columns_, -1, FALSE);
 		if (tcb_->setupError(retcode, "ExpHbaseInterface::getRowsOpen"))
 		  step_ = HANDLE_ERROR;
 		else
@@ -1024,7 +1000,7 @@ ExWorkProcRetcode ExHbaseGetSQTaskTcb::work(short &rc)
 	    if (tcb_->rowIds_.size() == 1)
 	      {
 		retcode = tcb_->ehi_->getRowOpen(tcb_->table_, tcb_->rowIds_[0],
-					     tcb_->columns_, -1);
+					     tcb_->columns_, -1, TRUE);
 		if (tcb_->setupError(retcode, "ExpHbaseInterface::getRowOpen"))
 		  step_ = HANDLE_ERROR;
 		else
@@ -1033,7 +1009,7 @@ ExWorkProcRetcode ExHbaseGetSQTaskTcb::work(short &rc)
 	    else
 	      {
 		retcode = tcb_->ehi_->getRowsOpen(tcb_->table_, tcb_->rowIds_,
-					     tcb_->columns_, -1);
+					     tcb_->columns_, -1, TRUE);
 		if (tcb_->setupError(retcode, "ExpHbaseInterface::getRowsOpen"))
 		  step_ = HANDLE_ERROR;
 		else
@@ -1045,7 +1021,7 @@ ExWorkProcRetcode ExHbaseGetSQTaskTcb::work(short &rc)
 
 	case GET_FETCH:
 	  {
-	    retcode = tcb_->fetchRowVec();
+	    retcode = tcb_->ehi_->nextRow();
             // EOD is end of data, EOR is end of result set. 
             // for single get, EOD or EOR indicates DONE
             // for multi get, only EOR indicates DONE
@@ -1074,7 +1050,7 @@ ExWorkProcRetcode ExHbaseGetSQTaskTcb::work(short &rc)
 
 	case CREATE_ROW:
 	  {
-            rc = tcb_->createSQRow();
+            rc = tcb_->createSQRowDirect();
 	    if (rc == -1)
 	      {
 		step_ = HANDLE_ERROR;

@@ -1744,7 +1744,7 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
 	    StrVec columns;
 	    retcode =  tcb_->ehi_->getRowOpen( tcb_->table_,  
 					       tcb_->rowIds_[tcb_->currRowidIdx_],
-					       tcb_->columns_, -1);
+					       tcb_->columns_, -1, TRUE);
 	    if ( tcb_->setupError(retcode, "ExpHbaseInterface::getRowOpen"))
 	      step_ = HANDLE_ERROR;
 	    else
@@ -1754,7 +1754,7 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
 
 	case GET_FETCH_ROW_VEC:
 	  {
-	    retcode =  tcb_->fetchRowVec();
+	    retcode =  tcb_->ehi_->nextRow();
 	    if ( (retcode == HBASE_ACCESS_EOD) || (retcode == HBASE_ACCESS_EOR) )
 	      {
 		if (tcb_->hbaseAccessTdb().getAccessType() == ComTdbHbaseAccess::MERGE_)
@@ -1770,7 +1770,7 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
 		break;
 	      }
 
-	    if ( tcb_->setupError(retcode, "ExpHbaseInterface::fetchRowVec"))
+	    if ( tcb_->setupError(retcode, "ExpHbaseInterface::nextRow"))
 	      step_ = HANDLE_ERROR;
 	    else if ((tcb_->hbaseAccessTdb().getAccessType() == ComTdbHbaseAccess::DELETE_) &&
 		     (! tcb_->scanExpr()) &&
@@ -1783,7 +1783,7 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
 
 	  case CREATE_FETCHED_ROW:
 	    {
-	    rc =  tcb_->createSQRow();
+	    rc =  tcb_->createSQRowDirect();
 	    if (rc < 0)
 	      {
 		if (rc != -1)
@@ -2399,7 +2399,7 @@ ExWorkProcRetcode ExHbaseUMDnativeUniqueTaskTcb::work(short &rc)
 
 	    retcode =  tcb_->ehi_->getRowOpen( tcb_->table_,  
 					       tcb_->rowIds_[tcb_->currRowidIdx_],
-					       columns, -1);
+					       columns, -1, FALSE);
 	    if ( tcb_->setupError(retcode, "ExpHbaseInterface::getRowOpen"))
 	      step_ = HANDLE_ERROR;
 	    else
@@ -2649,6 +2649,7 @@ void ExHbaseUMDtrafSubsetTaskTcb::init()
 ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 {
   Lng32 retcode = 0;
+  HbaseStr rowID;
   rc = 0;
 
   while (1)
@@ -2684,27 +2685,13 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 
 	case SCAN_FETCH_NEXT_ROW:
 	  {
-	    retcode = tcb_->ehi_->fetchNextRow();
+	    retcode = tcb_->ehi_->nextRow();
 	    if (retcode == HBASE_ACCESS_EOD)
 	      {
 		step_ = SCAN_CLOSE;
 		break;
 	      }
-	    
-	    step_ = SCAN_FETCH_ROW_VEC;
-	  }
-	  break;
-
-	case SCAN_FETCH_ROW_VEC:
-	  {
-	    retcode = tcb_->fetchRowVec();
-	    if ( (retcode == HBASE_ACCESS_EOD) || (retcode == HBASE_ACCESS_EOR) )
-	      {
-		step_ = SCAN_FETCH_NEXT_ROW; //SCAN_CLOSE_AND_INIT; 
-		break;
-	      }
-
-	    if (tcb_->setupError(retcode, "ExpHbaseInterface::scanFetch"))
+	    if (tcb_->setupError(retcode, "ExpHbaseInterface::nextRow"))
 	      {
 		step_ = HANDLE_ERROR;
 		break;
@@ -2726,11 +2713,11 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 
 	  case CREATE_FETCHED_ROW:
 	    {
-	    rc = tcb_->createSQRow();
+	    rc = tcb_->createSQRowDirect();
 	    if (rc < 0)
 	      {
 		if (rc != -1)
-		  tcb_->setupError(rc, "createSQRow");
+		  tcb_->setupError(rc, "createSQRowDirect");
 		step_ = HANDLE_ERROR;
 		break;
 	      }
@@ -2752,7 +2739,7 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 	    else if (rc == -1)
 	      step_ = HANDLE_ERROR;
 	    else
-	      step_ = SCAN_FETCH_ROW_VEC;
+	      step_ = SCAN_FETCH_NEXT_ROW;
 	  }
 	  break;
 
@@ -2783,7 +2770,7 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 	    if (rc == 1) // expr is true or no expr
 	      step_ = CREATE_MUTATIONS;
 	    else if (rc == 0) // expr is false
-	      step_ = SCAN_FETCH_ROW_VEC; 
+	      step_ = SCAN_FETCH_NEXT_ROW; 
 	    else // error
 	      step_ = HANDLE_ERROR;
 	  }
@@ -2808,16 +2795,22 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 
 	case UPDATE_ROW:
 	  {
+            retcode = tcb_->ehi_->getRowID(rowID);
+	    if (tcb_->setupError(retcode, "ExpHbaseInterface::insertRow"))
+	    {
+		step_ = HANDLE_ERROR;
+		break;
+	    }
 	    retcode = tcb_->ehi_->insertRow(tcb_->table_,
-					    tcb_->rowID_,
+					    rowID,
 					    tcb_->row_,
 					    FALSE,
 					    -1); //colTS_);
 	    if (tcb_->setupError(retcode, "ExpHbaseInterface::insertRow"))
-	      {
+	    {
 		step_ = HANDLE_ERROR;
 		break;
-	      }
+	    }
 
 	    if (tcb_->hbaseAccessTdb().returnRow())
 	      {
@@ -2827,15 +2820,21 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 
 	    tcb_->matches_++;
 
-	    step_ = SCAN_FETCH_ROW_VEC; //SCAN_FETCH_NEXT_ROW;
+	    step_ = SCAN_FETCH_NEXT_ROW;
 	  }
 	  break;
 
 	case DELETE_ROW:
 	  {
 	    TextVec columns;
+            retcode = tcb_->ehi_->getRowID(rowID);
+	    if (tcb_->setupError(retcode, "ExpHbaseInterface::insertRow"))
+	    {
+		step_ = HANDLE_ERROR;
+		break;
+            }
 	    retcode =  tcb_->ehi_->deleteRow(tcb_->table_,
-					     tcb_->rowID_,
+					     rowID,
 					     columns,
 					     -1); //colTS_);
 	    if ( tcb_->setupError(retcode, "ExpHbaseInterface::deleteRow"))
@@ -2854,7 +2853,7 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 
 	    tcb_->matches_++;
 
-	    step_ = SCAN_FETCH_ROW_VEC; //SCAN_FETCH_NEXT_ROW;
+	    step_ = SCAN_FETCH_NEXT_ROW;
 	  }
 	  break;
 
@@ -2879,7 +2878,7 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 		break;
 	      }
 
-	    step_ = SCAN_FETCH_ROW_VEC;
+	    step_ = SCAN_FETCH_NEXT_ROW;
 	  }
 	  break;
 
@@ -2946,7 +2945,7 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 		break;
 	      }
 
-	    step_ = SCAN_FETCH_ROW_VEC;
+	    step_ = SCAN_FETCH_NEXT_ROW;
 	  }
 	  break;
 
@@ -3153,7 +3152,7 @@ ExWorkProcRetcode ExHbaseUMDnativeSubsetTaskTcb::work(short &rc)
 	    if (rc < 0)
 	      {
 		if (rc != -1)
-		  tcb_->setupError(rc, "createSQRow");
+		  tcb_->setupError(rc, "createRowwiseRow");
 		step_ = HANDLE_ERROR;
 		break;
 	      }
