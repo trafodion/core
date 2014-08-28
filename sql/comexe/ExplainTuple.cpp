@@ -345,6 +345,13 @@ ExplainTuple::setCol(Int32 col,
 	  if ((cursor + dataLength) > (UInt32)getColLength(col))
 	  {
 	    //replace the last two characters by the end of line character and the truncation indicator
+	    //NOTE: Must be careful not to damage a multi-byte UTF8 character, so we ensure
+	    //      that *(p-2) [i.e. where the '*' will be put] is either an ASCII character
+	    //      or it is the first byte of a multi-byte UTF8 character.
+	    //
+	    while ( ( *(p-2) & 0x80 ) && ! ( *(p-2) & 0x40 ) && ( p > (explainTuple_ + colOffset + 2) ) )
+	      *--p = '\0';
+
 	    *--p = '\0';
 	    *--p = '*';
 	  }
