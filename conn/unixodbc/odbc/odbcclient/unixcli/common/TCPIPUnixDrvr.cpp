@@ -667,7 +667,6 @@ bool DoExpand(CTCPIPUnixDrvr* pTCPIPSystem, HEADER& rheader, unsigned char* ibuf
 	                                                               // (in case something goes wrong in decompression)
 	if (obuffer == NULL)
 	{
-		delete[] obuffer;
 		SET_ERROR((long)pTCPIPSystem, PC, TCPIP, pTCPIPSystem->odbcAPI, E_DRIVER, pTCPIPSystem->m_object_ref, O_DO_OPERATOR_NEW, F_DO_IO, DRVR_ERR_MEMORY_ALLOCATE, rheader.total_length);
 		return false;
 	}
