@@ -806,7 +806,7 @@ public:
 
   ItemExpr * getExecutorPredTree()              { return executorPredTree_; }
 
-  const ValueIdSet& getPartInputs()             { return neededPivs_; }
+  NABoolean predsNeedPIVs() const               { return predsNeedPIVs_; }
   ValueIdSet & retrievedCols()                  { return retrievedCols_; }
 
   NABoolean getReverseScan() const              { return reverseScan_; }
@@ -955,7 +955,7 @@ private:
 
   // a search key for the partitioning key (maybe same as pathKeys_)
   SearchKey * partKeys_;
-  ValueIdSet  neededPivs_;
+  NABoolean   predsNeedPIVs_;
 
   // For Hive tables, a bit mask of selected Hive partitions and buckets
   HivePartitionAndBucketKey *hiveSearchKey_;
