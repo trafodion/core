@@ -484,29 +484,6 @@ public class HTableClient {
 		return true;
 	}
 
-	public ResultKeyValueList fetchRowVec() { 
-	    logger.trace("Enter fetchRowVec() " + tableName);
-
-		if (lastFetchedRow == null) {
-			logger.trace("Exit 1 fetchRowVec.  Returning empty.");
-			return null;
-		}
-		ResultKeyValueList result = new ResultKeyValueList(lastFetchedRow);
-		lastFetchedRow = null;
-
-		if (getResultSet != null) {
-			if (getResultSetPos == getResultSet.length) {
-				getResultSet = null;
-			} else {
-			        lastFetchedRow = getResultSet[getResultSetPos];
-			        getResultSetPos++;
-			}
-		}
-
-		logger.trace("Exit fetchRowVec()" + tableName + ". Result Size: " + result.getSize());
-		return result;
-	}
-
 	public KeyValue getLastFetchedCell() {
 		logger.trace("Enter getLastFetchedCell() ");
 		if (lastFetchedCell == null)
