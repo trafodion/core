@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Dennis Markt <dennis.markt@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Shang-Sheng Tung <shang-sheng.tung@hp.com>
+Workflow+1: Shang-Sheng Tung <shang-sheng.tung@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Wed, 03 Sep 2014 22:23:13 +0000
+Reviewed-on: https://review.trafodion.org/349
+Project: trafodion/core
+Branch: refs/heads/master
