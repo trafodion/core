@@ -188,28 +188,57 @@ void runServer(Int32 argc, char **argv)
   {
     if (errno == ENOENT)
     {
+      // Normal case, segment does not exist yet. Try to create.
+      bool didCreate = false;
       if ((shmid = shmget((key_t)getStatsSegmentId(),
                                 maxSegSize,
                                 shmFlag | IPC_CREAT)) == -1)
       {
-         cout << tmbuf << " Shmget failed, key=" << getStatsSegmentId() <<", Error code : "  << errno << "(" << strerror(errno) << ")\n";
-         exit(errno);
+        if (enableHugePages > 0)
+        {
+          enableHugePages = 0;
+          // try again withouf hugepages
+          shmFlag =  shmFlag & ~SHM_HUGETLB;
+          if ((shmid = shmget((key_t)getStatsSegmentId(),
+                                    maxSegSize,
+                                    shmFlag | IPC_CREAT)) != -1)
+            didCreate = true;
+        }
+      }
+      else
+        didCreate = true;
+
+      if (didCreate)
+      {
+        if (enableHugePages > 0)
+            cout << tmbuf 
+                 << " RMS Shared segment id = " 
+                 << shmid << ", key = " 
+                 << (key_t)getStatsSegmentId() 
+                 << ", created with huge pages support.\n";
+        else
+            cout << tmbuf 
+                 << " RMS Shared segment created id = " 
+                 << shmid 
+                 << ", key = " 
+                 << (key_t)getStatsSegmentId() 
+                 << ".\n";
+
+        createStatsGlobals = TRUE;
       }
       else
       {
-         if (enableHugePages > 0)
-             cout << tmbuf << " RMS Shared segment id=" << shmid << ", key=" << (key_t)getStatsSegmentId() << ", created with huge pages support\n";
-         else
-             cout << tmbuf << " RMS Shared segment created id=" << shmid << ", key=" << (key_t)getStatsSegmentId() << "\n";
-
+        cout << tmbuf
+             << " Shmget failed, key="
+             << getStatsSegmentId()
+             <<", Error code : "
+             << errno
+             << " ("
+             << strerror(errno)
+             << ")\n";
+        exit(errno);
       }
-      createStatsGlobals = TRUE;
-    }
-    else
-    {
-      cout << tmbuf << " Shmget failed key=" << (key_t)getStatsSegmentId()<< ", Error code : "  << errno << "(" << strerror(errno) << ")\n";
-      exit(errno);
-    }
+    } // if ENOENT (i.e., attempting creation.)
   }
   else
   {
