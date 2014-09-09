@@ -1,42 +1,12 @@
-/**************************************************************************
-// @@@ START COPYRIGHT @@@
-//
-// (C) Copyright 2004-2014 Hewlett-Packard Development Company, L.P.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-// @@@ END COPYRIGHT @@@
-**************************************************************************/
-//
-// MODULE: SQLMXConnection.cpp
-//
-
 #include <platform_ndcs.h>
-#ifdef NSK_PLATFORM
-#include <sqlWin.h>
-#else
 #include <sql.h>
-#endif
 #include <sqlext.h>
 #include "JdbcDriverGlobal.h"
 #include "org_trafodion_jdbc_t2_SQLMXConnection.h"
 #include "SQLMXCommonFunctions.h"
-#ifdef NSK_PLATFORM
-#include "cextdecs.h"
-#include "pThreadsSync.h"
-#endif
 #include "CoreCommon.h"
 #include "SrvrCommon.h"
+#include "SrvrOthers.h"
 #include "CSrvrConnect.h"
 #include "Debug.h"
 #include "GlobalInformation.h"
@@ -135,7 +105,6 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_setTransaction
 
 	// Null out outputValueList before we pass it down
 	CLEAR_LIST(outputValueList);
-#ifndef TODO
 	odbc_SQLSvc_GetSQLCatalogs_sme_(NULL, NULL,
 		&exception_,
 		dialogueId,
@@ -161,7 +130,6 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_setTransaction
 		NULL,
 		NULL,
 		NULL);
-#endif
 	switch (exception_.exception_nr)
 	{
 	case CEE_SUCCESS:
@@ -454,7 +422,6 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_connectInit
 			CliDebugSqlError(setConnectException.exception_nr)));
 	}
 
-#if 0 /* NOT NEEDED with improvements to Native Expressions code */
 	// new code begin: to disable native code for multi-threading
 		odbc_SQLSvc_SetConnectionOption_sme_(NULL, NULL,
 			&setConnectException,
@@ -470,7 +437,6 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_connectInit
 				CliDebugSqlError(setConnectException.exception_nr)));
 		}
 	// new code end
-#endif /* NOT NEEDED with improvements to Native Expressions code */
 
 	if (srvrGlobal->nowaitOn == 2)
 	{
