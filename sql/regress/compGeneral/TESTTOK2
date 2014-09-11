@@ -1,0 +1,26 @@
+-- Test: TEST001 (CompGeneral)
+-- Owner: Compiler Team
+-- Functionality: Check for newly introduced shift/reduce and reduce/reduce
+--                conflicts in the parser
+-- Table created: none
+-- Expected files: EXPECTEDTOK2.*, 
+-- Limitations:
+--
+-- This file is not used for TESTTOK2 on Windows. The file tok2.ksh is run directly from
+-- runregr_compGeneral.ksh for Windows builds.
+--
+-- Revision history:
+--     (10/30/02) - Created  from TEST013 of fullstack.
+--                  added showshape for some queries to ensure that 
+--                  the group by is being pushed down
+--     (05/13/06) - Jim Kass: changed call to display_explain to just
+--                  explain and removed the '(s)' from the output which
+--                  has been supressed.
+--     (03/26/12) - Ported to Linux (Hans Zeller)
+--                  Top level Makefile now also packages required files
+--                  parser/sqlparser.y and toolbin/bison_linux/bison
+--                  into the regression tar file
+
+-- process the parser through bison to get a list of shift/reduce and reduce/reduce conflicts
+-- in file sqlparser.output. Remove the directory name from the output.
+sh $REGRTSTDIR/TESTTOK2.sh $REGRTSTDIR/../..;

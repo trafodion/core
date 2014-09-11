@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# process the parser through bison to get a list of shift/reduce and reduce/reduce conflicts
+# in file sqlparser.output. Remove the directory name from the output.
+topdir=$1
+bisondir=${TOOLSDIR}/bison_3_linux/share/bison
+bisonexedir=${TOOLSDIR}/bison_3_linux/bin
+parserdir=$topdir/parser
+toolsdir=$topdir/regress/tools
+
+# m4 is a utility needed by bison
+export M4=$bisonexedir/m4
+
+
+export BISON_PKGDATADIR=$bisondir
+
+$bisonexedir/bison -v $parserdir/sqlparser.y 2>&1 | sed -r 's/.+sqlparser\.y/sqlparser.y/' >LOGTOK2;
+
+# extract a list of conflicts from the sqlparser.output file
+awk '/State [0-9]+ conflicts:/ { printf "%06d ", $2; print } ' sqlparser.output | grep State | sed -r 's/ State [0-9]+//' >LOGTOK2_conflicts
+# extract a list of parser states (state number and first descriptive line) from the parser output file
+awk '/^State 0$/,/untilthelastline/ { print }' sqlparser.output | awk '/^State [0-9]+$/ { printf "%06d ", $2; getline; getline; print }'  >LOGTOK2_gramm
+# join the two extracted files on the state number (first 6 digits)
+join LOGTOK2_conflicts LOGTOK2_gramm >LOGTOK2_join
+# replace state numbers with nnnn, so unrelated parser changes don't cause this test to fail
+echo " " >>LOGTOK2
+cat LOGTOK2_join | sed -r 's/^[0-9]+ conflicts/nnnn conflicts/' | sed -r 's/reduce [0-9]+/reduce nnnn/' >>LOGTOK2
+
+# delete some of the larger output files produced (uncomment for debugging)
+rm sqlparser.output sqlparser.tab.c;

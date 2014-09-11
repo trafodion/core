@@ -1,0 +1,10 @@
+1c1
+< sqlparser.y: conflicts: 72 shift/reduce, 9 reduce/reduce
+---
+> sqlparser.y: conflicts: 81 shift/reduce, 9 reduce/reduce
+5a6
+> nnnn conflicts: 3 shift/reduce nnnn get_desccount_statement: TOK_GET . TOK_DESCRIPTOR entity_name simple_host_variable '=' TOK_COUNT
+9a11
+> nnnn conflicts: 3 shift/reduce nnnn exe_util_get_volatile_info: TOK_GET . TOK_ALL TOK_VOLATILE TOK_SCHEMAS
+38a41
+> nnnn conflicts: 3 shift/reduce nnnn exe_util_get_statistics: TOK_GET . TOK_STATISTICS stats_merge_clause get_statistics_optional_options

@@ -1,0 +1,11 @@
+#! /bin/sh
+ 
+# We delete lines which may or may not be generated (e.g. depending on use of gmake or omake.)
+# Called by the runregr script before doing diff.
+ 
+fil=$1
+sed '
+/identical to/D
+/The process cannot access the file because it is being used by another process/D
+' $fil
+
