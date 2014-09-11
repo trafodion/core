@@ -18,6 +18,7 @@
 
 package org.trafodion.sql.HBaseAccess;
 
+import com.google.protobuf.ServiceException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -32,6 +33,8 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.NamespaceDescriptor;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -49,11 +52,11 @@ import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.SnapshotDescriptio
 import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.SnapshotDescription.Type;
 //import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos;
 
-//import org.apache.hadoop.hbase.io.compress.Compression.Algorithm;
-import org.apache.hadoop.hbase.io.hfile.Compression.Algorithm;
+import org.apache.hadoop.hbase.io.compress.Compression.Algorithm;
+//import org.apache.hadoop.hbase.io.hfile.Compression.Algorithm;
 import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding;
-//import org.apache.hadoop.hbase.regionserver.BloomType; in v0.97
-import org.apache.hadoop.hbase.regionserver.StoreFile.BloomType ;
+import org.apache.hadoop.hbase.regionserver.BloomType; 
+//import org.apache.hadoop.hbase.regionserver.StoreFile.BloomType ;
 import org.apache.hadoop.hbase.regionserver.KeyPrefixRegionSplitPolicy;
 //import org.apache.hadoop.hbase.client.Durability;
 import org.trafodion.sql.HBaseAccess.StringArrayList;
@@ -118,7 +121,8 @@ public class HBaseClient {
     }
 
     public boolean init(String zkServers, String zkPort) 
-              throws MasterNotRunningException, ZooKeeperConnectionException {
+	throws MasterNotRunningException, ZooKeeperConnectionException, ServiceException, IOException
+    {
          setupLog4j();
          logger.debug("HBaseClient.init(" + zkServers + ", " + zkPort
                          + ") called.");
@@ -542,11 +546,15 @@ public class HBaseClient {
                 i++;
             }
 
-            UserPermission userPerm = new UserPermission(user, tblName,
+	    //HB98
+	    TableName htblName = TableName.valueOf(new String(NamespaceDescriptor.DEFAULT_NAMESPACE_NAME)
+						   ,new String(tblName));
+            UserPermission userPerm = new UserPermission(user, htblName,
                                                          colFamily, assigned);
 
             AccessController accessController = new AccessController();
-            accessController.grant(userPerm);
+	    //HB98 The grant() method is very different in HB98 (commenting out for now)
+            //accessController.grant(userPerm);
         return true;
     }
 
@@ -569,11 +577,16 @@ public class HBaseClient {
                 i++;
             }
 
-            UserPermission userPerm = new UserPermission(user, tblName,
+	    //HB98
+	    TableName htblName = TableName.valueOf(new String(NamespaceDescriptor.DEFAULT_NAMESPACE_NAME)
+						   ,new String(tblName));
+            UserPermission userPerm = new UserPermission(user, htblName,
                                                          colFamily, assigned);
 
             AccessController accessController = new AccessController();
-            accessController.revoke(userPerm);
+	    
+	    //HB98 The revoke() method is very different in HB98 (commenting out for now)
+            //accessController.revoke(userPerm);
         return true;
     }
 

@@ -3207,7 +3207,7 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
   //user to create it
   DD_____(TRAF_LOAD_PREP_TMP_LOCATION, "/bulkload/" ),
   DDkwd__(TRAF_LOAD_TAKE_SNAPSHOT ,    "OFF"),
-  DDkwd__(TRAF_LOAD_USE_FOR_INDEXES,   "ON"),
+  DDkwd__(TRAF_LOAD_USE_FOR_INDEXES, "ON"), // Temporarily OFF for HBase 98 incompatibility
   DDkwd__(TRAF_LOAD_USE_FOR_STATS,     "ON"),
   DDkwd__(TRAF_LOAD_USE_QUASI_SECURE , "OFF"),
   DDkwd__(TRAF_NO_CONSTR_VALIDATION,                 "OFF"),
