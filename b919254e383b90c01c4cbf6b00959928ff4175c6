@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Aruna Sadashiva <aruna.sadashiva@hp.com>
+Code-Review+2: Arvind Narain <arvind.narain@hp.com>
+Workflow+1: Arvind Narain <arvind.narain@hp.com>
+Code-Review+1: Kevin Xu <kai-hua.xu@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Fri, 12 Sep 2014 23:46:31 +0000
+Reviewed-on: https://review.trafodion.org/158
+Project: trafodion/core
+Branch: refs/heads/master
