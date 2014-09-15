@@ -141,10 +141,19 @@ class CmpSeabaseDDL
     (NADefaults::Provenance overwriteIfNotYet, Int32 errOrWarn,
      NADefaults * defs);
 
+  short getSystemSoftwareVersion(Int64 &softMajVers, 
+                                 Int64 &softMinVers,
+                                 Int64 &softUpdVers);
+
   short validateVersions(NADefaults *defs, 
 			 ExpHbaseInterface * inEHI = NULL,
 			 Int64 * mdMajorVersion = NULL,
 			 Int64 * mdMinorVersion = NULL,
+                         Int64 * sysSWMajorVersion = NULL,
+                         Int64 * sysSWMinorVersion = NULL,
+                         Int64 * sysSWUpdVersion = NULL,
+                         Int64 * mdSWMajorVersion = NULL,
+                         Int64 * mdSWMinorVersion = NULL,
 			 Lng32 * hbaseErr = NULL,
 			 NAString * hbaseErrStr = NULL);
 
@@ -201,8 +210,10 @@ class CmpSeabaseDDL
     METADATA_OLD_MINOR_VERSION = 2,
     DATAFORMAT_MAJOR_VERSION = 1,
     DATAFORMAT_MINOR_VERSION = 1,
-    SOFTWARE_MAJOR_VERSION = 1,
-    SOFTWARE_MINOR_VERSION = 1
+
+    // next 2 definitions have been moved to CmpSeabaseDDLcommon.cpp
+    //    SOFTWARE_MAJOR_VERSION = 0,
+    //    SOFTWARE_MINOR_VERSION = 9
   };
 
   enum {
@@ -730,6 +741,7 @@ class CmpSeabaseDDL
   void createSeabaseMDviews();
   void dropSeabaseMDviews();
   void createSeabaseSeqTable();
+  void updateVersion();
 
   short dropSeabaseObjectsFromHbase(const char * pattern);
   short updateSeabaseAuths(ExeCliInterface * cliInterface, const char * sysCat);

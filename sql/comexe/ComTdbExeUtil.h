@@ -4501,7 +4501,8 @@ class ComTdbExeUtilMetadataUpgrade : public ComTdbExeUtil
 {
   enum MUflags
   {
-    GET_MD_VERSION          = 0x0001
+    GET_MD_VERSION          = 0x0001,
+    GET_SW_VERSION = 0x0002
   };
 
 public:
@@ -4540,6 +4541,10 @@ public:
   void setGetMDVersion(NABoolean v)
   {(v ? flags_ |= GET_MD_VERSION : flags_ &= ~GET_MD_VERSION); }
   NABoolean getMDVersion() { return (flags_ & GET_MD_VERSION) != 0;}
+
+  void setGetSWVersion(NABoolean v)
+  {(v ? flags_ |= GET_SW_VERSION : flags_ &= ~GET_SW_VERSION); }
+  NABoolean getSWVersion() { return (flags_ & GET_SW_VERSION) != 0;}
 
 protected:
 

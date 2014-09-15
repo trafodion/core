@@ -194,6 +194,7 @@ public:
     isNative_(FALSE),
     initHbase_(FALSE),
     dropHbase_(FALSE),
+    updateVersion_(FALSE),
     purgedataHbase_(FALSE),
     addSeqTable_(FALSE),
     flags_(0)
@@ -204,7 +205,7 @@ public:
 
  DDLExpr(NABoolean initHbase, NABoolean dropHbase,
 	 NABoolean createMDviews, NABoolean dropMDviews,
-	 NABoolean addSeqTable,
+	 NABoolean addSeqTable, NABoolean updateVersion,
 	 char * ddlStmtText,
 	 CharInfo::CharSet ddlStmtTextCharSet,
 	  CollHeap *oHeap = CmpCommon::statementHeap())
@@ -225,6 +226,7 @@ public:
     isNative_(FALSE),
     initHbase_(initHbase), 
     dropHbase_(dropHbase),
+    updateVersion_(updateVersion),
     purgedataHbase_(FALSE),
     addSeqTable_(addSeqTable),
     flags_(0)
@@ -257,6 +259,7 @@ public:
     isNative_(FALSE),
     initHbase_(FALSE), 
     dropHbase_(FALSE),
+    updateVersion_(FALSE),
     purgedataHbase_(purgedataHbase),
     addSeqTable_(FALSE),
     flags_(0)
@@ -320,6 +323,7 @@ public:
 
   NABoolean initHbase() { return initHbase_; }
   NABoolean dropHbase() { return dropHbase_; }
+  NABoolean updateVersion() { return updateVersion_; }
   NABoolean purgedataHbase() { return purgedataHbase_; }
   NABoolean addSeqTable() { return addSeqTable_; }
 
@@ -379,6 +383,7 @@ public:
                                   // creating an hbase table from trafodion interface.
   NABoolean initHbase_;	  
   NABoolean dropHbase_;	
+  NABoolean updateVersion_;
   NABoolean purgedataHbase_;
   NABoolean addSeqTable_;
 
@@ -2611,10 +2616,15 @@ public:
   {(v ? myFlags_ |= GET_MD_VERSION : myFlags_ &= ~GET_MD_VERSION); }
   NABoolean getMDVersion() { return (myFlags_ & GET_MD_VERSION) != 0;}
 
+  void setGetSWVersion(NABoolean v)
+  {(v ? myFlags_ |= GET_SW_VERSION : myFlags_ &= ~GET_SW_VERSION); }
+  NABoolean getSWVersion() { return (myFlags_ & GET_SW_VERSION) != 0;}
+
  private:
   enum Flags
   {
-    GET_MD_VERSION   = 0x0001
+    GET_MD_VERSION   = 0x0001,
+    GET_SW_VERSION = 0x0002
   };
 
   UInt32 myFlags_;
