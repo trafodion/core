@@ -46,7 +46,6 @@ import org.apache.hadoop.hbase.client.transactional.UnknownTransactionException;
 import org.apache.hadoop.hbase.client.transactional.HBaseBackedTransactionLogger;
 import org.apache.hadoop.hbase.client.transactional.TransactionRegionLocation;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.ipc.TransactionalRegionInterface;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -146,10 +145,10 @@ public class HBaseAuditControlPoint {
          String rowKey;
          LOG.debug("entering for loop" );
          for (Result r : ss) {
-            LOG.debug("getting rowKey" );
             rowKey = new String(r.getRow());
-            LOG.debug("Setting currKey" );
+            LOG.debug("rowKey is " + rowKey );
             currKey = Long.parseLong(new String(r.getRow()));
+            LOG.debug("value is " + Long.parseLong(Bytes.toString(r.value())));
             if (currKey > highKey) {
                LOG.debug("Setting highKey to " + currKey);
                highKey = currKey;
@@ -157,12 +156,12 @@ public class HBaseAuditControlPoint {
          }
       }
       catch (Exception e) {
-            LOG.error("getCurrControlPt IOException" + e);
+        LOG.error("getCurrControlPt IOException" + e);
         e.printStackTrace();
       } finally {
          ss.close();
       }
-      LOG.trace("getCurrControlPt returning " + highKey);
+      LOG.debug("getCurrControlPt returning " + highKey);
       return highKey;
    }
 
@@ -238,7 +237,7 @@ public class HBaseAuditControlPoint {
       LOG.trace("getStartingAuditSeqNum");
       String controlPtString = new String(String.valueOf(currControlPt));
       long lvAsn;
-      LOG.debug("getStartingAuditSeqNum new get");
+      LOG.debug("getStartingAuditSeqNum new get for control point " + currControlPt);
       Get g = new Get(Bytes.toBytes(controlPtString));
       LOG.debug("getStartingAuditSeqNum setting result");
       Result r = table.get(g);
@@ -257,7 +256,7 @@ public class HBaseAuditControlPoint {
          return lvAsn;
       }
       LOG.debug("getStartingAuditSeqNum recordString is good");
-      LOG.debug("Starting asn is " + recordString);
+      LOG.debug("Starting asn for control point " + currControlPt + " is " + recordString);
       lvAsn = Long.valueOf(recordString);
       LOG.trace("getStartingAuditSeqNum - exit returning " + lvAsn);
       return lvAsn;
