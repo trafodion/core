@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Shang-Sheng Tung <shang-sheng.tung@hp.com>
+Workflow+1: Shang-Sheng Tung <shang-sheng.tung@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Mon, 22 Sep 2014 20:34:30 +0000
+Reviewed-on: https://review.trafodion.org/442
+Project: trafodion/core
+Branch: refs/heads/master
