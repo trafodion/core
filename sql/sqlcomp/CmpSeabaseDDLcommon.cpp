@@ -592,6 +592,28 @@ NABoolean CmpSeabaseDDL::isSeabaseMD(const NAString &catName,
   return FALSE;
 }
 
+NABoolean CmpSeabaseDDL::isSeabaseReservedSchema(
+                                                 const ComObjectName &name)
+{
+  const NAString &catName = name.getCatalogNamePartAsAnsiString(TRUE);
+  const NAString &schName = name.getSchemaNamePartAsAnsiString(TRUE);
+
+  if (NOT catName.isNull())
+    {
+      NAString seabaseDefCatName = "";
+      CmpCommon::getDefault(SEABASE_CATALOG, seabaseDefCatName, FALSE);
+      seabaseDefCatName.toUpper();
+      
+      if ((catName == seabaseDefCatName) &&
+          ((schName == SEABASE_MD_SCHEMA) ||
+           (schName == SEABASE_DTM_SCHEMA) ||
+           (schName == SEABASE_REPOS_SCHEMA)))
+        return TRUE;
+    }
+
+  return FALSE;
+}
+
 // ----------------------------------------------------------------------------
 // Method:  isUserUpdatableSeabaseMD
 //
@@ -4102,7 +4124,7 @@ void  CmpSeabaseDDL::createSeabaseSequence(StmtDDLCreateSequence  * createSequen
       return;
     }
 
-  if (isSeabaseMD(seqName))
+  if (isSeabaseReservedSchema(seqName))
     {
       *CmpCommon::diags() << DgSqlCode(-CAT_CREATE_TABLE_NOT_ALLOWED_IN_SMD)
 			  << DgTableName(extSeqName);
@@ -4469,7 +4491,7 @@ void CmpSeabaseDDL::purgedataHbaseTable(DDLExpr * ddlExpr,
       return;
     }
 
-  if ((isSeabaseMD(tableName)) &&
+  if ((isSeabaseReservedSchema(tableName)) &&
       (!Get_SqlParser_Flags(INTERNAL_QUERY_FROM_EXEUTIL)))
     {
       *CmpCommon::diags() << DgSqlCode(-CAT_USER_CANNOT_DROP_SMD_TABLE)
@@ -4773,6 +4795,8 @@ short CmpSeabaseDDL::executeSeabaseDDL(DDLExpr * ddlExpr, ExprNode * ddlNode,
       startXn = FALSE;
     }
 
+  //HBase98 Narendra
+  startXn = FALSE;
   if ((NOT xnInProgress(&cliInterface)) &&
       (startXn))
     {

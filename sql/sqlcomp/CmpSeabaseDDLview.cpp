@@ -338,9 +338,9 @@ void CmpSeabaseDDL::createSeabaseView(
      return;
     }
 
-  if ((isSeabaseMD(viewName)) &&
+  if ((isSeabaseReservedSchema(viewName)) &&
       (!Get_SqlParser_Flags(INTERNAL_QUERY_FROM_EXEUTIL)))
-    {
+     {
       *CmpCommon::diags() << DgSqlCode(-1118)
 			  << DgTableName(extViewName);
       deallocEHI(ehi); 
@@ -551,7 +551,7 @@ void CmpSeabaseDDL::dropSeabaseView(
   if (ehi == NULL)
     return;
 
-  if ((isSeabaseMD(viewName)) &&
+  if ((isSeabaseReservedSchema(viewName)) &&
       (!Get_SqlParser_Flags(INTERNAL_QUERY_FROM_EXEUTIL)))
     {
       *CmpCommon::diags() << DgSqlCode(-1119)
