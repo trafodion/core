@@ -273,7 +273,14 @@ void assert_botch_abend( const char *f, Int32 l, const char * m, const char *c)
      abort();
   else
   if (IdentifyMyself::GetMyName() == I_AM_EMBEDDED_SQL_COMPILER)
-    AssertException(m, f, l).throwException();
+  {
+    NAString fileName(f);
+    //throw exception if ABORT is called from optimizer dir
+    if( ((int)fileName.index("/optimizer/")) > -1 )
+      AssertException(m, f, l).throwException();
+    else
+      abort();
+  }
   else
 #endif
     abort();
