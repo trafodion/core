@@ -75,6 +75,7 @@
 #include "exp_clause_derived.h"
 #include "PrivMgrCommands.h"
 #include "ComDistribution.h"
+#include "ExExeUtilCli.h"
 
 #define MAX_NODE_NAME 9
 
@@ -6060,6 +6061,51 @@ NABoolean NATable::getCorrespondingConstraint(NAList<NAString> &inputCols,
     }
 
   return constrFound;
+}
+
+// Query the metadata to find the object uid of the table. This is used when
+// the uid for a metadata table is requested, since 0 is usually stored for
+// these tables.
+void NATable::lookupObjectUid()
+{
+    ExeCliInterface cliInterface(STMTHEAP);
+    QualifiedName qualName = getExtendedQualName().getQualifiedNameObj();
+
+    const size_t BUF_SIZE = 2000;
+    char buf[BUF_SIZE];
+    snprintf(buf, BUF_SIZE,
+             "select object_uid from %s.\"%s\".%s "
+             "where catalog_name = '%s' and schema_name = '%s' and object_name = '%s' ",
+             TRAFODION_SYSCAT_LIT, SEABASE_MD_SCHEMA, SEABASE_OBJECTS,
+             qualName.getCatalogName().data(),
+             qualName.getSchemaName().data(),
+             qualName.getObjectName().data());
+
+
+    // Silently return on any CLI error without setting objectUID_.
+    // Should we raise an exception instead?
+    Lng32 diagsMark = CmpCommon::diags()->mark();
+    Lng32 cliRC = cliInterface.fetchRowsPrologue(buf, TRUE/*no exec*/);
+    if (cliRC < 0)
+      {
+        CmpCommon::diags()->rewind(diagsMark);
+        return;
+      }
+    cliRC = cliInterface.clearExecFetchClose(NULL, 0);
+    if (cliRC < 0)
+      {
+        CmpCommon::diags()->rewind(diagsMark);
+        return;
+      }
+    if (cliRC == 100) // did not find the row
+      return;
+
+    char * ptr = NULL;
+    Lng32 len = 0;
+    cliInterface.getPtrAndLen(1, ptr, len);
+    objectUID_ = *(Int64*)ptr;
+
+    cliInterface.fetchRowsEpilogue(NULL, TRUE);
 }
 
 NATable::~NATable()
