@@ -57,6 +57,7 @@ class CompilerEnv;
 struct CacheEntry;
 class NAType;
 class QueryCache;
+class OptPCodeCache;
 class ConstantParameter;
 class ConstantParameters;
 class SelParameters;
@@ -1396,6 +1397,118 @@ class QueryCache {
   // ParameterTypeList::getParameterTypes()
   // and freed by QueryCache::finalize().
   NAString *parameterTypes_;
+};
+
+class PCECacheEntry {        // Doubly-linked PCode Expr Cache Entry
+public:
+  UInt64 incrPCEHits()                  { return ++hits_     ; }
+  UInt64 getPCEHits()             const { return hits_       ; }
+  UInt32 getOptPClen()            const { return pcLenO_     ; }
+  UInt32 getUnOptPClen()          const { return pcLenU_     ; }
+  UInt32 getUnOptConstsLen()      const { return constsLenU_ ; }
+  UInt32 getOptConstsLen()        const { return constsLenO_ ; }
+
+  char          * getConstsArea() const { return constsPtr_  ; }
+  PCodeBinary   * getOptPCptr()   const { return pCodeO_ ; }
+  PCodeBinary   * getUnOptPCptr() const { return pCodeU_ ; }
+  PCECacheEntry * getPCENext()    const { return pnext_  ; }
+  PCECacheEntry * getPCEPrev()    const { return pprev_  ; }
+
+  void           setPCEPrev(PCECacheEntry* prevp) { pprev_ = prevp ; }
+  void           setPCENext(PCECacheEntry* nextp) { pnext_ = nextp ; }
+
+  // constructor
+  PCECacheEntry( PCECacheEntry * nextp
+               , PCECacheEntry * prevp
+               , PCodeBinary   * unOptPCptr
+               , PCodeBinary   * optPCptr
+               , char          * constsPtr
+               , UInt32          unOptPClen
+               , UInt32          optPClen
+               , UInt32          constsLenU
+               , UInt32          constsLenO
+               )
+  : pnext_  (nextp)      ,
+    pprev_  (prevp)      ,
+    pCodeU_ (unOptPCptr) ,
+    pCodeO_ (optPCptr)   ,
+    constsPtr_ (constsPtr) ,
+    pcLenU_ (unOptPClen) ,
+    pcLenO_ (optPClen)   ,
+    constsLenU_ (constsLenU)   ,
+    constsLenO_ (constsLenO)   ,
+    hits_   ( 0 )
+    {};
+private:
+  PCECacheEntry * pnext_      ;
+  PCECacheEntry * pprev_      ;
+  PCodeBinary   * pCodeU_     ;  // Ptr    to unoptimized PCode byte stream
+  PCodeBinary   * pCodeO_     ;  // Ptr    to optimized   PCode byte stream
+  char          * constsPtr_  ;  // Ptr to cached constants area
+  UInt32          pcLenU_     ;  // Length of unoptimized PCode byte stream
+  UInt32          pcLenO_     ;  // Length of optimized   PCode byte stream
+  UInt32          constsLenU_ ;  // Length of ConstantsArea for unoptimized PC
+  UInt32          constsLenO_ ;  // Length of ConstantsArea for   optimized PC
+  UInt64          hits_       ;  // number of hits for this cache entry
+};
+
+class OptPCodeCache : public NABasicObject {
+ public:
+  void printPCodeExprCacheStats();
+
+  void addPCodeExpr( PCodeBinary * uncachedPCodePtr
+                   , PCodeBinary * cachedPCodePtr
+                   , char        * oldConstsArea
+                   , Int32         uncachedPCodeLen
+                   , Int32         cachedPCodeLen
+                   , Int32         oldConstsAreaLen
+                   , Int32         newConstsAreaLen
+                   ) ;
+
+  PCodeBinary * findPCodeExprInCache( PCodeBinary * unOptPCodePtr
+                                    , char   * unOptConstantsArea
+                                    , Int32    unOptPCodeLen
+                                    , Int32    unOptConstsLen
+                                    , Int32  * optPCodeLen
+                                    , Int32  * optConstsLen
+                                    , char  ** optConstantsArea
+                                    ) ;
+
+  const PCECacheEntry* getHead() const { return head_ ; }  // Strictly for debug
+  UInt64 getNumLookups() const { return numLookups_ ; }
+  UInt64 getNumHits()    const { return numHits_    ; }
+  UInt64 getMaxHits()    const { return maxHits_    ; }
+  UInt64 getMaxHitsDel() const { return maxHitsDel_ ; }
+  UInt32 getNumEntries() const { return numEntries_ ; }
+  UInt32 getCurrSize()   const { return currSize_   ; }
+  UInt32 getMaxSize()    const { return maxSize_    ; }
+  const OptPCodeCache * getThisPtr() const { return this  ; }  // Strictly for debug
+  //constructor
+  OptPCodeCache( ULng32 maxSize )
+    : heap_( new CTXTHEAP NABoundedHeap
+            ("optPCode cache heap", (NAHeap *)CTXTHEAP, 0, 0) )
+    , head_       (NULL)
+    , tail_       (NULL)
+    , numLookups_ ( 0 )
+    , numHits_    ( 0 )
+    , maxHits_    ( 0 )
+    , maxHitsDel_ ( 0 )
+    , numEntries_ ( 0 )
+    , currSize_   ( 0 )
+    , maxSize_( maxSize )
+    { };
+ private:
+  NAHeap        * heap_ ;    // heap to use for memory allocations
+  PCECacheEntry * head_ ;
+  PCECacheEntry * tail_ ;
+  UInt64          numLookups_ ; // Number of searches done
+  UInt64          numHits_    ; // Number of cache hits (total)
+  UInt64          maxHits_    ; // Max hits of any cache entry
+  UInt64          maxHitsDel_ ; // Max hits of any kicked out entry
+  UInt32          numEntries_ ; // Number of cache entries
+  UInt32          currSize_   ; // Current total size of cached byte streams
+  UInt32          maxSize_    ; // Maximum total size allowed (see CQD)
+  UInt32     maxOptPCodeSize_ ; // Maximum optimized PCode byte stream length
 };
 
 #endif // QUERYCACHE__H

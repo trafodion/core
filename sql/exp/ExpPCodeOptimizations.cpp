@@ -18,7 +18,10 @@
 // @@@ END COPYRIGHT @@@
 **********************************************************************/
 
+#include "BaseTypes.h"
 #include "ExpPCodeOptimizations.h"
+#include "CmpCommon.h"
+#include "QCache.h"
 
 #if defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
   #define DUMP_PHASE(str,flag1,flag2) \
@@ -1972,6 +1975,8 @@ void PCodeCfg::optimize()
   Int32 optFlag = 1;
   Int32 debugSome = 0;
   Int32 debugAll = 0;
+  NABoolean pcodeExprIsCacheable = TRUE ;
+  NABoolean usingCachedPCodeExpr = FALSE ;
 
   NABoolean overlapFound = FALSE;
   NABoolean bulkNullGenerated = FALSE;
@@ -2005,7 +2010,11 @@ void PCodeCfg::optimize()
 
   // If this pcode sequence can't be optimized, or if decided to disable opts,
   // return.
-  if (!canPCodeBeOptimized(pCode) || !enableOpt)
+
+  Int32 savedUnOptPCodeLen = 0 ;
+
+  if ( !canPCodeBeOptimized(pCode, &savedUnOptPCodeLen ) ||
+       !enableOpt )
     return;
 
   // Initialize counters
@@ -2026,6 +2035,121 @@ void PCodeCfg::optimize()
 
   // Initialize null mapping table
   initNullMapTable();
+
+  CollIndex oldConstsAreaLen = expr_->getConstsLength(); // Save the old Consts Length
+
+  // Now that we have the Constants needed for the unOptimized PCode ...
+
+  PCodeBinary * savedUnOptPCodePtr = pCode ;
+
+  if ( pcodeExprIsCacheable )
+  {
+     PCodeBinary * optimizedPCode     = NULL ;
+     char        * cachedConstsArea   = NULL ;
+     Int32         cachedPCodeLen     = 0 ;
+     Int32         cachedNewConstsLen = 0 ;
+
+#if defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
+     if ( debugAll )
+     {
+        char NExBuf[100];
+        sprintf( NExBuf, "PCODE EXPR cacheable - searching cache: ThisPtr=%p: oldLen=%d\n",
+                              CURROPTPCODECACHE->getThisPtr(), savedUnOptPCodeLen);
+        NExLog(  NExBuf );
+     }
+#endif // defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
+
+     if ( optimizedPCode = CURROPTPCODECACHE->findPCodeExprInCache( pCode
+                                              , expr_->getConstantsArea()
+                                              , savedUnOptPCodeLen 
+                                              , expr_->getConstsLength()
+                                              , & cachedPCodeLen 
+                                              , & cachedNewConstsLen
+                                              , & cachedConstsArea
+                                              ) )
+     {
+#if defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
+        if ( debugAll )
+        {
+           char NExBuf[200];
+           sprintf( NExBuf, "PCODE EXPR FOUND in cache: ThisPtr=%p: Loc=%p, oldLen=%d, newLen=%d, #Lookups=%ld, #Hits=%ld\n", CURROPTPCODECACHE->getThisPtr(), CURROPTPCODECACHE->getHead(), savedUnOptPCodeLen, cachedPCodeLen, CURROPTPCODECACHE->getNumLookups(), CURROPTPCODECACHE->getNumHits() );
+           NExLog(  NExBuf );
+        }
+#endif // defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
+        if ( ! space_ )
+        {
+          if ( cachedPCodeLen <= savedUnOptPCodeLen ) // If new can go over the old PCode
+          {
+            memcpy( pCode, optimizedPCode, sizeof(PCodeBinary) * cachedPCodeLen );
+            optimizedPCode = pCode;
+            usingCachedPCodeExpr = TRUE;
+          }
+          else { /* run with unoptimized PCODE and Constants */ }
+        }
+        else // Otherwise, we allocate space to hold the optimized code & constants
+        {
+           PCodeBinary * newPcode = new(space_) PCodeBinary[ cachedPCodeLen ];
+           for (Int32 ii = 0 ; ii < cachedPCodeLen ; ii++ )
+              newPcode[ii] = optimizedPCode[ii];
+           optimizedPCode = newPcode ;
+           usingCachedPCodeExpr = TRUE;
+
+           char * newConstsArea = expr_->getConstantsArea() ;
+           if ( cachedNewConstsLen > 0 )
+           {
+              newConstsArea        = space_->allocateAlignedSpace( cachedNewConstsLen );
+              char * oldConstsArea =  expr_->getConstantsArea() ;
+
+              if ( cachedNewConstsLen > oldConstsAreaLen )
+              {
+                 // If a match was found despite the oldConstantsLen NOT being the
+                 // same as the newConstantsLen, it means the old constants were
+                 // EXACTLY the same as the first oldConstantsLen bytes of the 
+                 // saved new constants.  Therefore, it doesn't matter which version
+                 // of those constants we use, but we need the cached new constants
+                 // in the rest of that cached ConstantsArea.
+                 // So, copy ALL of the new constantsArea to required space.
+
+                 oldConstsArea = cachedConstsArea ;
+              }
+              else
+              {
+                 // If a match was found and the oldConstantsLen == newConstantsLen
+                 // then we want to run with *this* expr_'s constants, not some 
+                 // cached version of the constants.
+                 ;
+              }
+              str_cpy_all( newConstsArea, oldConstsArea, cachedNewConstsLen );
+           }
+
+           expr_->setConstantsArea( newConstsArea );
+           expr_->setConstsLength(  cachedNewConstsLen   );
+        }
+
+        if ( usingCachedPCodeExpr )
+        {
+#if defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
+           if ( debugAll )
+              NExLog("DECIDED TO USE cached PCode Expr\n");
+#endif // defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
+           // Update the expression's pcode object with the new pcode segment
+           PCodeSegment* pcodeSegment = expr_->getPCodeSegment();
+           pcodeSegment->setPCodeSegmentSize(sizeof(PCodeBinary) * cachedPCodeLen );
+           pcodeSegment->setPCodeBinary( optimizedPCode );
+        }
+     }
+     else
+     {
+        // Must save a copy of the unoptimized pcode because orig might
+        // be overwritten during layoutCode().
+        savedUnOptPCodePtr = new(heap_) PCodeBinary[savedUnOptPCodeLen];
+        for (Int32 ii = 0 ; ii < savedUnOptPCodeLen ; ii++ )
+           savedUnOptPCodePtr[ii] = pCode[ii];
+     }
+  }
+
+  if ( usingCachedPCodeExpr )
+     goto considerNativeCodeGen ;
 
 #if defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
   if (debugSome) NExLog("-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n");
@@ -2259,14 +2383,22 @@ void PCodeCfg::optimize()
   // Dump instructions back into pcode bytecode and store in expression
   layoutCode();
 
+considerNativeCodeGen:
+
+  Int32 constsLenAfterOpt = newConstsAreaLen_ ;
+
 #if defined(NA_LINUX) && ! defined(__EID)
 
-  Int32 debugNE = ( NExprDbgLvl_ >= VV_BD ) ; // Debugging Native Expr ?
+  if ( ! usingCachedPCodeExpr )
+  {
+    Int32 debugNE = ( NExprDbgLvl_ >= VV_BD ) ; // Debugging Native Expr ?
 
-  DUMP_PHASE("Before NE [15.5]", debugSome || debugNE , debugAll || debugNE );
+    DUMP_PHASE("Before NE [15.5]", debugSome || debugNE , debugAll || debugNE );
+  }
 
   // Native code generation
-  if (optFlags_ & NATIVE_EXPR) {
+  // NOTE: DISABLED FOR OPTIMIZED PCODE EXPR TESTING -- FOR NOW.   J.A.C.  ZZZZZZZZZZZZZZZZZZZZZ
+  if ( (TRUE==FALSE) && (optFlags_ & NATIVE_EXPR) ) {
     cfgRewiring(rewiringFlags);
     computeLiveness(FALSE /* no DCE */);
     layoutNativeCode(NULL);
@@ -2276,10 +2408,46 @@ void PCodeCfg::optimize()
 
 #endif // defined(NA_LINUX) && ! defined(__EID)
 
-  // Lay out any new constants back into the space object.
-  layoutConstants();
+  if ( ! usingCachedPCodeExpr )
+  {
+    // Lay out any new constants back into the space object.
+    layoutConstants();
 
-  DUMP_PHASE("Layout [16]", debugSome, debugAll);
+    DUMP_PHASE("Layout [16]", debugSome, debugAll);
+
+    if ( pcodeExprIsCacheable )
+    {
+      Int32 cacheableConstsLen = newConstsAreaLen_ ;
+
+      if ( ( oldConstsAreaLen > 0 ) && ( constsLenAfterOpt == oldConstsAreaLen ) )
+      {
+         cacheableConstsLen = 0     ; // Don't cache the constants. Can't be used in matching
+      }
+      PCodeSegment* pcodeSegment = expr_->getPCodeSegment();
+      PCodeBinary * newPCode = pcodeSegment->getPCodeBinary();
+      Int32      newPCodeLen = pcodeSegment->getPCodeSegmentSize() / sizeof(PCodeBinary);
+
+      CURROPTPCODECACHE->addPCodeExpr( savedUnOptPCodePtr
+                                     , newPCode
+                                     , expr_->getConstantsArea()
+                                     , savedUnOptPCodeLen
+                                     , newPCodeLen
+                                     , oldConstsAreaLen
+                                     , cacheableConstsLen
+                                     );
+#if defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
+      if ( debugAll )
+      {
+         char NExBuf[200];
+         sprintf( NExBuf, "CACHED PCODE EXPR: ThisPtr=%p: Loc=%p oldLen=%d, newLen=%d, numExprCached=%d, curSiz=%d, maxSiz=%d\n",
+                  CURROPTPCODECACHE->getThisPtr(), CURROPTPCODECACHE->getHead(),
+                  savedUnOptPCodeLen, newPCodeLen, CURROPTPCODECACHE->getNumEntries(),
+                  CURROPTPCODECACHE->getCurrSize(), CURROPTPCODECACHE->getMaxSize() );
+         NExLog(  NExBuf );
+      }
+#endif // defined(_DEBUG) && !defined(NA_NO_C_RUNTIME)
+    }
+  }
 }
 
 PCodeCfg::~PCodeCfg() {
@@ -2900,17 +3068,19 @@ void PCodeCfg::layoutConstants()
   char* newConstsArea = space_->allocateAlignedSpace(newConstsAreaLen_);
   str_cpy_all(newConstsArea, stk, oldConstsAreaLen);
 
-  PCodeConstants* key;
-  CollIndex* value;
-  NAHashDictionaryIterator<PCodeConstants, CollIndex> iter(*constToOffsetMap_);
+  if ( newConstsAreaLen_ > oldConstsAreaLen ) {
+     PCodeConstants* key;
+     CollIndex* value;
+     NAHashDictionaryIterator<PCodeConstants, CollIndex> iter(*constToOffsetMap_);
 
-  for (i=0; i < iter.entries(); i++) {
-    iter.getNext(key, value);
+     for (i=0; i < iter.entries(); i++) {
+       iter.getNext(key, value);
 
-    // If constant added goes beyond that in the constants area, add it
-    if (*value >= oldConstsAreaLen) {
-      str_cpy_all(newConstsArea + *value, (char*)key->getData(), key->getLen());
-    }
+       // If constant added goes beyond that in the constants area, add it
+       if (*value >= oldConstsAreaLen) {
+         str_cpy_all(newConstsArea + *value, (char*)key->getData(), key->getLen());
+       }
+     }
   }
 
   expr_->setConstantsArea(newConstsArea);
@@ -6725,7 +6895,8 @@ void PCodeCfg::createCfg()
 // limiting factor is if the pcode graph contains a clause that will violate
 // the assumptions made by this infrastructure.
 //
-NABoolean PCodeCfg::canPCodeBeOptimized(PCodeBinary * pCode)
+NABoolean PCodeCfg::canPCodeBeOptimized( PCodeBinary * pCode 
+                                       , Int32       * totalPCodeLen )
 {
   // Obviously if we have no pCode then we should return FALSE :)
   if (pCode == NULL)
@@ -6762,7 +6933,7 @@ NABoolean PCodeCfg::canPCodeBeOptimized(PCodeBinary * pCode)
   // opts framework.  This solution is, however, draconian, in that the entire
   // expression is un-optimized.
 
-  // Remove if-def when cases are to be added.
+  PCodeBinary * pCodeStart = pCode ;
   Int32 length = *(pCode++);
   pCode += (2*length);
 
@@ -6778,7 +6949,7 @@ NABoolean PCodeCfg::canPCodeBeOptimized(PCodeBinary * pCode)
     }
     pCode += PCode::getInstructionLength(pCode);
   }
-
+  *totalPCodeLen = 1 + ( pCode - pCodeStart ); // Add 1 for the PCIT::END
   return TRUE;
 }
 

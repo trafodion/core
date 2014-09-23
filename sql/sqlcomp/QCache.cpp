@@ -2797,3 +2797,192 @@ KeyDataPair::~KeyDataPair()
      logmsg("end ~KeyDataPair()\n");
 #endif
 }
+
+void
+OptPCodeCache::addPCodeExpr( PCodeBinary  * unOptimizedPCodePtr
+                           , PCodeBinary  * optimizedPCodePtr
+                           , char         * newConstsArea
+                           , Int32        unOptimizedPCodeLen
+                           , Int32          optimizedPCodeLen
+                           , Int32          oldConstsLen
+                           , Int32          newConstsLen
+                           )
+
+{
+  // For quick-and-dirty implementation, just blindly add it to the cache
+  // and plan on the findPCodeExprInCache() routine doing linear search.
+
+  PCodeBinary * cachedUnOptPcode = new(heap_) PCodeBinary[unOptimizedPCodeLen];
+  PCodeBinary * cachedOptPcode   = new(heap_) PCodeBinary[optimizedPCodeLen];
+  PCodeBinary * tmpCachedUnoptPC = cachedUnOptPcode ;
+  PCodeBinary * tmpCachedOptPC   = cachedOptPcode ;
+
+  for (Int32 ii = 0 ; ii < unOptimizedPCodeLen ; ii++ )
+     *tmpCachedUnoptPC++ = *unOptimizedPCodePtr++;
+
+  for (Int32 ii = 0 ; ii < optimizedPCodeLen ; ii++ )
+     *tmpCachedOptPC++ = *optimizedPCodePtr++;
+
+  char * cachedConstsArea = NULL ;
+  if ( newConstsLen > 0 )
+  {
+     cachedConstsArea           = new(heap_) char[ newConstsLen ];
+     char * tmpCachedConstsArea = cachedConstsArea ;
+
+     for (Int32 ii = 0 ; ii < newConstsLen ; ii++ )
+        *tmpCachedConstsArea++ = *newConstsArea++;
+  }
+
+  PCECacheEntry * newEntry = new(heap_) PCECacheEntry( head_
+                                                     , NULL
+                                                     , cachedUnOptPcode
+                                                     , cachedOptPcode
+                                                     , cachedConstsArea
+                                                     , unOptimizedPCodeLen 
+                                                     , optimizedPCodeLen
+                                                     , oldConstsLen
+                                                     , newConstsLen
+                                                     );
+
+  if ( head_ != NULL ) 
+       head_->setPCEPrev( newEntry );
+  head_ = newEntry ;
+  if ( tail_ == NULL ) 
+       tail_ = newEntry ;
+  numEntries_++ ;
+  currSize_ += unOptimizedPCodeLen + optimizedPCodeLen + newConstsLen ;
+
+  if ( maxOptPCodeSize_ < optimizedPCodeLen )
+       maxOptPCodeSize_ = optimizedPCodeLen;
+
+  while ( currSize_ > maxSize_ && numEntries_ > 1 )
+  {
+     PCECacheEntry * currTail = tail_ ;
+     PCECacheEntry * newTail  = tail_->getPCEPrev() ;
+
+     if ( currTail == head_ ) // NEVER delete the head!
+        break;
+     newTail->setPCENext(NULL);  // Delink the tail
+     tail_ = newTail ;        // Record new tail in anchor
+     numEntries_-- ;
+     currSize_ -= currTail->getUnOptPClen() + currTail->getOptPClen() ;
+
+     if ( currTail->getPCEHits() > maxHitsDel_ )
+        maxHitsDel_ = currTail->getPCEHits() ;
+
+     NADELETEBASIC( currTail->getUnOptPCptr() , heap_ );
+     NADELETEBASIC( currTail->getOptPCptr()   , heap_ );
+     NADELETEBASIC( currTail , heap_ );
+  }
+  return ;
+}
+PCodeBinary *
+OptPCodeCache::findPCodeExprInCache( PCodeBinary * unOptPCodePtr
+                                   , char   * unOptConstantsArea
+                                   , Int32    unOptPCodeLen
+                                   , Int32    unOptConstsLen
+                                   , Int32  * optPCodeLen
+                                   , Int32  * optConstsLen
+                                   , char  ** optConstantsArea
+                                   )
+{
+  // For quick-and-dirty implementation, just search the entire cache.
+  // Later, we will want to make this search faster.
+
+  *optPCodeLen      = unOptPCodeLen  ; // Store defaults for return values
+  *optConstsLen     = unOptConstsLen ;
+  *optConstantsArea = NULL ;
+
+  PCodeBinary   * rtnPCodePtr = NULL  ;
+  PCECacheEntry * currEntry   = head_ ;
+  NABoolean  match_found      = FALSE ;
+
+  numLookups_++ ;
+  for ( ; currEntry != NULL ; currEntry = currEntry->getPCENext() )
+  {
+     if ( unOptPCodeLen != currEntry->getUnOptPClen() )
+        continue ;          // cannot be a match
+
+     if ( unOptConstsLen != currEntry->getUnOptConstsLen() )
+        continue ;          // cannot be a match
+
+     match_found = TRUE ;
+     if ( unOptConstsLen != currEntry->getOptConstsLen() )
+     {
+        // Constants were added during PCode optimization, so
+        // in order to declare a match, the orginal constants
+        // must match exactly (so that we know that the constants
+        // that would be added during optimization would be the
+        // same as the added constants when we optimized the 
+        // cached PCode Expr.)
+
+        char * optConstsArea = currEntry->getConstsArea() ;
+        char * tmpUnOptConstantsArea = unOptConstantsArea ;
+        for ( Int32 ii = 0; ii < unOptConstsLen ; ii++ )
+        {
+          if ( *tmpUnOptConstantsArea++ != *optConstsArea++ )
+          {
+             match_found = FALSE ;
+             break;
+          }
+        }
+     }
+     if ( ! match_found )
+        continue ;
+
+     // We know the unOptimized PC length matches, now let's compare
+     PCodeBinary * entryUnOptPC = currEntry->getUnOptPCptr() ;
+     PCodeBinary * tmpUnOptPCodePtr = unOptPCodePtr ;
+     for ( Int32 ii = 0; ii < unOptPCodeLen ; ii++ )
+     {
+       if ( *entryUnOptPC++ != *tmpUnOptPCodePtr++ )
+       {
+          match_found = FALSE ;
+          break ;
+       }
+     }
+     if ( match_found )
+        break ;
+  }
+  if ( match_found )
+  {
+     numHits_++ ;
+     UInt64 nHits = currEntry->incrPCEHits() ;
+     if ( nHits > maxHits_ )
+        maxHits_ = nHits ;
+     if ( currEntry != head_ )
+     {
+        // Delink from current location in LRU and put at head
+        currEntry->getPCEPrev()->setPCENext( currEntry->getPCENext() );
+        if ( currEntry != tail_ )
+           currEntry->getPCENext()->setPCEPrev( currEntry->getPCEPrev() );
+        else
+           tail_ = currEntry->getPCEPrev() ;
+        currEntry->setPCENext( head_ );
+        currEntry->setPCEPrev( NULL );
+        head_->setPCEPrev( currEntry );
+        head_ = currEntry ;
+     }
+     rtnPCodePtr       = currEntry->getOptPCptr()     ;
+     *optPCodeLen      = currEntry->getOptPClen()     ;
+     *optConstsLen     = currEntry->getOptConstsLen() ;
+     *optConstantsArea = currEntry->getConstsArea()   ;
+  }
+  return rtnPCodePtr ;
+}
+
+void
+OptPCodeCache::printPCodeExprCacheStats()
+{
+   printf("\nPCode Expression Cache Statistics - for cache anchored at %p\n", this);
+   printf("MaxSize = %d (KB), CurrSize = %d, NumEntries = %d, NumLookups = %ld, NumHits = %ld\n",
+           maxSize_ ,         currSize_ ,    numEntries_ ,    numLookups_ ,     numHits_ );
+   printf("MaxOptPCodeSize = %d, MaxHitsForAnyOneEntry = %ld, MaxHitsForAnyDeletedEntry = %ld\n",
+           maxOptPCodeSize_ ,    maxHits_ ,                   maxHitsDel_ );
+}
+void
+printPCCStats() // Callable from gdb OR anywhere in code
+{
+   OptPCodeCache * pcc = CURROPTPCODECACHE ;
+   pcc->printPCodeExprCacheStats() ;
+}
