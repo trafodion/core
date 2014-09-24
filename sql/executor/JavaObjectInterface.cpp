@@ -359,6 +359,15 @@ JOI_RetCode JavaObjectInterface::init(char *className,
 //////////////////////////////////////////////////////////////////////////////
 // 
 //////////////////////////////////////////////////////////////////////////////
+void JavaObjectInterface::logError(const char* cat, const char* methodName, const char *result)
+{
+    if (result == NULL)
+       HdfsLogger::log(cat, LL_ERROR, "Unknown Java error in %s.", methodName);
+    else
+       HdfsLogger::log(cat, LL_ERROR, "%s error: %s.", methodName, result);
+}
+//
+//////////////////////////////////////////////////////////////////////////////
 void JavaObjectInterface::logError(const char* cat, const char* methodName, jstring jresult)
 {
   if (jresult == NULL)
@@ -459,11 +468,26 @@ NABoolean  JavaObjectInterface::getExceptionDetails(JNIEnv *jenv)
     return TRUE;
 } 
 
-jstring JavaObjectInterface::getLastError(JNIEnv *jenv)
+NAString JavaObjectInterface::getLastError()
 {
-   if (jenv == NULL)
-       jenv = jenv_;
-   return jenv->NewStringUTF(GetCliGlobals()->getJniErrorStr());
+  return cli_globals->getJniErrorStr();
+}
+
+NAString JavaObjectInterface::getLastJavaError(jmethodID methodID)
+{
+  NAString error_msg;
+
+  if (javaObj_ == NULL)
+    return "";
+  jstring j_error = (jstring)jenv_->CallObjectMethod(javaObj_,
+               methodID);
+  if (j_error == NULL)
+      return "";
+  const char *error_str = jenv_->GetStringUTFChars(j_error, NULL);
+  error_msg = error_str;
+  jenv_->ReleaseStringUTFChars(j_error, error_str);
+  cli_globals->setJniErrorStr(error_msg);
+  return cli_globals->getJniErrorStr();
 }
 
 
