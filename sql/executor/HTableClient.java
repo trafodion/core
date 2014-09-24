@@ -44,10 +44,21 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.client.transactional.RMInterface;
-import org.apache.hadoop.hbase.client.transactional.TransactionalAggregationClient;
+// TODO HBase98 import org.apache.hadoop.hbase.client.transactional.TransactionalAggregationClient;
 import org.apache.hadoop.hbase.client.transactional.TransactionState;
 
 import org.apache.log4j.Logger;
+
+// H98 coprocessor needs
+import java.util.*;
+import org.apache.hadoop.hbase.*;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.coprocessor.*;
+import org.apache.hadoop.hbase.coprocessor.*;
+import org.apache.hadoop.hbase.coprocessor.example.*;
+import org.apache.hadoop.hbase.ipc.*;
+import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.*;
+import org.apache.hadoop.hbase.util.*;
 
 import org.apache.hadoop.hbase.client.coprocessor.AggregationClient;
 import org.apache.hadoop.hbase.coprocessor.ColumnInterpreter;
@@ -62,6 +73,7 @@ import org.apache.hadoop.hbase.filter.RandomRowFilter;
 
 public class HTableClient {
 	private boolean useTRex;
+	private boolean useTRexScanner;
 	private String tableName;
 
 	private ResultScanner scanner = null;
@@ -71,8 +83,9 @@ public class HTableClient {
 	Result[] getResultSet = null;
 	int getResultSetPos;
 	String lastError;
-	RMInterface table = null;
-	private boolean writeToWAL = false;
+        RMInterface table = null;
+        ByteArrayList coprocAggrResult = null;
+        private boolean writeToWAL = false;
 	int numRowsCached = 1;
 	int numColsInScan = 0;
 	int[] kvValLen = null;
@@ -149,12 +162,35 @@ public class HTableClient {
 	    logger.debug("Enter HTableClient::init, tableName: " + tblName);
 	    this.useTRex = useTRex;
 	    tableName = tblName;
+	    
+	    this.useTRex = false; //HBase98 TODO
+	    String useTransactions = System.getenv("USE_TRANSACTIONS");
+	    if (useTransactions != null) {
+		int lv_useTransactions = (Integer.parseInt(useTransactions));
+		if (lv_useTransactions == 0) {
+		    this.useTRex = false;
+		}
+		else {
+		    this.useTRex = true;
+		}
+	    }
+	    
+	    //HBase98 TODO -- For scanner
+	    this.useTRexScanner = false;
+	    String useTransactionsScanner = System.getenv("USE_TRANSACTIONS_SCANNER");
+	    if (useTransactionsScanner != null) {
+		int lv_useTransactionsScanner = (Integer.parseInt(useTransactionsScanner));
+		if (lv_useTransactionsScanner == 1) {
+		    this.useTRexScanner = true;
+		}
+	    }
 
 	    config.set("hbase.regionserver.class", "org.apache.hadoop.hbase.ipc.TransactionalRegionInterface");
 	    config.set("hbase.regionserver.impl", "org.apache.hadoop.hbase.regionserver.transactional.TransactionalRegionServer");
 	    config.set("hbase.hregion.impl", "org.apache.hadoop.hbase.regionserver.transactional.TransactionalRegion");
 	    config.set("hbase.hlog.splitter.impl", "org.apache.hadoop.hbase.regionserver.transactional.THLogSplitter");
 	    table = new RMInterface(config, tblName);
+	    //	    table = new HTable(config, tblName);
 	    logger.debug("Exit HTableClient::init, table object: " + table);
 	    return true;
 	}
@@ -252,13 +288,14 @@ public class HTableClient {
 			scan.setFilter(new RandomRowFilter(samplePercent));
 		}
 
-		if (useTRex && (transID != 0)) {
+		if (useTRexScanner && (transID != 0)) {
 		    scanner = table.getScanner(transID, scan);
 		} else {
 		    scanner = table.getScanner(scan);
 		}
 		logger.trace("startScan(). After getScanner. Scanner: " + scanner);
 		resultIterator = new ResultIterator(scanner);
+		
 		preFetch = inPreFetch;
 		if (preFetch)
 		{
@@ -269,6 +306,7 @@ public class HTableClient {
 				}
 			});
 		}
+
 		logger.trace("Exit startScan().");
 		return true;
 	}
@@ -298,6 +336,7 @@ public class HTableClient {
 		} else {
 			getResult = table.get(get);
 		}
+
 		if (getResult == null
                     || getResult.isEmpty()) {
 			logger.trace("Exit 1 startGet.  Returning empty.");
@@ -324,7 +363,8 @@ public class HTableClient {
 		Result [] results = new Result[gets.size()];
 		int i=0;
 		for (Get g : gets) {
-			Result r = table.get(transactionID, g);
+		    //Result r = table.get(transactionID, g);
+			Result r = table.get(g);
 			if (r != null && r.isEmpty() == false)
 				results[i++] = r;
 		}
@@ -561,9 +601,9 @@ public class HTableClient {
 			}
 
 			if (useTRex && (transID != 0)) {
-				table.delete(transID, del);
+			    table.delete(transID, del);
 			} else {
-				table.delete(del);
+			    table.delete(del);
 			}
 		logger.trace("Exit deleteRow");
 		return true;
@@ -591,10 +631,11 @@ public class HTableClient {
 			    del = new Delete(rowID, timestamp);
 			listOfDeletes.add(del);
 		}
+
 		if (useTRex && (transID != 0)) 
-			table.delete(transID, listOfDeletes);
-                 else
-			table.delete(listOfDeletes);
+		    table.delete(transID, listOfDeletes);
+		else
+		    table.delete(listOfDeletes);
 		logger.trace("Exit deleteRows");
 		return true;
 	}
@@ -685,19 +726,19 @@ public class HTableClient {
 		boolean res = true;
 		if (checkAndPut)
 		{
-			if (useTRex && (transID != 0)) 
-			    res = table.checkAndPut(transID, rowID, 
-				family, qualifier, colValToCheck, put);
-			 else 
-			    res = table.checkAndPut(rowID, 
-				family, qualifier, colValToCheck, put);
+		    if (useTRex && (transID != 0)) 
+			res = table.checkAndPut(transID, rowID, 
+						family, qualifier, colValToCheck, put);
+		    else 
+			res = table.checkAndPut(rowID, 
+						family, qualifier, colValToCheck, put);
 		}
 		else
 		{
-			if (useTRex && (transID != 0)) 
-				table.put(transID, put);
-			else
-				table.put(put);
+		    if (useTRex && (transID != 0)) 
+			table.put(transID, put);
+		    else 
+			table.put(put);
 		}
 		return res;
 	}
@@ -751,10 +792,11 @@ public class HTableClient {
 		}
 		if (autoFlush == false)
 			table.setAutoFlush(false, true);
+
 		if (useTRex && (transID != 0)) {
-			table.put(transID, listOfPuts);
+		    table.put(transID, listOfPuts);
 		} else {
-			table.put(listOfPuts);
+		    table.put(listOfPuts);
 		}
 		return true;
 	} 
@@ -782,12 +824,20 @@ public class HTableClient {
 
 		    Configuration customConf = table.getConfiguration();
 
-		    TransactionalAggregationClient aggregationClient = new TransactionalAggregationClient(customConf);
+		    //H98tmp		    TransactionalAggregationClient aggregationClient = new TransactionalAggregationClient(customConf);
+		    AggregationClient aggregationClient = new AggregationClient(customConf);
 		    Scan scan = new Scan();
 		    scan.addFamily(colFamily);
-		    final ColumnInterpreter<Long, Long> ci = new LongColumnInterpreter();
+		    final ColumnInterpreter<Long, Long, EmptyMsg, LongMsg, LongMsg> ci =
+			new LongColumnInterpreter();
 		    byte[] tname = getTableName().getBytes();
-		    long rowCount = aggregationClient.rowCount(transID, tname, ci, scan);
+		    //H98tmp long rowCount = aggregationClient.rowCount(transID, tname, ci, scan);
+		    long rowCount = aggregationClient.rowCount(org.apache.hadoop.hbase.TableName.valueOf(getTableName()),
+							       ci,
+							       scan);
+
+		    coprocAggrResult = new ByteArrayList();
+
 		    byte[] rcBytes = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(rowCount).array();
                     return rcBytes; 
 	}

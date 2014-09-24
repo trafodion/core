@@ -982,7 +982,13 @@ Lng32 ExHbaseAccessTcb::createSQRowDirect()
       }
 
       if (! getColPos(colName, colNameLen, idx)) // not found
-         ex_assert(FALSE, "Error in getColPos()");
+#ifdef _DEBUG
+       ex_assert(FALSE, "Error in getColPos()");
+#else
+	{ continue;
+	  //TODO: Narendra     	  ex_assert(FALSE, "Error in getColPos()");
+ 	}
+#endif
 
       // not missing any more
       asciiRowMissingCols_[idx] = 0;
