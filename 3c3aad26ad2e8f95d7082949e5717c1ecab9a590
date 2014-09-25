@@ -1,0 +1,8 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Narendra Goyal <narendra.goyal@hp.com>
+Workflow+1: Narendra Goyal <narendra.goyal@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 25 Sep 2014 19:29:05 +0000
+Reviewed-on: https://review.trafodion.org/458
+Project: trafodion/core
+Branch: refs/heads/hbase98
