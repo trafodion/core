@@ -186,7 +186,7 @@ public class TransactionState {
         LOG.trace("writeOrdering size before: " + writeOrdering.size());
         writeOrdering.add(waction = new WriteAction(write));
         LOG.trace("writeOrdering size after: " + writeOrdering.size());
-        for (Cell value : waction.getCells()) {
+         for (Cell value : waction.getCells()) {
              //KeyValue kv = KeyValueUtil.ensureKeyValue(value);
              //LOG.debug("add tag into edit for put " + this.transactionId);
              KeyValue kv = KeyValue.cloneAndAddTags(value, tagList);
@@ -209,8 +209,15 @@ public class TransactionState {
 
              transactionEditsLen = transactionEditsLen + kv.getLength();
              e.add(kv);
-        }
-        LOG.trace("addWrite -- EXIT");
+         }
+
+       //  Here, we just append the ACTIVE edit to HLOG in the no-wait form (actively logging) rathen than waiting until phase 1
+       //  long txid = this.tHLog.appendNoSync(this.regionInfo, this.regionInfo.getTable(),
+       //           state.getEdit(), new ArrayList<UUID>(), EnvironmentEdgeManager.currentTimeMillis(), this.m_Region.getTableDesc(),
+       //           nextLogSequenceId, false, HConstants.NO_NONCE, HConstants.NO_NONCE);
+       //  if (txid > largestLogSeqId) largestLogSeqId = txid; // save the log txid into TS object, later sync on largestSeqid during phase 1
+    
+       LOG.trace("addWrite -- EXIT");
     }
 
    public  static void updateLatestTimestamp(final Collection<List<Cell>> kvsCollection, final long time) {
@@ -353,8 +360,8 @@ public class TransactionState {
                             + "], scanRange[" + scanRange.toString() + "] ,row[" + Bytes.toString(row) + "]");
                     return true;
                 }
-              }
             }
+        }
         }
         return false;
     }
@@ -506,7 +513,7 @@ public class TransactionState {
     }
 
     private synchronized Cell[] getAllCells(final Scan scan) {
-        LOG.trace("getAllKVs -- ENTRY");
+        LOG.trace("getAllCells -- ENTRY");
         List<Cell> kvList = new ArrayList<Cell>();
 
         for (WriteAction action : writeOrdering) {
@@ -541,7 +548,7 @@ public class TransactionState {
       }
         }
 
-        LOG.trace("getAllKVs -- EXIT kvList size = " + kvList.size());
+        LOG.trace("getAllCells -- EXIT kvList size = " + kvList.size());
         return kvList.toArray(new Cell[kvList.size()]);
     }
     
@@ -568,15 +575,15 @@ public class TransactionState {
       }
 
 	    // Pick only the Cell's that match the 'scan' specifications
+	Map<byte [], NavigableSet<byte []>> lv_familyMap = scan.getFamilyMap();
 	    for (KeyValue lv_kv : kvs) {
-		byte[] lv_kv_family = lv_kv.getFamilyArray();
-		Map<byte [], NavigableSet<byte []>> lv_familyMap = scan.getFamilyMap();
+		byte[] lv_kv_family = lv_kv.getFamily();
 		NavigableSet<byte []> set = lv_familyMap.get(lv_kv_family);
 		if (set == null || set.size() == 0) {
 					kvList.add(lv_kv);
 		    continue;
 		}
-		if (set.contains(lv_kv.getQualifierArray())) {
+		if (set.contains(lv_kv.getQualifier())) {
 		    kvList.add(lv_kv);
 		}
 	    }
@@ -850,7 +857,7 @@ public class TransactionState {
 
           if (put != null) {
               if (!put.getFamilyMap().isEmpty()) {
-                kvsList = put.getFamilyMap().values();
+              kvsList = put.getFamilyMap().values();
               }
           } else if (delete != null) {
               if (delete.getFamilyCellMap().isEmpty()) {
@@ -870,13 +877,13 @@ public class TransactionState {
           }
 
           if (kvsList != null) {
-            for (List<KeyValue> kvs : kvsList) {
+          for (List<KeyValue> kvs : kvsList) {
               for (KeyValue kv : kvs) {
                   edits.add(kv);
                   LOG.trace("Trafodion getKeyValues:   " + regionInfo.getRegionNameAsString() + " create edits for transaction: "
                                  + transactionId + " with Op " + kv.getType());
               }
-            }
+              }
           }
           else
             LOG.trace("Trafodion getKeyValues:   " 

@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.NavigableSet;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.Executors;
@@ -315,7 +318,9 @@ public class HTableClient {
                      Object[] columns,
 		     long timestamp, boolean directRow) throws IOException {
 
-		logger.trace("Enter startGet(" + tableName + " rowID: " + new String(rowID));
+		logger.trace("Enter startGet(" + tableName + 
+			     " #cols: " + ((columns == null) ? 0:columns.length ) +
+			     " rowID: " + new String(rowID));
 
 		Get get = new Get(rowID);
 		if (columns != null)
@@ -330,6 +335,17 @@ public class HTableClient {
 		else
 			numColsInScan = 0;
 			
+		/*
+		if (logger.isTraceEnabled()) {
+		    Map<byte[],NavigableSet<byte[]>> lv_fm = get.getFamilyMap();
+		    byte [][] lv_fms = lv_fm.keySet().toArray(new byte[0][0]);
+		    byte[] lv_f = lv_fms[0];
+		    logger.trace("family: " + new String(lv_f));
+		    NavigableSet<byte []> lv_set = lv_fm.get(lv_f);
+		    logger.trace("lv_set size: " + lv_set.size());
+		}
+		*/
+
 		Result getResult;
 		if (useTRex && (transID != 0)) {
 			getResult = table.get(transID, get);
@@ -351,7 +367,7 @@ public class HTableClient {
 			lastFetchedRow = getResult;
 			resultIterator = new ResultIterator(getResult);
 		}
-		logger.trace("Exit 2 startGet.");
+		logger.trace("Exit 2 startGet. size: " + getResult.size());
 		return true;
 	}
 
@@ -441,7 +457,7 @@ public class HTableClient {
 	public int fetchRows(long jniObject) throws IOException, 
 			InterruptedException, ExecutionException {
 		int rowsReturned = 0;
-		logger.trace("Enter fetcRows(). Table: " + tableName);
+		logger.trace("Enter fetchRows(). Table: " + tableName);
 		if (getResultSet != null)
 		{
 			rowsReturned = pushRowsToJni(jniObject, getResultSet);
@@ -584,7 +600,7 @@ public class HTableClient {
 				 long timestamp) throws IOException {
 
 		logger.trace("Enter deleteRow(" + new String(rowID) + ", "
-			     + timestamp + ") ");
+			     + timestamp + ") " + tableName);
 
 			Delete del;
 			if (timestamp == -1)
@@ -612,7 +628,7 @@ public class HTableClient {
 	public boolean deleteRows(long transID, short rowIDLen, Object rowIDs,
 		      long timestamp) throws IOException {
 
-	        logger.trace("Enter deleteRows() ");
+	        logger.trace("Enter deleteRows() " + tableName);
 
 		List<Delete> listOfDeletes = new ArrayList<Delete>();
 		listOfDeletes.clear();
@@ -654,7 +670,7 @@ public class HTableClient {
 					 long timestamp) throws IOException {
 
 		logger.trace("Enter checkAndDeleteRow(" + new String(rowID) + ", "
-			     + new String(columnToCheck) + ", " + new String(colValToCheck) + ", " + timestamp + ") ");
+			     + new String(columnToCheck) + ", " + new String(colValToCheck) + ", " + timestamp + ") " + tableName);
 
 			Delete del;
 			if (timestamp == -1)
@@ -689,7 +705,7 @@ public class HTableClient {
 		byte[] columnToCheck, byte[] colValToCheck,
 		boolean checkAndPut) throws IOException 	{
 
-		logger.trace("Enter putRow() ");
+		logger.trace("Enter putRow() " + tableName);
 
 		Put put;
 		ByteBuffer bb;
@@ -755,7 +771,7 @@ public class HTableClient {
                        long timestamp, boolean autoFlush)
 			throws IOException {
 
-		logger.trace("Enter putRows() ");
+		logger.trace("Enter putRows() " + tableName);
 
 		Put put;
 		ByteBuffer bbRows, bbRowIDs;
@@ -860,7 +876,7 @@ public class HTableClient {
 	}
 
 	public boolean close(boolean clearRegionCache) throws IOException {
-           logger.trace("Enter close() ");
+           logger.trace("Enter close() " + tableName);
            if (scanner != null) {
               scanner.close();
               scanner = null;

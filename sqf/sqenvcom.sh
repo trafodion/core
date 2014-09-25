@@ -676,8 +676,6 @@ done
 # remove the leading colon from the classpath
 SQ_CLASSPATH=${SQ_CLASSPATH#:}
 
-export HBASE_TRXDIR=$MY_SQROOT/export/lib
-export HBASE_TRX_JAR=hbase-trx-${TRAFODION_VER}.jar
 # add Hadoop and HBase config dirs to classpath
 SQ_CLASSPATH=$SQ_CLASSPATH:$HADOOP_CNF_DIR:$HBASE_CNF_DIR:$HIVE_CNF_DIR
 SQ_CLASSPATH=$SQ_CLASSPATH:${HBASE_TRXDIR}:${HBASE_TRXDIR}/${HBASE_TRX_JAR}:$MY_SQROOT/export/lib/trafodion-UDR-${TRAFODION_VER}.jar:$MY_SQROOT/export/lib/trafodion-HBaseAccess-${TRAFODION_VER}.jar:$MY_SQROOT/export/lib/jdbcT2.jar:$HBASE_HBLDIR/$HBASE_HBL_JAR

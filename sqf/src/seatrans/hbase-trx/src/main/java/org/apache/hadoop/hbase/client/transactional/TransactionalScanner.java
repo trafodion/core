@@ -228,7 +228,9 @@ public class TransactionalScanner extends AbstractClientScanner {
 
 	@Override
 	public Result next() throws IOException {
-		LOG.trace("next() -- ENTRY txID: " + ts.getTransactionId());
+		// Commenting out ENTRY/EXIT lines since they fill up logs, uncomment for
+		//    debugging purposes
+		//LOG.trace("next() -- ENTRY txID: " + ts.getTransactionId());
 		
 		if(cache.size() == 0 && firstEntry == true) { 
 			firstEntry = false;
@@ -320,13 +322,13 @@ public class TransactionalScanner extends AbstractClientScanner {
 		}
 		
 		if (cache.size() > 0)  {
-			LOG.trace("next() -- EXIT txID: " + ts.getTransactionId());
+			//LOG.trace("next() -- EXIT txID: " + ts.getTransactionId());
 			return cache.poll();
 		}
 
 		
 		// Exhausted scanner before calling close, then return null
-		LOG.trace("next() -- EXIT -- returning null txID: " + ts.getTransactionId());
+		//LOG.trace("next() -- EXIT -- returning null txID: " + ts.getTransactionId());
 		return null;
 	}
 
