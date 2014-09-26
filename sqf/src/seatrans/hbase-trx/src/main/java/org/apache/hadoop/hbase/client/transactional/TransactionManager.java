@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HRegionInfo;
+import org.apache.hadoop.hbase.HRegionLocation;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HConnectionManager;
@@ -224,6 +225,15 @@ public class TransactionManager {
 	    LOG.trace("doPrepareX -- before coprocessorService txid: " + transactionId + " table: " + table.toString());
 	    LOG.trace("doPrepareX -- txid: " + transactionId + " table: " + table.toString() + " endKey_Orig: " + new String(endKey_orig, "UTF-8"));
 	    LOG.trace("doPrepareX -- " + table.toString() + " startKey: " + new String(startKey, "UTF-8") + " endKey: " + new String(endKey, "UTF-8"));
+	    HRegionLocation lv_hrl = table.getRegionLocation(startKey);
+	    HRegionInfo     lv_hri = lv_hrl.getRegionInfo();
+	    if (location.getRegionInfo().compareTo(lv_hri) != 0) {
+		LOG.info("doPrepareX -- " + table.toString() + " location being refreshed");
+		LOG.trace("doPrepareX -- lv_hri: " + lv_hri);
+		LOG.trace("doPrepareX -- location.getRegionInfo(): " + location.getRegionInfo());
+		
+		table.getRegionLocation(startKey, true);
+	    }
 	    result = table.coprocessorService(TrxRegionService.class, startKey, endKey, callable);
         } catch (Throwable e) {
           e.printStackTrace();

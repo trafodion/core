@@ -1079,6 +1079,7 @@ CoprocessorService, Coprocessor {
 
       LOG.trace("TrxRegionEndpoint coprocessor: get - id " + request.getTransactionId() + ", regionName " + regionInfo.getRegionNameAsString() + ", row = " + rowKey + ", getRowKey = " + getRowKey);
 
+/*
       if (LOG.isTraceEnabled()) {
 	  Map lv_getmap = get.toMap(1000);
 	  Map<byte[],NavigableSet<byte[]>> lv_fm = get.getFamilyMap();
@@ -1089,6 +1090,7 @@ CoprocessorService, Coprocessor {
 	  LOG.trace("get - lv_set size: " + lv_set.size() + " Map size: " + lv_getmap.size());
 	  //	  LOG.trace("get -  map contents: " + lv_getmap);
       }
+*/
 
       Scan scan = new Scan(get);
       List<Cell> results = new ArrayList<Cell>();
@@ -2632,7 +2634,8 @@ CoprocessorService, Coprocessor {
         throw new RuntimeException(e);
     }
 
-    LOG.debug("TrxRegionEndpoint coprocessor:  beginTransaction -- EXIT txId: " + transactionId + " transactionsById size: " + transactionsById.size());
+    LOG.debug("TrxRegionEndpoint coprocessor:  beginTransaction -- EXIT txId: " + transactionId + " transactionsById size: " + transactionsById.size()
+    		 + " region ID: " + this.regionInfo.getRegionId());
   }
   }
 

@@ -320,7 +320,14 @@ public class TransactionalTable extends HTable {
       }
       
       Collection<CheckAndDeleteResponse> results = result.values();
+      CheckAndDeleteResponse[] resultArray = new CheckAndDeleteResponse[results.size()];
+      results.toArray(resultArray);
       // Should only be one result, if more than one. Can't handle.
+      return resultArray[0].getResult();
+
+      
+    // TODO: Need to fix the exception checking and return, but for now need it 
+    //       to work so commenting out 
       
       /*
       if(results.size() != 1)
@@ -329,10 +336,7 @@ public class TransactionalTable extends HTable {
       if (resultArray[0].hasException())
         throw new IOException(resultArray[0].getException());
         */
-        
-      // TODO: Need to fix the exception checking and return, but for now need it 
-      //       to work so commenting out 
-      return true;
+     
    }
     
 	public boolean checkAndPut(final TransactionState transactionState,
@@ -397,12 +401,8 @@ public class TransactionalTable extends HTable {
       // Should only be one result, if more than one. Can't handle.      
       CheckAndPutResponse[] resultArray = new CheckAndPutResponse[results.size()];
       results.toArray(resultArray);
-    		  //(CheckAndPutResponse[]) results.toArray();
-     // if (resultArray[0].hasException()) 
-     //   throw new IOException(resultArray[0].getException());
-      
-      // Needs to work out the response
-      return true;
+    	
+      return resultArray[0].getResult();      
 	}
 
        /**

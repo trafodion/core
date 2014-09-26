@@ -292,7 +292,7 @@ public class TransactionState {
 
         for (Delete delete : deletes) {
             // Skip if delete should not apply
-            if (!Bytes.equals(kv.getRowArray(), delete.getRow()) || kv.getTimestamp() > delete.getTimeStamp()
+            if (!Bytes.equals(kv.getRow(), delete.getRow()) || kv.getTimestamp() > delete.getTimeStamp()
                     || delete.getTimeStamp() > maxTime || delete.getTimeStamp() < minTime) {
                 continue;
             }

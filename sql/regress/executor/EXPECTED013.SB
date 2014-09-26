@@ -39,9 +39,6 @@ A
 >>create index t013t1i on t013t1(a);
 
 --- SQL operation complete.
->>grant select on t013t1 to public;
-
---- SQL operation complete.
 >>
 >>create volatile table t013t1(a int, b int);
 
