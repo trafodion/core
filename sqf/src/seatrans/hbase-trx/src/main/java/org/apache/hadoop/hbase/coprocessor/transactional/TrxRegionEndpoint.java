@@ -2632,7 +2632,8 @@ CoprocessorService, Coprocessor {
         throw new RuntimeException(e);
     }
 
-    LOG.debug("TrxRegionEndpoint coprocessor:  beginTransaction -- EXIT txId: " + transactionId + " transactionsById size: " + transactionsById.size());
+    LOG.debug("TrxRegionEndpoint coprocessor:  beginTransaction -- EXIT txId: " + transactionId + " transactionsById size: " + transactionsById.size()
+    		 + " region ID: " + this.regionInfo.getRegionId());
   }
   }
 

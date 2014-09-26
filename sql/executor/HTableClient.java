@@ -82,9 +82,7 @@ public class HTableClient {
 	private ResultScanner scanner = null;
 	private ResultIterator resultIterator = null;
 	KeyValue lastFetchedCell = null;
-	Result lastFetchedRow = null;
 	Result[] getResultSet = null;
-	int getResultSetPos;
 	String lastError;
         RMInterface table = null;
         ByteArrayList coprocAggrResult = null;
@@ -199,7 +197,9 @@ public class HTableClient {
 	}
 
 	public String getLastError() {
-		return lastError;
+		String ret = lastError;
+		lastError = null;
+		return ret;
 	}
 
 	void setLastError(String err) {
@@ -355,8 +355,6 @@ public class HTableClient {
 
 		if (getResult == null
                     || getResult.isEmpty()) {
-			logger.trace("Exit 1 startGet.  Returning empty.");
-			setLastError(null);
 			return false;
 		}
 		logger.trace("startGet, result: " + getResult);
@@ -364,7 +362,6 @@ public class HTableClient {
 			getResultSet = new Result[1];
 			getResultSet[0] = getResult;
 		} else {
-			lastFetchedRow = getResult;
 			resultIterator = new ResultIterator(getResult);
 		}
 		logger.trace("Exit 2 startGet. size: " + getResult.size());
@@ -422,11 +419,9 @@ public class HTableClient {
 			return true;
 		else {
 			if (getResultSet.length > 0) {
-				getResultSetPos = 0;
-				lastFetchedRow = getResultSet[getResultSetPos];
-				getResultSetPos++;
+			        resultIterator = new ResultIterator(getResultSet);
 			} else
-				lastFetchedRow = null;
+				resultIterator = null;
 		}
 		return true;
 	}
@@ -434,18 +429,13 @@ public class HTableClient {
 	public boolean scanFetch() throws IOException {
 		logger.trace("Enter scanFetch() " + tableName);
 		if (resultIterator == null) {
-			String err = "  scanFetch() called before scanOpen().";
-			logger.error(err);
-			setLastError(err);
 			return false;
 		}
 
-			lastFetchedCell = resultIterator.nextCell();
+		lastFetchedCell = resultIterator.nextCell();
 		if (lastFetchedCell == null) {
-			setLastError(null);
-			return false; // Done.
+			return false; 
 		}
-
 		return true;
 	}
 
@@ -567,27 +557,6 @@ public class HTableClient {
 		return rowsReturned;	
 	}		
 	
-
-	public boolean fetchNextRow() throws IOException {
-	    logger.trace("Enter fetchNextRow(). Table: " + tableName);
-		if (scanner == null) {
-			String err = "  fetchNextRow() called before scanOpen().";
-			logger.error(err);
-			setLastError(err);
-			return false;
-		}
-
-		    logger.trace("fetchNextRow(). Calling scanner.next");
-			lastFetchedRow = scanner.next();
-			if (lastFetchedRow == null) {
-			    logger.trace("Exit 1 fetchNextRow().");
-				setLastError(null);
-				return false;
-			}
-		logger.trace("Exit 2 fetchNextRow().");
-		return true;
-	}
-
 	public KeyValue getLastFetchedCell() {
 		logger.trace("Enter getLastFetchedCell() ");
 		if (lastFetchedCell == null)
@@ -859,19 +828,27 @@ public class HTableClient {
 	}
 
 	public boolean flush() throws IOException {
+		if (table != null)
+			table.flushCommits();
+		return true;
+	}
+
+	public boolean release() throws IOException {
+		if (table != null)
+			table.flushCommits();
 		if (scanner != null) {
 			scanner.close();
 			scanner = null;
 		}
-		
-		if (table != null)
-			table.flushCommits();
 		cleanScan();		
 		future = null;
 		if (executorService != null) {
 			executorService.shutdown();
 			executorService = null;
 		}
+		resultIterator = null;
+		lastFetchedCell = null;
+		getResultSet = null;
 		return true;
 	}
 
