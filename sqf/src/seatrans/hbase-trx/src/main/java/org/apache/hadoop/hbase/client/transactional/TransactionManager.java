@@ -10,23 +10,22 @@ l * Copyright 2009 The Apache Software Foundation Licensed to the Apache Softwar
  */
 package org.apache.hadoop.hbase.client.transactional;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
@@ -40,6 +39,8 @@ import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProt
 import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.CommitRequestRequest;
 import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.CommitRequestResponse;
 import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.CommitResponse;
+import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.RecoveryRequestRequest;
+import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.RecoveryRequestResponse;
 import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TrxRegionService;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
 import org.apache.hadoop.hbase.ipc.ServerRpcController;
@@ -674,16 +675,24 @@ public class TransactionManager {
      */
     public List<Long> recoveryRequest (String hostnamePort, byte[] regionArray, int tmid) throws Exception{
         LOG.trace("recoveryRequest -- ENTRY TM" + tmid);
-        HRegionInfo regionInfo = new HRegionInfo();
+        HRegionInfo regionInfo = null;
+        HTable table = null;
+        
+        /*
+         * hostname and port no longer needed for RPC
         final byte [] delimiter = ",".getBytes();
         String[] result = hostnamePort.split(new String(delimiter), 3);
         
         if (result.length < 2)
                 throw new IllegalArgumentException("Region array format is incorrect");
-        
+                    	
         String hostname = result[0];        
         int port = Integer.parseInt(result[1]);
         LOG.debug("recoveryRequest regionInfo -- hostname:" + hostname + " port:" + port);
+        */
+        
+        /*
+         *  New way of parsing HRegionInfo used instead
         ByteArrayInputStream lv_bis = new ByteArrayInputStream(regionArray);
         DataInputStream lv_dis = new DataInputStream(lv_bis);
         try {
@@ -695,16 +704,74 @@ public class TransactionManager {
                 LOG.error("recoveryRequest exception in regionInfo.readFields() " + sw.toString()); 
                 throw new Exception();
         }
-        
-        // OSB: recoveryRequest work will need to be called through an endpoint coprocessor vs this method
-        //      commenting out recovery work for first cut
-        /*
-        TransactionRegionLocation regionLocation = new TransactionRegionLocation(regionInfo, hostname, port);
-        TransactionalRegionInterface tri = (TransactionalRegionInterface) connection.createHRegionConnection(regionLocation.getServerName());
         */
-        LOG.trace("recoveryRequest -- EXIT TM" + tmid);
+        
+    	try {
+    	    regionInfo = HRegionInfo.parseFrom(regionArray);
+    	}
+    	catch (Exception de) {
+            LOG.trace("HBaseTxClient:callRegisterRegion exception in lv_regionInfo parseFrom, " + 		     
+ 		     " TM : " + tmid +
+ 		     " DeserializationException: " + de);
+ 	        StringWriter sw = new StringWriter();
+ 	        PrintWriter pw = new PrintWriter(sw);
+ 	        de.printStackTrace(pw);
+ 	        LOG.error(sw.toString());  	   
+            throw new Exception("DeserializationException in lv_regionInfo parseFrom, unable to register region");
+       } 
+        
+    	final String regionName = regionInfo.getRegionNameAsString();
+    	final int tmID = tmid;
+        Batch.Call<TrxRegionService, RecoveryRequestResponse> callable = 
+                new Batch.Call<TrxRegionService, RecoveryRequestResponse>() {
+              ServerRpcController controller = new ServerRpcController();
+              BlockingRpcCallback<RecoveryRequestResponse> rpcCallback = 
+                new BlockingRpcCallback<RecoveryRequestResponse>();         
+
+              @Override
+              public RecoveryRequestResponse call(TrxRegionService instance) throws IOException {        
+                org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.RecoveryRequestRequest.Builder rbuilder = RecoveryRequestRequest.newBuilder();        
+                rbuilder.setTransactionId(-1);
+                rbuilder.setRegionName(ByteString.copyFromUtf8(regionName));
+                rbuilder.setTmId(tmID);
+                
+                instance.recoveryRequest(controller, rbuilder.build(), rpcCallback);
+                return rpcCallback.get();        
+              }
+            };
+            
+            // Working out the begin and end keys
+            byte[] startKey = regionInfo.getStartKey();
+            byte[] endKey = regionInfo.getEndKey();
+            
+            if(endKey != HConstants.EMPTY_END_ROW)
+            	endKey = TransactionManager.binaryIncrementPos(endKey, -1);
+            
+            table = new HTable(regionInfo.getTable(), connection, cp_tpe);
+         
+            Map<byte[], RecoveryRequestResponse> rresult = null;   
+            try {
+              rresult = table.coprocessorService(TrxRegionService.class, startKey, endKey, callable);
+            } 
+            catch (Throwable e) {
+            	LOG.error("Exception thrown when calling coprocessor: " + e.toString());
+                e.printStackTrace();     
+            }
+                                
+        Collection<RecoveryRequestResponse> results = rresult.values();
+        RecoveryRequestResponse[] resultArray = new RecoveryRequestResponse[results.size()];
+        results.toArray(resultArray);
+        
+        if(resultArray.length == 0) {
+        	table.close();
+        	throw new IOException("Problem with calling coprocessor, no regions returned result");
+        }                      
+       
         //return tri.recoveryRequest(regionInfo.getRegionName(), tmid);
-        return null;
+        table.close();
+        LOG.trace("recoveryRequest -- EXIT TM" + tmid);
+        
+        return resultArray[0].getResultList();
     }
 }
 

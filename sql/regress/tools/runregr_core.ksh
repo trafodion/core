@@ -320,7 +320,7 @@ fi
 
 #skip these tests for Seabase
 if [ "$seabase" -ne 0 ]; then
-  skipTheseTests="TEST056"
+    skipTheseTests="$skipTheseTests"
 fi
 
 # Skip exclusive tests during concurrent execution

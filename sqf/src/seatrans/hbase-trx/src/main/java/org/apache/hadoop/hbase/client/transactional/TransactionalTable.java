@@ -144,7 +144,9 @@ public class TransactionalTable extends HTable {
       //if(results.size() != 1)
       //  throw new IOException("Incorrect number of results from coprocessor call");      
       GetTransactionalResponse[] resultArray = new GetTransactionalResponse[results.size()];    		  
-      results.toArray(resultArray);                 
+      results.toArray(resultArray);            
+      if(resultArray.length == 0) 
+    	  throw new IOException("Problem with calling coprocessor, no regions returned result");
       
       if(resultArray[0].hasException())
         throw new IOException(resultArray[0].getException());
@@ -197,6 +199,9 @@ public class TransactionalTable extends HTable {
         //GetTransactionalResponse[] resultArray = (GetTransactionalResponse[]) results.toArray();
         DeleteTransactionalResponse[] resultArray = new DeleteTransactionalResponse[results.size()];
         results.toArray(resultArray);
+        
+        if(resultArray.length == 0) 
+      	  throw new IOException("Problem with calling coprocessor, no regions returned result");
 
         if(resultArray[0].hasException())
           throw new IOException(resultArray[0].getException());
@@ -248,6 +253,9 @@ public class TransactionalTable extends HTable {
     Collection<PutTransactionalResponse> results = result.values();
     PutTransactionalResponse[] resultArray = new PutTransactionalResponse[results.size()]; 
     results.toArray(resultArray);
+    if(resultArray.length == 0) 
+  	  throw new IOException("Problem with calling coprocessor, no regions returned result");
+    
     if(resultArray[0].hasException())
       throw new IOException(resultArray[0].getException());
     
@@ -322,6 +330,9 @@ public class TransactionalTable extends HTable {
       Collection<CheckAndDeleteResponse> results = result.values();
       CheckAndDeleteResponse[] resultArray = new CheckAndDeleteResponse[results.size()];
       results.toArray(resultArray);
+      
+      if(resultArray.length == 0) 
+    	  throw new IOException("Problem with calling coprocessor, no regions returned result");
       // Should only be one result, if more than one. Can't handle.
       return resultArray[0].getResult();
 
@@ -401,6 +412,8 @@ public class TransactionalTable extends HTable {
       // Should only be one result, if more than one. Can't handle.      
       CheckAndPutResponse[] resultArray = new CheckAndPutResponse[results.size()];
       results.toArray(resultArray);
+      if(resultArray.length == 0) 
+    	  throw new IOException("Problem with calling coprocessor, no regions returned result");
     	
       return resultArray[0].getResult();      
 	}
@@ -475,6 +488,9 @@ public class TransactionalTable extends HTable {
 	      Collection<DeleteMultipleTransactionalResponse> results = result.values();
 	      DeleteMultipleTransactionalResponse[] resultArray = new DeleteMultipleTransactionalResponse[results.size()];
 	      results.toArray(resultArray);
+	      if(resultArray.length == 0) 
+	    	  throw new IOException("Problem with calling coprocessor, no regions returned result");
+	      
           if (resultArray[0].hasException())
              throw new IOException(resultArray[0].getException());
 	   }
@@ -545,6 +561,9 @@ public class TransactionalTable extends HTable {
       Collection<PutMultipleTransactionalResponse> results = result.values();
       PutMultipleTransactionalResponse[] resultArray = new PutMultipleTransactionalResponse[results.size()];
       results.toArray(resultArray);
+      if(resultArray.length == 0) 
+    	  throw new IOException("Problem with calling coprocessor, no regions returned result");
+      
       if (resultArray[0].hasException()) 
         throw new IOException(resultArray[0].getException());
      }
