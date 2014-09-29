@@ -1,0 +1,8 @@
+Code-Review+2: Steve Varnau <steve.varnau@hp.com>
+Workflow+1: Steve Varnau <steve.varnau@hp.com>
+Verified+2: Trafodion Jenkins
+Submitted-by: Trafodion Jenkins
+Submitted-at: Mon, 29 Sep 2014 19:16:57 +0000
+Reviewed-on: https://review.trafodion.org/465
+Project: trafodion/core
+Branch: refs/heads/hbase98
