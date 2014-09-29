@@ -114,7 +114,7 @@ public class HBaseTmZK implements Abortable{
 			return nodeDataMap;
 		}
 		else {
-			LOG.warn(zkNode + " is currently not present.");
+			LOG.debug(zkNode + " is currently not present.");
             LOG.trace("checkForRecovery -- EXIT -- node not present");
 			return null;
 		}		

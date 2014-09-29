@@ -164,7 +164,7 @@ public class HTableClient {
 	    this.useTRex = useTRex;
 	    tableName = tblName;
 	    
-	    this.useTRex = false; //HBase98 TODO
+	    this.useTRex = true; //HBase98 TODO
 	    String useTransactions = System.getenv("USE_TRANSACTIONS");
 	    if (useTransactions != null) {
 		int lv_useTransactions = (Integer.parseInt(useTransactions));
@@ -177,7 +177,7 @@ public class HTableClient {
 	    }
 	    
 	    //HBase98 TODO -- For scanner
-	    this.useTRexScanner = false;
+	    this.useTRexScanner = true;
 	    String useTransactionsScanner = System.getenv("USE_TRANSACTIONS_SCANNER");
 	    if (useTransactionsScanner != null) {
 		int lv_useTransactionsScanner = (Integer.parseInt(useTransactionsScanner));

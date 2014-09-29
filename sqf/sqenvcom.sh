@@ -649,7 +649,7 @@ for d in $HADOOP_JAR_DIRS
 
 for d in $HIVE_JAR_DIRS
   do
-    HIVE_JAR_FILES="$HIVE_JAR_FILES $d/hive-*.jar"
+    HIVE_JAR_FILES="$HIVE_JAR_FILES $d/*.jar"
   done
 
 # assemble all of them into a classpath
@@ -665,6 +665,9 @@ do
           SUPPRESS_FILE=1
         fi
       done
+      # also eliminate ant jar that may be 
+      # incompatible with system ant command
+      [[ $j =~ /ant- ]] && SUPPRESS_FILE=1
 
     # finally, add the jar to the classpath
     if [ $SUPPRESS_FILE -eq 0 ]; then
@@ -709,17 +712,6 @@ This is not supported. To change environments, do the following:
 EOF
 fi
 
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/hbase/lib/hbase-server-0.98.1-cdh5.1.0-tests.jar:$MY_SQROOT/sql/local_hadoop/hbase-0.98.1-cdh5.1.0/lib/hbase-server-0.98.1-cdh5.1.0.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/hbase-0.98.1-cdh5.1.0/lib/hbase-protocol-0.98.1-cdh5.1.0.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/hbase-0.98.1-cdh5.1.0/lib/hbase-hadoop2-compat-0.98.1-cdh5.1.0-tests.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/hbase-0.98.1-cdh5.1.0/lib/hbase-hadoop-compat-0.98.1-cdh5.1.0-tests.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/apache-hive-0.13.1-bin/lib/libfb303-0.9.0.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/apache-hive-0.13.1-bin/lib/jdo-api-3.0.1.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/apache-hive-0.13.1-bin/lib/antlr-runtime-3.4.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/apache-hive-0.13.1-bin/lib/datanucleus-api-jdo-3.2.6.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/apache-hive-0.13.1-bin/lib/datanucleus-core-3.2.10.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/apache-hive-0.13.1-bin/lib/datanucleus-rdbms-3.2.9.jar
-USER_CLASSPATH=$USER_CLASSPATH:$MY_SQROOT/sql/local_hadoop/mysql-connector-java-5.1.23/mysql-connector-java-5.1.23-bin.jar
 
 
 
