@@ -1661,7 +1661,8 @@ Ex_Lob_Error ExLobGlobals::performRequest(ExLobHdfsRequest *request)
         } else {
           assert("data_ is null"); 
         }
-        cursor->lock_.lock();
+	if (!cursor->eod_ && !cursor->eor_ && !cursor->eol_)
+	  cursor->lock_.lock();
       }   
       cursor->lock_.unlock();
       if (cursor->eol_) { 
@@ -1956,6 +1957,7 @@ ExLobLock::ExLobLock()
 
 ExLobLock::~ExLobLock()
 {
+   pthread_mutex_unlock( &mutex_ );
    pthread_mutex_destroy(&mutex_);
    pthread_cond_destroy(&workBell_);
 }
