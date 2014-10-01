@@ -41,6 +41,7 @@
 #include "CmpMessage.h"
 #include "PrivMgrDefs.h"
 #include "PrivMgrMD.h"
+#include "ElemDDLHbaseOptions.h"
 
 class ExpHbaseInterface;
 class ExeCliInterface;
@@ -219,6 +220,27 @@ class CmpSeabaseDDL
 			  NABoolean implicitPK,
 			  CollIndex numSysCols,
 			  NAMemory * heap = NULL);
+
+
+  // The next three methods do use anything from the CmpSeabaseDDL class.
+  // They are placed here as a packaging convinience, to avoid code 
+  // duplication that would occur if non-member static functions were used.
+  // These methods convert VirtTable*Info classes to corresponding desc_struct
+  // objects
+  void convertVirtTableColumnInfoToDescStruct( 
+       const ComTdbVirtTableColumnInfo * colInfo,
+       const ComObjectName * objectName,
+       desc_struct * column_desc);
+
+  desc_struct * convertVirtTableColumnInfoArrayToDescStructs(
+     const ComObjectName * objectName,
+     const ComTdbVirtTableColumnInfo * colInfoArray,
+     Lng32 numCols);
+
+  desc_struct * convertVirtTableKeyInfoArrayToDescStructs(
+       const ComTdbVirtTableKeyInfo *keyInfoArray,
+       const ComTdbVirtTableColumnInfo *colInfoArray,
+       Lng32 numKeys);
 
  protected:
 
@@ -879,8 +901,21 @@ class CmpSeabaseDDL
 				       ComTdbVirtTableColumnInfo * &colInfoArray,
 				       ComTdbVirtTableKeyInfo * &keyInfoArray,
 				       NAList<NAString> &selColList,
+                                       Lng32 &keyLength,
 				       NAMemory * heap);
- private:
+
+  // called by both Create Table and Create Index code
+  // Given the optionsclause (from parser) and numSplits (parser/cqd/infered)
+  // this method the produced hbaseOptions in a list that can be more
+  // easily provided to the HBase create table API as well as in a string
+  // that can be stored in Trafodion metadata.
+  void setupHbaseOptions(ElemDDLHbaseOptions * hbaseOptionsClause, // in
+                         Int32 numSplits, // in
+                         NAList<HbaseCreateOption*>& hbaseCreateOptions, //out
+                         NAString& hco); // out
+  
+
+    private:
   enum
   {
     NUM_MAX_PARAMS = 20

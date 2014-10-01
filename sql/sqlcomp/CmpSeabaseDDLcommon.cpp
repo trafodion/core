@@ -413,6 +413,7 @@ short CmpSeabaseDDL::processDDLandCreateDescs(
       ComTdbVirtTableKeyInfo * indexNonKeyInfoArray = NULL;
       
       NAList<NAString> selColList;
+      Lng32 keyLength = 0;
       
       if (createIndexColAndKeyInfoArrays(indexColRefArray,
                                          createIndexNode->isUniqueSpecified(),
@@ -421,6 +422,7 @@ short CmpSeabaseDDL::processDDLandCreateDescs(
                                          numIndexKeys, numIndexNonKeys, numIndexCols,
                                          indexColInfoArray, indexKeyInfoArray,
                                          selColList,
+                                         keyLength,
                                          CTXTHEAP))
         return resetCQD(cqdWasSet, -1);
 
@@ -6507,3 +6509,131 @@ PrivDropBehavior dropBehavior = PrivDropBehavior::RESTRICT;
 }
 //****************** End of revokeSeabaseComponentPrivilege ********************
 
+
+
+void 
+CmpSeabaseDDL::setupHbaseOptions(ElemDDLHbaseOptions * hbaseOptionsClause,
+                                 Int32 numSplits,
+                                 NAList<HbaseCreateOption*>& hbaseCreateOptions,
+                                 NAString& hco)
+{
+  NAText hbaseOptionsStr;
+  NABoolean maxFileSizeOptionSpecified = FALSE;
+  NABoolean splitPolicyOptionSpecified = FALSE;
+  const char *maxFileSizeOptionString = "MAX_FILESIZE";
+  const char *splitPolicyOptionString = "SPLIT_POLICY";
+
+  Lng32 numHbaseOptions = 0;
+  if (hbaseOptionsClause)
+  {
+    for (CollIndex i = 0; i < hbaseOptionsClause->getHbaseOptions().entries(); 
+         i++)
+    {
+      HbaseCreateOption * hbaseOption =
+        hbaseOptionsClause->getHbaseOptions()[i];
+
+      hbaseCreateOptions.insert(hbaseOption);
+
+      if (hbaseOption->key() == maxFileSizeOptionString)
+        maxFileSizeOptionSpecified = TRUE;
+      else if (hbaseOption->key() == splitPolicyOptionString)
+        splitPolicyOptionSpecified = TRUE;
+
+      hbaseOptionsStr += hbaseOption->key();
+      hbaseOptionsStr += "=''";
+      hbaseOptionsStr += hbaseOption->val();
+      hbaseOptionsStr += "''";
+
+      hbaseOptionsStr += "|";
+    }
+
+    numHbaseOptions += hbaseOptionsClause->getHbaseOptions().entries();
+  }
+
+  if (numSplits > 0 /* i.e. a salted table */)
+  {
+    // set table-specific region split policy and max file
+    // size, controllable by CQDs, but only if they are not
+    // already set explicitly in the DDL.
+    // Save these options in metadata if they are specified by user through
+    // explicit create option or through a cqd.
+    double maxFileSize = 
+      CmpCommon::getDefaultNumeric(HBASE_SALTED_TABLE_MAX_FILE_SIZE);
+    NABoolean usePerTableSplitPolicy = 
+      (CmpCommon::getDefault(HBASE_SALTED_TABLE_SET_SPLIT_POLICY) == DF_ON);
+    HbaseCreateOption * hbaseOption = NULL;
+
+    if (maxFileSize > 0 && !maxFileSizeOptionSpecified)
+    {
+      char fileSizeOption[100];
+      Int64 maxFileSizeInt;
+
+      if (maxFileSize < LLONG_MAX)
+        maxFileSizeInt = maxFileSize;
+      else
+        maxFileSizeInt = LLONG_MAX;
+          
+      snprintf(fileSizeOption,100,"%ld", maxFileSizeInt);
+      hbaseOption = new(STMTHEAP) 
+        HbaseCreateOption("MAX_FILESIZE", fileSizeOption);
+      hbaseCreateOptions.insert(hbaseOption);
+
+      if (ActiveSchemaDB()->getDefaults().userDefault(
+               HBASE_SALTED_TABLE_MAX_FILE_SIZE) == TRUE)
+      {
+        numHbaseOptions += 1;
+        snprintf(fileSizeOption,100,"MAX_FILESIZE=''%ld''|", maxFileSizeInt);
+        hbaseOptionsStr += fileSizeOption;
+      }
+    }
+
+    if (usePerTableSplitPolicy && !splitPolicyOptionSpecified)
+    {
+      const char *saltedTableSplitPolicy =
+        "org.apache.hadoop.hbase.regionserver.ConstantSizeRegionSplitPolicy";
+      hbaseOption = new(STMTHEAP) HbaseCreateOption(
+           "SPLIT_POLICY", saltedTableSplitPolicy);
+      hbaseCreateOptions.insert(hbaseOption);
+
+      if (ActiveSchemaDB()->getDefaults().userDefault(
+               HBASE_SALTED_TABLE_SET_SPLIT_POLICY) == TRUE)
+      {
+        numHbaseOptions += 1;
+        hbaseOptionsStr += "SPLIT_POLICY=''";
+        hbaseOptionsStr += saltedTableSplitPolicy;
+        hbaseOptionsStr += "''|";
+      }
+    }  
+  }
+  
+  /////////////////////////////////////////////////////////////////////
+  // update HBASE_CREATE_OPTIONS field in metadata TABLES table.
+  // Format of data stored in this field, if applicable.
+  //    HBASE_OPTIONS=>numOptions(4bytes)option='val'| ...
+  //    NUM_SPLITS=>4_bytes(int)
+  ///////////////////////////////////////////////////////////////////////
+  if  (hbaseOptionsStr.size() > 0)
+  {
+    hco += "HBASE_OPTIONS=>";
+
+    char hbaseOptionsNumCharStr[5];
+    sprintf(hbaseOptionsNumCharStr, "%04d", numHbaseOptions);
+    hco += hbaseOptionsNumCharStr;
+
+    hco += hbaseOptionsStr.data();
+      
+    hco += " "; // separator
+  }
+  
+  if (numSplits > 0)
+  {
+    char splitNumCharStr[5];
+    sprintf(splitNumCharStr, "%04d", numSplits+1);
+ 
+    hco += "NUM_SALT_PARTNS=>";
+    hco+=splitNumCharStr;
+                 
+    hco += " "; // separator
+  }
+  return ;
+}

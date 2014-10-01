@@ -329,3 +329,20 @@ select * from minotaur.events_load75<<+ cardinality 10e6 >>  where srcip = '120.
 execute s;
 
 showddl TRAFODION.MINOTAUR.EVENTS_LOAD75;
+
+drop table if exists t010t4;
+create table t010t4 (a int not null primary key, b int, c int) 
+salt using 4 partitions ;
+create index t010ix1 on t010t4 (b) 
+HBASE_OPTIONS
+  (
+    DATA_BLOCK_ENCODING = 'FAST_DIFF',
+    COMPRESSION = 'GZ'
+  )
+  SALT LIKE TABLE
+;
+showddl t010t4 ;
+insert into t010t4 values (1,1,1) ;
+prepare s from select a from t010t4 <<+cardinality 10e8>> where b > 0 ;
+explain options 'f' s ;
+execute s;
