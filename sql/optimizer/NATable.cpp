@@ -1647,6 +1647,9 @@ static ItemExpr * getRangePartitionBoundaryValuesFromEncodedKeys(
          varCharstr = NULL;
       }
 
+      if (pkType->supportsSQLnullPhysical())
+        keyColOffset += pkType->getSQLnullHdrSize();
+
       if (result)
         result = new(heap) ItemList(result, keyColVal);
       else
@@ -3794,6 +3797,14 @@ NABoolean createNAFileSets(desc_struct * table_desc       /*IN*/,
 
       CMPASSERT(indexes_desc->body.indexes_desc.blocksize > 0);
 
+      NAList<HbaseCreateOption*>* hbaseCreateOptions = NULL;
+      if ((indexes_desc->body.indexes_desc.hbaseCreateOptions) &&
+          (CmpSeabaseDDL::genHbaseCreateOptions
+           (indexes_desc->body.indexes_desc.hbaseCreateOptions,
+            hbaseCreateOptions,
+            heap)))
+        return TRUE;
+
       newIndex = new (heap)
 	NAFileSet(
 		  qualIndexName, // QN containing "\NSK.$VOL", FUNNYSV, FUNNYNM
@@ -3835,6 +3846,8 @@ NABoolean createNAFileSets(desc_struct * table_desc       /*IN*/,
 		  (indexes_desc->body.indexes_desc.isInMemoryObjectDefn != 0),
                   indexes_desc->body.indexes_desc.keys_desc,
                   NULL, // no Hive stats
+                  indexes_desc->body.indexes_desc.numSaltPartns,
+                  hbaseCreateOptions,
                   heap);
 
       if (isNotAvailable)
@@ -4181,6 +4194,8 @@ NABoolean createNAFileSets(hive_tbl_desc* hvt_desc        /*IN*/,
 		  0, // inMemObjectDefn
                   NULL, // indexes_desc->body.indexes_desc.keys_desc,
                   hiveHDFSTableStats,
+                  0, // saltPartns
+                  NULL, //hbaseCreateOptions
                   heap);
 
       if (isNotAvailable)
@@ -4426,8 +4441,6 @@ NATable::NATable(BindWA *bindWA,
     hiveDefaultStringLen_(0),
     hiveTableId_(-1),
     tableDesc_(inTableDesc),
-    numSaltPartns_(0),
-    hbaseCreateOptions_(NULL),
     privInfo_(NULL),
     secKeySet_(heap)
 {
@@ -4469,17 +4482,6 @@ NATable::NATable(BindWA *bindWA,
       // Need to initialize the maxIndexLevelsPtr field
       *maxIndexLevelsPtr = 1;
     }
-
-  numSaltPartns_ = table_desc->body.table_desc.numSaltPartns;
-
-  NAList<HbaseCreateOption*>* hbaseCreateOptions = NULL;
-  if ((table_desc->body.table_desc.hbaseCreateOptions) &&
-      (CmpSeabaseDDL::genHbaseCreateOptions
-       (table_desc->body.table_desc.hbaseCreateOptions,
-	hbaseCreateOptions,
-	heap_)))
-    return;
-  hbaseCreateOptions_ = hbaseCreateOptions;
 
   if ((corrName.isHbase()) || (corrName.isSeabase()))
     {
@@ -5205,8 +5207,6 @@ NATable::NATable(BindWA *bindWA,
     hiveDefaultStringLen_(0),
     hiveTableId_(htbl->tblID_),
     tableDesc_(NULL),
-    numSaltPartns_(0),
-    hbaseCreateOptions_(NULL),
     privInfo_(NULL)
 {
 
@@ -6068,8 +6068,14 @@ NABoolean NATable::getCorrespondingIndex(NAList<NAString> &inputCols,
       const NAColumnArray &nacArr = naf->getIndexKeyColumns();
 
       Lng32 numKeyCols = 
-	((isUniqueIndex || isPrimaryKey) ? nacArr.entries() :
-	 (nacArr.entries() - numBTpkeys));
+	(isPrimaryKey ? nacArr.entries() : 
+         naf->getCountOfUserSpecifiedIndexCols());
+
+      if (naf->numSaltPartns() > 0)
+        numKeyCols-- ; // for salted index, the SALT column is counted
+      // as a user specified column, but it is not present in inputCols
+      // We want to disregard the salt column when looking for a match.
+
       if ((inputCols.entries() > 0) && (inputCols.entries() != numKeyCols))
 	continue;
 
@@ -6079,7 +6085,10 @@ NABoolean NATable::getCorrespondingIndex(NAList<NAString> &inputCols,
 	{
 	  const NAString &colName = inputCols[j];
 	  keyColNAS.insert(colName);
-	  indexNAS.insert(nacArr[j]->getColName());
+          if (naf->numSaltPartns() > 0)
+            indexNAS.insert(nacArr[j+1]->getColName()); //SALT column is first
+          else                                          // skip it.
+            indexNAS.insert(nacArr[j]->getColName());
 	}
 
       if (inputCols.entries() == 0)
