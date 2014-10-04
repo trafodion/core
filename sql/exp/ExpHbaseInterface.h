@@ -141,14 +141,7 @@ class ExpHbaseInterface : public NABasicObject
 			 const TextVec *inCompareOpList,
 			 const TextVec *inColValuesToCompare,
 			 Float32 samplePercent = -1.0f) = 0;
-  
-  virtual Lng32 scanFetch(
-		  HbaseStr &rowId,
-		  HbaseStr &colFamName,
-		  HbaseStr &colName,
-		  HbaseStr &colVal,
-		  Int64 &timestamp) = 0;
-  
+
   virtual Lng32 scanClose() = 0;
 
   Lng32 fetchAllRows(
@@ -165,8 +158,7 @@ class ExpHbaseInterface : public NABasicObject
 		HbaseStr &tblName,
 		const Text &row, 
 		const std::vector<Text> & columns,
-		const int64_t timestamp,
-                NABoolean directRow) = 0;
+		const int64_t timestamp) = 0;
 
   // return 1 if row exists, 0 if does not exist. -ve num in case of error.
   virtual Lng32 rowExists(
@@ -177,17 +169,15 @@ class ExpHbaseInterface : public NABasicObject
 		HbaseStr &tblName,
 		const std::vector<Text> & rows, 
 		const std::vector<Text> & columns,
-		const int64_t timestamp,
-                NABoolean directRow) = 0;
-  
-  virtual Lng32 getFetch(
-		 HbaseStr &rowId,
-		 HbaseStr &colFamName,
-		 HbaseStr &colName,
-		 HbaseStr &colVal,
-		 Int64 &timestamp) = 0;
+		const int64_t timestamp) = 0;
 
   virtual Lng32 nextRow() = 0;
+  
+  virtual Lng32 nextCell(HbaseStr &rowId,
+          HbaseStr &colFamName,
+          HbaseStr &colName,
+          HbaseStr &colVal,
+          Int64 &timestamp) = 0;
 
   virtual Lng32 getColVal(int colNo, BYTE *colVal,
           Lng32 &colValLen, NABoolean nullable, BYTE &nullVal) = 0;
@@ -225,7 +215,7 @@ class ExpHbaseInterface : public NABasicObject
 
   virtual Lng32 deleteColumns(
 		  HbaseStr &tblName,
-		  const Text & column);
+		  const Text & column) = 0;
   virtual Lng32 insertRow(
 		  HbaseStr &tblName,
 		  HbaseStr& rowID, 
@@ -386,13 +376,6 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 			 const TextVec *inCompareOpList,
 			 const TextVec *inColValuesToCompare,
                          Float32 samplePercent = -1.0f);
-
-  virtual Lng32 scanFetch(
-		  HbaseStr &rowId,
-		  HbaseStr &colFamName,
-		  HbaseStr &colName,
-		  HbaseStr &colVal,
-		  Int64 &timestamp);
   
   virtual Lng32 scanClose();
 
@@ -400,8 +383,7 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 		HbaseStr &tblName,
 		const Text &row, 
 		const std::vector<Text> & columns,
-		const int64_t timestamp,
-                NABoolean directRow);
+		const int64_t timestamp);
  
   // return 1 if row exists, 0 if does not exist. -ve num in case of error.
   virtual Lng32 rowExists(
@@ -412,17 +394,15 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 		HbaseStr &tblName,
 		const std::vector<Text> & rows, 
 		const std::vector<Text> & columns,
-		const int64_t timestamp,
-                NABoolean directRow);
-  
-  virtual Lng32 getFetch(
-		 HbaseStr &rowId,
-		 HbaseStr &colFamName,
-		 HbaseStr &colName,
-		 HbaseStr &colVal,
-		 Int64 &timestamp);
+		const int64_t timestamp);
 
   virtual Lng32 nextRow();
+
+  virtual Lng32 nextCell( HbaseStr &rowId,
+          HbaseStr &colFamName,
+          HbaseStr &colName,
+          HbaseStr &colVal,
+          Int64 &timestamp);
 
   virtual Lng32 getColVal(int colNo, BYTE *colVal,
           Lng32 &colValLen, NABoolean nullable, BYTE &nullVal);
@@ -456,7 +436,12 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 				  HbaseStr& row, 
 				  const Text& columnToCheck,
 				  const Text& colValToCheck,
-				  const int64_t timestamp);
+		                  const int64_t timestamp);
+
+  virtual Lng32 deleteColumns(
+		  HbaseStr &tblName,
+		  const Text & column);
+
   virtual Lng32 insertRow(
 		  HbaseStr &tblName,
 		  HbaseStr& rowID, 
@@ -547,13 +532,6 @@ virtual Lng32 initHFileParams(HbaseStr &tblName,
                                  Int32 numCols,
                                  Int64& estRC);
 
-protected:
-  Lng32 getLastFetchedCell(
-  	  HbaseStr &rowId,
-	  HbaseStr &colFamName,
-	  HbaseStr &colName,
-	  HbaseStr &colVal,
-	  Int64 &timestamp);
 private:
   bool  useTRex_;
   HBaseClient_JNI* client_;
