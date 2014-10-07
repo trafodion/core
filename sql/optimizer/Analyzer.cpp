@@ -897,6 +897,14 @@ TableAnalysis * QueryAnalysis::newTableAnalysis(RelExpr* tableExpr)
      colAnalysisArray_.insertAt(x, colAn);
   }
 
+  // By the same argument as for the divisioning columns, include the salt column.
+  const ValueIdSet& saltColumnSet = tableDesc->getSaltColumnAsSet();
+  for (ValueId x= saltColumnSet.init(); saltColumnSet.next(x); saltColumnSet.advance(x) )
+  {
+     ColAnalysis* colAn = new (heap_) ColAnalysis(x, tabAnalysis);
+     colAnalysisArray_.insertAt(x, colAn);
+  }
+
   // initialize local preds. Add characteristics inputs as
   // used cols, to account for host variables. Host variables
   // come as characteristic inputs
@@ -4434,7 +4442,7 @@ Int32 AccessPathAnalysis::numIndexPrefixCovered(const ValueIdSet& vidSet,
     indexDesc_->getPrimaryTableDesc()->getTableAnalysis()->getUsedCols();
 
   // get the use equality columns
-  equalityCols.intersect((ValueIdSet&)usedCols);
+  equalityCols.intersectSet((ValueIdSet&)usedCols);
 
   // Get the list of index columns and check if a prefix is
   // covered in the provided set.

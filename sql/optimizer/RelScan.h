@@ -130,6 +130,8 @@ public:
 
   ScanIndexInfo(const ScanIndexInfo & other);
 
+  //const SET(IndexProperty *)& usableIndexes() { return  usableIndexes_; }
+
 private:
 
   ValueIdSet       outputsFromIndex_;
@@ -587,6 +589,10 @@ public:
     else
       matchingMVs_.insert(match);
   }
+
+protected:
+  // Find the most promising index from the LIST 
+  IndexProperty* findSmallestIndex(const LIST(ScanIndexInfo *)&);
 
 private:
 
