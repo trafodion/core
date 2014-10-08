@@ -46,6 +46,7 @@ import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
 import org.apache.hadoop.hbase.ipc.ServerRpcController;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.EnvironmentEdgeManager;
+import org.apache.hadoop.ipc.RemoteException;
 
 import com.google.protobuf.ByteString;
 
@@ -127,10 +128,11 @@ public class TransactionManager {
 	 * Return  : Always 0, can ignore
 	 * Purpose : Call commit for a given regionserver  
 	 */
-    public Integer doCommitX(final byte[] regionName, final long transactionId) throws CommitUnsuccessfulException {
+    public Integer doCommitX(final byte[] regionName, final long transactionId, final boolean ignoreUnknownTransactionException) throws CommitUnsuccessfulException {
         try {
 
-          if (LOG.isTraceEnabled()) LOG.trace("doCommitX -- ENTRY txid: " + transactionId);
+          if (LOG.isTraceEnabled()) LOG.trace("doCommitX -- ENTRY txid: " + transactionId +
+                                              " ignoreUnknownTransactionException: " + ignoreUnknownTransactionException);
           Batch.Call<TrxRegionService, CommitResponse> callable =
               new Batch.Call<TrxRegionService, CommitResponse>() {
             ServerRpcController controller = new ServerRpcController();
@@ -142,6 +144,7 @@ public class TransactionManager {
               org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.CommitRequest.Builder builder = CommitRequest.newBuilder();
               builder.setTransactionId(transactionId);
 	      builder.setRegionName(ByteString.copyFromUtf8(Bytes.toString(regionName))); //ByteString.copyFromUtf8(Bytes.toString(regionName)));
+              builder.setIgnoreUnknownTransactionException(ignoreUnknownTransactionException);
 
               instance.commit(controller, builder.build(), rpcCallback);
               return rpcCallback.get();
@@ -150,12 +153,13 @@ public class TransactionManager {
 
             Map<byte[], CommitResponse> result = null;
             try {
-              if (LOG.isTraceEnabled()) LOG.trace("doCommitX -- before coprocessorService txid: " + transactionId);
+              if (LOG.isTraceEnabled()) LOG.trace("doCommitX -- before coprocessorService txid: " + transactionId +
+                        " ignoreUnknownTransactionException: " + ignoreUnknownTransactionException);
 	      if (LOG.isTraceEnabled()) LOG.trace("doCommitX -- " + table.toString() + " startKey: " + new String(startKey, "UTF-8") + " endKey: " + new String(endKey, "UTF-8"));
               result = table.coprocessorService(TrxRegionService.class, startKey, endKey, callable);
             } catch (Throwable e) {
               e.printStackTrace();
-              throw new Exception("ERROR occurred while calling coprocessor service");
+              throw new Exception("ERROR occurred while calling coprocessor service: " + e);
             }   
             if(result.size() > 1) {
 		LOG.error("doCommitX, result size: " + result.size());
@@ -164,7 +168,20 @@ public class TransactionManager {
             for (CommitResponse cresponse : result.values())
             {
               if(cresponse.getHasException()) {
-                throw new Exception(cresponse.getException());
+                String exceptionString = new String (cresponse.getException().toString());
+                if (exceptionString.contains("UnknownTransactionException")) {
+                   if (ignoreUnknownTransactionException == true) {
+                      LOG.error("doCommitX, ignoring UnknownTransactionException in cresponse");
+                   }
+                   else {
+                      LOG.error("doCommitX, cresponse exception is UnknownTransactionException: " + cresponse.getException());
+                      throw new Exception(cresponse.getException());
+                   }
+                }
+                else {
+                   LOG.error("doCommitX, cresponse exception: " + cresponse.getException());
+                   throw new Exception(cresponse.getException());
+                }
               }                     
             }
             
@@ -566,9 +583,23 @@ public class TransactionManager {
      * @throws CommitUnsuccessfulException
      */
     public void doCommit(final TransactionState transactionState) throws CommitUnsuccessfulException {
+       if (LOG.isTraceEnabled()) LOG.trace("doCommit [" + transactionState.getTransactionId() +
+                      "] ignoreUnknownTransactionException not supplied");
+       doCommit(transactionState, false);
+    }
+
+    /**
+     * Do the commit. This is the 2nd phase of the 2-phase protocol.
+     *
+     * @param transactionState
+     * @param ignoreUnknownTransactionException
+     * @throws CommitUnsuccessfulException
+     */
+    public void doCommit(final TransactionState transactionState, final boolean ignoreUnknownTransactionException) throws CommitUnsuccessfulException {
     	int loopCount = 0;
         try {
-            if (LOG.isTraceEnabled()) LOG.trace("Committing [" + transactionState.getTransactionId() + "]");
+            if (LOG.isTraceEnabled()) LOG.trace("Committing [" + transactionState.getTransactionId() +
+                      "] ignoreUnknownTransactionException: " + ignoreUnknownTransactionException);
 
             transactionLogger.setStatusForTransaction(transactionState.getTransactionId(),
                 TransactionLogger.TransactionStatus.COMMITTED);
@@ -588,8 +619,9 @@ public class TransactionManager {
                     
                 threadPool.submit(new TransactionManagerCallable(transactionState, location, connection) {
                   public Integer call() throws CommitUnsuccessfulException {
-                    if (LOG.isTraceEnabled()) LOG.trace("before doCommit() [" + transactionState.getTransactionId() + "]");
-                    return doCommitX(regionName, transactionState.getTransactionId());
+                    if (LOG.isTraceEnabled()) LOG.trace("before doCommit() [" + transactionState.getTransactionId() + "]" +
+                                                        " ignoreUnknownTransactionException: " + ignoreUnknownTransactionException);
+                    return doCommitX(regionName, transactionState.getTransactionId(), ignoreUnknownTransactionException);
                   }
                 });
                 
@@ -724,18 +756,19 @@ public class TransactionManager {
     	    regionInfo = HRegionInfo.parseFrom(regionArray);
     	}
     	catch (Exception de) {
-            if (LOG.isTraceEnabled()) LOG.trace("HBaseTxClient:callRegisterRegion exception in lv_regionInfo parseFrom, " + 		     
+           if (LOG.isTraceEnabled()) LOG.trace("TransactionManager:recoveryRequest exception in regionInfo parseFrom, " +
  		     " TM : " + tmid +
  		     " DeserializationException: " + de);
  	        StringWriter sw = new StringWriter();
  	        PrintWriter pw = new PrintWriter(sw);
  	        de.printStackTrace(pw);
  	        LOG.error(sw.toString());  	   
-            throw new Exception("DeserializationException in lv_regionInfo parseFrom, unable to register region");
+            throw new Exception("DeserializationException in regionInfo parseFrom, unable to complete recoveryRequest " + de);
        } 
         
     	final String regionName = regionInfo.getRegionNameAsString();
     	final int tmID = tmid;
+        if (LOG.isTraceEnabled()) LOG.trace("TransactionManager:recoveryRequest regionInfo encoded name: [" + regionInfo.getEncodedName() + "]");
         Batch.Call<TrxRegionService, RecoveryRequestResponse> callable = 
                 new Batch.Call<TrxRegionService, RecoveryRequestResponse>() {
               ServerRpcController controller = new ServerRpcController();
