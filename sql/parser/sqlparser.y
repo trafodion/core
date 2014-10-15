@@ -2371,6 +2371,7 @@ static void enableMakeQuotedStringISO88591Mechanism()
 %type <int64>                   optional_blob_unit
 %type <stringval>               component_privilege_name
 %type <stringval>               component_name
+%type <stringval>               identifier_with_7_bit_ascii_chars_only
 %type <stringval>               regular_identifier_with_7_bit_ascii_chars_only
 %type <stringval>               component_str_lit
 %type <stringval>               priv_abbrev_str_lit
@@ -30345,6 +30346,9 @@ ddl_object_name : ddl_qualified_name {
                       | TOK_LIBRARY ddl_qualified_name {
                                   $2->setObjectNameSpace(COM_LIBRARY_NAME);
                                   $$ = $2; }
+                      | TOK_SEQUENCE ddl_qualified_name {
+                                  $2->setObjectNameSpace(COM_SEQUENCE_GENERATOR_NAME);
+                                  $$ = $2; }
                                 
 /* type pElemDDL */
 grantee_list : grantee
@@ -34509,9 +34513,9 @@ priv_abbrev_str_lit : component_str_lit
                }
 
 /* type stringval */
-component_privilege_name : regular_identifier_with_7_bit_ascii_chars_only
+component_privilege_name : identifier_with_7_bit_ascii_chars_only
                {
-                 // component_privilege_name ::= regular_identifier_with_7_bit_ascii_chars_only
+                 // component_privilege_name ::= identifier_with_7_bit_ascii_chars_only
                }
 
 /* type stringval */
@@ -34541,6 +34545,26 @@ regular_identifier_with_7_bit_ascii_chars_only : regular_identifier
                         YYERROR;
                   }
                   delete $1; // regular_identifier
+               }
+
+/* type stringval */
+identifier_with_7_bit_ascii_chars_only : identifier
+               {
+                  // identifier_with_7_bit_ascii_chars_only ::= identifier
+
+                  NAString * pName = charToChar ( (Lng32)CharInfo::ISO88591 // targetCS
+                                                , $1->data()                // const char *s - regular_identifier
+                                                , $1->length()              // Int32 sLenInBytes
+                                                , (Lng32)ComGetNameInterfaceCharSet() // sourceCS - CharInfo::UTF8
+                                                , PARSERHEAP()              // heap for allocated target string
+                                                );
+                  if ( pName == NULL // conversion failed
+                       || NOT NAStringHasOnly7BitAsciiChars(*pName) )
+                  {
+                    YYERROR;
+                  }
+                  $$ = pName;
+                  delete $1; // identifier
                }
 
 /* type pStmtDDL */
