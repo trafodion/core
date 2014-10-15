@@ -691,7 +691,7 @@ public class HBaseClient {
       nano2 = System.nanoTime();
       if (logger.isDebugEnabled()) logger.debug("FileSystem.get() took " + ((nano2 - nano1) + 500000) / 1000000 + " milliseconds.");
       CacheConfig cacheConf = new CacheConfig(config);
-      FileStatus[] fsArr = fileSystem.globStatus(new Path("/hbase/" + 
+      FileStatus[] fsArr = fileSystem.globStatus(new Path("/hbase/data/default/" + 
                                tblName + "/" + REGION_NAME_PATTERN +
                                "/#1/" + HFILE_NAME_PATTERN));
       for (FileStatus fs : fsArr) {
