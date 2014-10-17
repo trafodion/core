@@ -277,7 +277,7 @@ public class TransactionManager {
 
 		    HRegionLocation lv_hrl = table.getRegionLocation(startKey);
 		    HRegionInfo     lv_hri = lv_hrl.getRegionInfo();
-		    if ((location.getRegionInfo().compareTo(lv_hri) != 0)) {
+		    if ((location.getRegionInfo().getEncodedName().compareTo(lv_hri.getEncodedName()) != 0)) {
 			    	LOG.info("doPrepareX -- " + table.toString() + " location being refreshed");
 			    	if (LOG.isTraceEnabled()) LOG.trace("doPrepareX -- lv_hri: " + lv_hri);
 			    	if (LOG.isTraceEnabled()) LOG.trace("doPrepareX -- location.getRegionInfo(): " + location.getRegionInfo());
