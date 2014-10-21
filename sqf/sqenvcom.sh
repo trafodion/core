@@ -229,8 +229,81 @@ else
   export LOC_JVMLIBS=$JAVA_HOME/jre/lib/i386/server
 fi
 
-ls /usr/lib/hadoop/hadoop-*cdh5*.jar >/dev/null 2>&1
-if [ $? -eq 0 ]; then
+if [ -e $MY_SQROOT/sql/scripts/sw_env.sh ]; then
+  # we are on a development system where install_local_hadoop has been
+  # executed
+  # ----------------------------------------------------------------
+  [[ $SQ_VERBOSE == 1 ]] && echo "Sourcing in $MY_SQROOT/sql/scripts/sw_env.sh"
+  . $MY_SQROOT/sql/scripts/sw_env.sh
+  #echo "YARN_HOME = $YARN_HOME"
+
+  # native library directories and include directories
+  export HADOOP_LIB_DIR=$YARN_HOME/lib/native
+  export HADOOP_INC_DIR=$YARN_HOME/include
+  export THRIFT_LIB_DIR=$TOOLSDIR/thrift-0.9.0/lib
+  export THRIFT_INC_DIR=$TOOLSDIR/thrift-0.9.0/include
+
+  # directories with jar files and list of jar files
+  export HADOOP_JAR_DIRS="$YARN_HOME/share/hadoop/common
+                          $YARN_HOME/share/hadoop/common/lib
+                          $YARN_HOME/share/hadoop/mapreduce
+                          $YARN_HOME/share/hadoop/hdfs"
+  export HADOOP_JAR_FILES=
+  export HBASE_JAR_FILES=
+  HBASE_JAR_DIRS="$HBASE_HOME/lib"
+  for d in $HBASE_JAR_DIRS
+  do
+    HBASE_JAR_FILES="$HBASE_JAR_FILES $d/*.jar"
+  done
+
+  export HIVE_JAR_DIRS="$HIVE_HOME/lib"
+  export HIVE_JAR_FILES="$HIVE_HOME/share/hadoop/mapreduce/hadoop-mapreduce-client-core-*.jar"
+
+  # suffixes to suppress in the classpath (set this to ---none--- to add all files)
+  export SUFFIXES_TO_SUPPRESS="-sources.jar -tests.jar"
+
+  # Configuration directories
+
+  export HADOOP_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hadoop/etc/hadoop
+  export HBASE_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hbase/conf
+  export HIVE_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hive/conf
+  
+elif [[ -f $MY_SQROOT/Makefile && -d $TOOLSDIR ]]; then
+  # we are are in a source tree - use build-time dependencies in TOOLSDIR
+  # ----------------------------------------------------------------
+
+  # native library directories and include directories
+  export HADOOP_LIB_DIR=$TOOLSDIR/hadoop-2.4.0/lib/native
+  export HADOOP_INC_DIR=$TOOLSDIR/hadoop-2.4.0/include
+  export THRIFT_LIB_DIR=$TOOLSDIR/thrift-0.9.0/lib
+  export THRIFT_INC_DIR=$TOOLSDIR/thrift-0.9.0/include
+
+  # directories with jar files and list of jar files
+  export HADOOP_JAR_DIRS="$TOOLSDIR/hadoop-2.4.0/share/hadoop/common
+                          $TOOLSDIR/hadoop-2.4.0/share/hadoop/common/lib
+                          $TOOLSDIR/hadoop-2.4.0/share/hadoop/mapreduce
+                          $TOOLSDIR/hadoop-2.4.0/share/hadoop/hdfs"
+  export HBASE_JAR_FILES=
+  HBASE_JAR_DIRS="$HBASE_HOME/lib"
+  for d in $TOOLSDIR/hbase-0.98.1-cdh5.1.0/lib
+  do
+    HBASE_JAR_FILES="$HBASE_JAR_FILES $d/*.jar"
+  done
+
+  export HIVE_JAR_DIRS="$TOOLSDIR/apache-hive-0.13.1-bin/lib"
+  export HIVE_JAR_FILES="$TOOLSDIR/hadoop-2.4.0/share/hadoop/mapreduce/hadoop-mapreduce-client-core-*.jar"
+
+  # suffixes to suppress in the classpath (set this to ---none--- to add all files)
+  export SUFFIXES_TO_SUPPRESS="-sources.jar -tests.jar"
+
+  # Configuration directories
+
+  export HADOOP_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hadoop/etc/hadoop
+  export HBASE_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hbase/conf
+  export HIVE_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hive/conf
+
+elif ls /usr/lib/hadoop/hadoop-*cdh*.jar >/dev/null 2>&1
+then
   # we are on a cluster with Cloudera installed
   # -------------------------------------------
 
@@ -364,74 +437,6 @@ elif [ -d /opt/mapr ]; then
 
   # HBase-trx jar with some modifications to work with MapR HBase 0.94.13
   export HBASE_TRX_JAR=hbase_mapr-trx-0.94.13.jar
-
-elif [ -e $MY_SQROOT/sql/scripts/sw_env.sh ]; then
-  # we are on a development system where install_local_hadoop has been
-  # executed
-  # ----------------------------------------------------------------
-  #echo "Sourcing in $MY_SQROOT/sw_env.sh"
-  . $MY_SQROOT/sql/scripts/sw_env.sh
-  #echo "YARN_HOME = $YARN_HOME"
-
-  # native library directories and include directories
-  export HADOOP_LIB_DIR=$YARN_HOME/lib/native
-  export HADOOP_INC_DIR=$YARN_HOME/include
-  export THRIFT_LIB_DIR=$TOOLSDIR/thrift-0.9.0/lib
-  export THRIFT_INC_DIR=$TOOLSDIR/thrift-0.9.0/include
-
-  # directories with jar files and list of jar files
-  export HADOOP_JAR_DIRS="$YARN_HOME/share/hadoop/common
-                          $YARN_HOME/share/hadoop/common/lib
-                          $YARN_HOME/share/hadoop/mapreduce
-                          $YARN_HOME/share/hadoop/hdfs"
-  export HADOOP_JAR_FILES=
-  export HBASE_JAR_FILES=
-  HBASE_JAR_DIRS="$HBASE_HOME/lib"
-  for d in $HBASE_JAR_DIRS
-  do
-    HBASE_JAR_FILES="$HBASE_JAR_FILES $d/*.jar"
-  done
-
-  export HIVE_JAR_DIRS="$HIVE_HOME/lib"
-  export HIVE_JAR_FILES="$HIVE_HOME/share/hadoop/mapreduce/hadoop-mapreduce-client-core-*.jar"
-
-  # suffixes to suppress in the classpath (set this to ---none--- to add all files)
-  export SUFFIXES_TO_SUPPRESS="-sources.jar -tests.jar"
-
-  # Configuration directories
-
-  export HADOOP_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hadoop/etc/hadoop
-  export HBASE_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hbase/conf
-  export HIVE_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hive/conf
-  
-elif [ -d $TOOLSDIR/hadoop-2.0.0-cdh4.2.0 ]; then
-  # we are on a development system or cluster with a tools directory
-  # ----------------------------------------------------------------
-
-  # native library directories and include directories
-  export HADOOP_LIB_DIR=$TOOLSDIR/hadoop-2.0.0-cdh4.2.0/lib/native
-  export HADOOP_INC_DIR=$TOOLSDIR/hadoop-2.0.0-cdh4.2.0/include
-  export THRIFT_LIB_DIR=$TOOLSDIR/thrift-0.9.0/lib
-  export THRIFT_INC_DIR=$TOOLSDIR/thrift-0.9.0/include
-
-  # directories with jar files and list of jar files
-  export HADOOP_JAR_DIRS="$TOOLSDIR/hadoop-2.0.0-cdh4.2.0/share/hadoop/common
-                          $TOOLSDIR/hadoop-2.0.0-cdh4.2.0/share/hadoop/common/lib
-                          $TOOLSDIR/hadoop-2.0.0-cdh4.2.0/share/hadoop/hdfs"
-  export HADOOP_JAR_FILES=
-  export HBASE_JAR_FILES="$TOOLSDIR/hbase-0.94.6-cdh4.4.0/hbase-*-security.jar
-                          $TOOLSDIR/hbase-0.94.6-cdh4.4.0/lib/zookeeper-*.jar"
-  export HIVE_JAR_DIRS="$TOOLSDIR/hive-0.9.0-bin/lib"
-  export HIVE_JAR_FILES="$TOOLSDIR/hadoop-2.0.0-cdh4.2.0/share/hadoop/mapreduce/hadoop-mapreduce-client-core-*.jar"
-
-  # suffixes to suppress in the classpath (set this to ---none--- to add all files)
-  export SUFFIXES_TO_SUPPRESS="-sources.jar -tests.jar"
-
-  # Configuration directories
-
-  export HADOOP_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hadoop/etc/hadoop
-  export HBASE_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hbase/conf
-  export HIVE_CNF_DIR=$MY_SQROOT/sql/local_hadoop/hive/conf
 
 fi
 
