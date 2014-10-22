@@ -5991,13 +5991,6 @@ NABoolean RelRoot::checkPrivileges(BindWA* bindWA)
     return TRUE;
 
   // If authorization is not enabled, then return TRUE
-  std::string privMDLoc(ActiveSchemaDB()->getDefaults().getValue(SEABASE_CATALOG));
-  privMDLoc += std::string(".\"") +
-               std::string(SEABASE_PRIVMGR_SCHEMA) +
-               std::string("\"");
-  PrivMgrCommands privInterface(privMDLoc, CmpCommon::diags());
-  if (!privInterface.isAuthorizationEnabled())
-    return TRUE;
 
   ComBoolean QI_enabled = (CmpCommon::getDefault(CAT_ENABLE_QUERY_INVALIDATION) == DF_ON);
 
@@ -6026,28 +6019,30 @@ NABoolean RelRoot::checkPrivileges(BindWA* bindWA)
     optStoi = (bindWA->getStoiList())[i];
     stoi = optStoi->getStoi();
     NATable* tab = optStoi->getTable();
+
     if (tab->isSeabaseMDTable())
       continue;
 
+    // tbd - use some other method.
+    if (strcasestr(tab->getTableName().getQualifiedNameAsString(), 
+        "PRIVMGR_MD"))
+     continue;
+
     // Privilege info for the user/table combination is stored in the NATable
     // object.
-    PrivStatus retcode = STATUS_GOOD;
+
+    // To be removed when we have implemented the change to return fully
+    // loaded bitmaps when authorization is not enabled.
+    if (tab->noPrivNeeded())
+      continue;
+
     PrivMgrUserPrivs* privInfo = tab->getPrivInfo();
     if (!privInfo)
-      {
-        // If tab->getHeap() is used, the priv error is added to diags area
-        // correctly, but does not appear in output; also, subsequent
-        // queries will not even get to checkPrivilege -- they display
-        // results even if priv is not held.
-        privInfo = new(CmpCommon::contextHeap()) PrivMgrUserPrivs;
-        std::vector <ComSecurityKey *> secKeyVec;
-        retcode = privInterface.getPrivileges(tab->objectUid().get_value(),
-                                              thisUserID, *privInfo, &secKeyVec);
-        if (retcode != STATUS_GOOD)
-          return FALSE;
-        tab->setPrivInfo(privInfo);
-        //tab->setSecKeySet(secKeyVec); -- causes weird problems; under investigation
-      }
+    {
+       tab->setRemoveFromCacheBNC(TRUE);
+       bindWA->setFailedForPrivileges(TRUE);
+       return FALSE;
+    }
 
    // if this is an explain query, validate that user has SELECT priv.
    // If they do, access is allowed.
@@ -6184,52 +6179,70 @@ NABoolean RelRoot::checkPrivileges(BindWA* bindWA)
   // NABoolean RemoveNARoutineEntryFromCache = FALSE ;
   OptUdrOpenInfo * udrStoi = NULL;
 
-  for(Int32 i=0; i<(Int32)bindWA->getUdrStoiList().entries(); i++)
+  if (bindWA->getUdrStoiList().entries())
   {
-    thisPrivCheckSuccess = TRUE ;  // Initialize each time through loop
-    // RemoveNARoutineEntryFromCache = FALSE ; // Initialize each time through loop
+    std::string privMDLoc(ActiveSchemaDB()->getDefaults().getValue(
+                            SEABASE_CATALOG));
 
-    udrStoi = (bindWA->getUdrStoiList())[i];
-    if (udrStoi->getUdrStoi()->checkSecurity() == FALSE)
-      continue;
+    privMDLoc += std::string(".\"") +
+                 std::string(SEABASE_PRIVMGR_SCHEMA) +
+                 std::string("\"");
 
-   NARoutine* rtn = udrStoi->getNARoutine();
-   PrivMgrUserPrivs privInfo;
-   PrivStatus retcode = privInterface.getPrivileges(rtn->getRoutineID(), thisUserID, privInfo);
+    PrivMgrCommands privInterface(privMDLoc, CmpCommon::diags());
 
-    // If we have object EXECUTE priv
-    if ( privInfo.hasExecutePriv() )
+    for(Int32 i=0; i<(Int32)bindWA->getUdrStoiList().entries(); i++)
     {
-      if ( QI_enabled && ! findKeyAndInsertInOutputList(
-                                         udrStoi->getNARoutine()->getSecKeySet(),
-                                         userHashValue,
-                                         EXECUTE_PRIV ) )
+      thisPrivCheckSuccess = TRUE ;  // Initialize each time through loop
+      // RemoveNARoutineEntryFromCache = FALSE ; // Initialize each time through loop
+  
+      udrStoi = (bindWA->getUdrStoiList())[i];
+      if (udrStoi->getUdrStoi()->checkSecurity() == FALSE)
+        continue;
+
+      // The next 2 lines will be removed when we have implemented 
+      // the change to return fully loaded bitmaps when authorization 
+      // is disabled.
+      if (!privInterface.isAuthorizationEnabled())
+        continue;
+
+     NARoutine* rtn = udrStoi->getNARoutine();
+     PrivMgrUserPrivs privInfo;
+     PrivStatus retcode = privInterface.getPrivileges(rtn->getRoutineID(), thisUserID, privInfo);
+
+      // If we have object EXECUTE priv
+      if ( privInfo.hasExecutePriv() )
+      {
+        if ( QI_enabled && ! findKeyAndInsertInOutputList(
+                                   udrStoi->getNARoutine()->getSecKeySet(),
+                                   userHashValue,
+                                   EXECUTE_PRIV ) )
+        {
+          thisPrivCheckSuccess = FALSE;
+          // RemoveNARoutineEntryFromCache = TRUE;
+        }
+      }
+      else
       {
         thisPrivCheckSuccess = FALSE;
         // RemoveNARoutineEntryFromCache = TRUE;
       }
-    }
-    else
-    {
-      thisPrivCheckSuccess = FALSE;
-      // RemoveNARoutineEntryFromCache = TRUE;
-    }
 
-    if ( thisPrivCheckSuccess == FALSE )
-    {
-      *CmpCommon::diags() << DgSqlCode(-4482)
-                          << DgString0("EXECUTE")
-                          << DgString1(udrStoi->getUdrName());
+      if ( thisPrivCheckSuccess == FALSE )
+      {
+        *CmpCommon::diags() << DgSqlCode(-4482)
+                            << DgString0("EXECUTE")
+                            << DgString1(udrStoi->getUdrName());
+      }
+
+      // if ( RemoveNARoutineEntryFromCache )
+      //{
+         // Mark as to be removed by CmpMain before Compilation retry
+         // udrStoi->getNARoutine()->setRemoveFromCacheBNC(TRUE); 
+      //}
+
+      if ( ! thisPrivCheckSuccess )  // Accumulate overall failure (if any)
+           privCheckSuccess = FALSE ;
     }
-
-    // if ( RemoveNARoutineEntryFromCache )
-    //{
-       // Mark as to be removed by CmpMain before Compilation retry
-       // udrStoi->getNARoutine()->setRemoveFromCacheBNC(TRUE); 
-    //}
-
-    if ( ! thisPrivCheckSuccess )        // Accumulate overall failure (if any)
-         privCheckSuccess = FALSE ;
   }
 
   // Check privs on any CoprocAggrs used in the query.
@@ -6242,17 +6255,18 @@ NABoolean RelRoot::checkPrivileges(BindWA* bindWA)
                                    get(coProcAggr->getCorrName(), bindWA, NULL);
     if (tab->isSeabaseMDTable())
       continue;
+
+    // tbd - use some other method.
+    if (strcasestr(tab->getTableName().getQualifiedNameAsString(),
+        "PRIVMGR_MD"))
+      continue;
+
+   // To be removed when we have implemented the change to return fully
+   // loaded bitmaps when authorization is not enabled.
+   if (tab->noPrivNeeded())
+     continue;
+
     PrivMgrUserPrivs* privInfo = tab->getPrivInfo();
-    PrivStatus retcode = STATUS_GOOD;
-    if (!privInfo)
-      {
-        privInfo = new(CmpCommon::contextHeap()) PrivMgrUserPrivs;
-        retcode = privInterface.getPrivileges(tab->objectUid().get_value(),
-                                              thisUserID, *privInfo);
-        if (retcode != STATUS_GOOD)
-         return false;
-        tab->setPrivInfo(privInfo);
-      }
 
    const NAString * val = ActiveControlDB()->getControlSessionValue("EXPLAIN");
    if ((Get_SqlParser_Flags(INTERNAL_QUERY_FROM_EXEUTIL)) &&
@@ -6263,7 +6277,12 @@ NABoolean RelRoot::checkPrivileges(BindWA* bindWA)
    NABoolean ErrorPutInDiags = FALSE ;
    Int32 numSecKeys = 0;
 
-   if ( privInfo->hasSelectPriv() )
+   if (!privInfo)
+   {
+     thisPrivCheckSuccess = FALSE;
+     RemoveNATableEntryFromCache = TRUE;
+   }
+   else if ( privInfo->hasSelectPriv() )
    {
      if ( QI_enabled && numSecKeys > 0 &&
           ! findKeyAndInsertInOutputList( tab->getSecKeySet(),
@@ -9947,6 +9966,7 @@ RelExpr *Insert::bindNode(BindWA *bindWA)
     *CmpCommon::diags() << DgSqlCode(-4486)
                         <<  DgString0("bulk load") ;
   }
+
   if (getIsTrafLoadPrep())
   {
     PartitioningFunction *pf = getTableDesc()->getClusteringIndex()->getPartitioningFunction();
@@ -9960,7 +9980,6 @@ RelExpr *Insert::bindNode(BindWA *bindWA)
          // 4490 - BULK LOAD into a salted table is not supported if ESP parallelism is turned off
          *CmpCommon::diags() << DgSqlCode(-4490);
     }
-
   }
   if (NOT isMerge())
     boundExpr = handleInlining(bindWA, boundExpr);
@@ -11691,7 +11710,8 @@ RelExpr *GenericUpdate::bindNode(BindWA *bindWA)
     }
   }
 
-  if ((naTable->isSeabaseTable()) &&
+// tbd - need to add tables in the PRIVMGR_MD schema too????
+    if ((naTable->isSeabaseTable()) &&
       (naTable->isSeabaseMDTable()) &&
       (NOT naTable->isUserUpdatableSeabaseMDTable()) &&
       (NOT Get_SqlParser_Flags(INTERNAL_QUERY_FROM_EXEUTIL)))
