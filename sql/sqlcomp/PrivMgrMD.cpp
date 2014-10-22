@@ -167,9 +167,23 @@ PrivMDStatus PrivMgr::authorizationEnabled()
               catName.c_str(), schName.c_str());
 
   ExeCliInterface cliInterface(STMTHEAP);
+
+  int32_t cliRC = cliInterface.executeImmediate(
+    "set transaction autocommit on;");
+
+  // Expect error -8612. This can happen if there is already a 
+  // transaction. We just want to ensure that any trans started 
+  // in the scope of this method  will commit before this method 
+  // returns.
+  if ((cliRC < 0) && (cliRC != -8612))
+  {
+    cliInterface.retrieveSQLDiagnostics(pDiags_);
+    return PRIV_INITIALIZE_UNKNOWN;
+  }
+
   Queue * schemaQueue = NULL;
 
-  int32_t cliRC =  cliInterface.fetchAllRows(schemaQueue, buf, 0, FALSE, FALSE, TRUE);
+  cliRC =  cliInterface.fetchAllRows(schemaQueue, buf, 0, FALSE, FALSE, TRUE);
   if (cliRC < 0)
   {
     cliInterface.retrieveSQLDiagnostics(pDiags_);

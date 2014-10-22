@@ -264,7 +264,7 @@ if [ $nsk -eq 1 ]; then
     echo "One or more User Ids are not set up on this machine!! "
     echo "Create the missing User Ids before running security tests."
   fi
-elif [ $LINUX -eq 1 -a -z "$SEABASE_REGRESS" ]; then
+else
   # Make sure users required by tests have been registered in the database
   if [ -e $scriptsdir/tools/reg_users.log ]; then
     rm $scriptsdir/tools/reg_users.log
