@@ -744,7 +744,59 @@ ComObjectType PrivMgr::ObjectLitToEnum(const char *objectLiteral)
 // ----------------------------------------------------------------------------
 bool PrivMgr::isAuthorizationEnabled()
 {
+
+  bool autoCommitWasOff = false;
+  bool needToRestoreAutocommitOff = false;
+  Queue *transactionAttrs = NULL;
+  ExeCliInterface cliInterface(STMTHEAP);
+
+  int cliRC =  cliInterface.fetchAllRows(transactionAttrs, 
+    (char *) "showtransaction", 0, FALSE, FALSE, TRUE);
+  if (cliRC < 0)
+  {
+    cliInterface.retrieveSQLDiagnostics(pDiags_);
+    return PRIV_INITIALIZE_UNKNOWN;
+  }
+
+  transactionAttrs->position();
+  for (int idx = 0; idx < transactionAttrs->numEntries(); idx++)
+  {
+    OutputInfo * outputRow = (OutputInfo*)transactionAttrs->getNext();
+    char *rowValue = outputRow->get(0);
+    if (strstr(rowValue, "AUTOCOMMIT") && strstr(rowValue, "OFF"))
+      {
+        autoCommitWasOff = true;
+        break;
+      }
+  }
+  
+  if (autoCommitWasOff)
+  {
+    int32_t cliRC = cliInterface.executeImmediate(
+      "set transaction autocommit on;");
+
+    if (cliRC == -8612)
+    {
+      // Expect error -8612. This can happen if there is already a
+      // transaction. We just want to ensure that any trans started
+      // in the scope of this method  will commit before this method
+      // returns.
+      ;
+    }
+    else if (cliRC < 0) 
+    {
+      cliInterface.retrieveSQLDiagnostics(pDiags_);
+      return PRIV_INITIALIZE_UNKNOWN;
+    }
+    else
+      needToRestoreAutocommitOff = true;
+  }
+
   PrivMDStatus retcode = authorizationEnabled();
+
+  if (needToRestoreAutocommitOff )
+    cliInterface.executeImmediate("set transaction autocommit off;");
+
   return (retcode == PRIV_INITIALIZED);
 }
 
