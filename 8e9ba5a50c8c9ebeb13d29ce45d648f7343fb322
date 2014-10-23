@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Sean Broeder <sean.broeder@hp.com>
+Code-Review+2: Marvin Anderson <marvin.anderson@hp.com>
+Workflow+1: Marvin Anderson <marvin.anderson@hp.com>
+Code-Review+1: Guy Groulx <guy.groulx@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 23 Oct 2014 16:56:19 +0000
+Reviewed-on: https://review.trafodion.org/602
+Project: trafodion/core
+Branch: refs/heads/master
