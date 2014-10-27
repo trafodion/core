@@ -1262,6 +1262,9 @@ private:
   PartitioningFunction * getClusteringIndexPartFuncForRightChild() const;
   NABoolean JoinPredicateCoversChild1PartKey() const;
 
+  // check the sort order for the source and the target table for Plan 1. 
+  NABoolean checkCompleteSortOrderForPlan1(const PhysicalProperty* sppForChild0Plan0);
+
 private:
   // Set to TRUE if the probes to the inner table are at least partially
   // in order. Default is FALSE.
