@@ -498,11 +498,12 @@ public class HBaseClient {
              return null;
           }
           if (logger.isDebugEnabled()) logger.debug("  ==> Created new object.");
-          hTableClientsInUse.put(htable.getTableName(), htable);
+          hTableClientsInUse.put(tblName, htable);
           return htable;
        } else {
             if (logger.isDebugEnabled()) logger.debug("  ==> Returning existing object, removing from container.");
-            hTableClientsInUse.put(htable.getTableName(), htable);
+            hTableClientsInUse.put(tblName, htable);
+            hTableClientsFree.removeValue(tblName, htable);
             htable.resetAutoFlush();
             return htable;
        }
@@ -513,12 +514,12 @@ public class HBaseClient {
                     throws IOException {
         if (htable == null)
             return;
-	                
-        if (logger.isDebugEnabled()) logger.debug("HBaseClient.releaseHTableClient(" + htable.getTableName() + ").");
+	String tblName = htable.getTableName();                
+        if (logger.isDebugEnabled()) logger.debug("HBaseClient.releaseHTableClient(" + tblName + ").");
         boolean cleanJniObject = false;
         htable.release(cleanJniObject);
-        if (hTableClientsInUse.remove(htable.getTableName(), htable))
-            hTableClientsFree.put(htable.getTableName(), htable);
+        if (hTableClientsInUse.removeValue(tblName, htable))
+            hTableClientsFree.put(tblName, htable);
         else
             if (logger.isDebugEnabled()) logger.debug("Table not found in inUse Pool");
     }
