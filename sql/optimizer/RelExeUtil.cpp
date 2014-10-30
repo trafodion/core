@@ -8860,7 +8860,7 @@ short ExeUtilHBaseBulkUnLoad::setOptions(NAList<UnloadOption*>  *
       {
         //4487 Invalid file name
         *da << DgSqlCode(-4487)
-            << DgString0((const char* )(mergePath_ + ".").data());
+            << DgString0((const char* )(mergePath_ + "needs to start with /.").data() );
         return 1;
 
       }
@@ -8873,7 +8873,7 @@ short ExeUtilHBaseBulkUnLoad::setOptions(NAList<UnloadOption*>  *
         {
           //4487 Invalid file name
           *da << DgSqlCode(-4487)
-              << DgString0(": compressed merge file needs to end with .gz.");
+              << DgString0("compressed merge file needs to end with .gz.");
           return 1;
         }
       }
