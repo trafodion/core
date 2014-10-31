@@ -5191,6 +5191,7 @@ short ExeUtilHbaseDDL::codeGen(Generator * generator)
 		      returnedDesc,
 		      downqueuelength,
 		      upqueuelength,
+		      0,  // Cardinality expectedRows,
 		      numBuffers,
 		      buffersize,
 
@@ -5295,6 +5296,15 @@ short ExeUtilHbaseCoProcAggr::codeGen(Generator * generator)
 
   work_cri_desc->setTupleDescriptor(projTuppIndex, projTupleDesc);
   
+  Cardinality expectedRows = (Cardinality) getEstRowsUsed().getValue();
+  // if run in ESPs
+  if (generator->getNumESPs() > 0)
+    expectedRows /= (Cardinality) generator->getNumESPs();
+
+  // make sure that the number is less than UINT_MAX
+  if (expectedRows > 4294967295.0)
+    expectedRows  = (float)4294967295.0;
+
   ULng32 buffersize = 3 * getDefault(GEN_DPSO_BUFFER_SIZE);
   queue_index upqueuelength = (queue_index)getDefault(GEN_DPSO_SIZE_UP);
   queue_index downqueuelength = (queue_index)getDefault(GEN_DPSO_SIZE_DOWN);
@@ -5359,6 +5369,7 @@ short ExeUtilHbaseCoProcAggr::codeGen(Generator * generator)
 		      returnedDesc,
 		      downqueuelength,
 		      upqueuelength,
+		      expectedRows,
 		      numBuffers,
 		      buffersize,
 
@@ -5532,6 +5543,14 @@ short ExeUtilHBaseBulkLoadTask::codeGen(Generator * generator)
   char * tablename =
     space->AllocateAndCopyToAlignedSpace(tableNameNAS, 0);
 
+  Cardinality expectedRows = (Cardinality) getEstRowsUsed().getValue();
+  // if run in ESPs
+  if (generator->getNumESPs() > 0)
+    expectedRows /= (Cardinality) generator->getNumESPs();
+
+  // make sure that the number is less than UINT_MAX
+  if (expectedRows > 4294967295.0)
+    expectedRows  = (float)4294967295.0;
 
   ULng32 buffersize = getDefault(GEN_DDL_BUFFER_SIZE);
   queue_index upqueuelength = (queue_index)getDefault(GEN_DDL_SIZE_UP);
@@ -5563,6 +5582,7 @@ short ExeUtilHBaseBulkLoadTask::codeGen(Generator * generator)
                       returnedDesc,
                       downqueuelength,
                       upqueuelength,
+                      expectedRows,
                       numBuffers,
                       buffersize,
                       server,

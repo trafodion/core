@@ -1201,6 +1201,15 @@ short HbaseDelete::codeGen(Generator * generator)
 				   0, returnedDesc->noTuples()-1);
     }
 
+  Cardinality expectedRows = (Cardinality) getEstRowsUsed().getValue();
+  // if run in ESPs
+  if (generator->getNumESPs() > 0)
+    expectedRows /= (Cardinality) generator->getNumESPs();
+
+  // make sure that the number is less than UINT_MAX
+  if (expectedRows > 4294967295.0)
+    expectedRows  = (float)4294967295.0;
+
   ULng32 buffersize = getDefault(GEN_DPSO_BUFFER_SIZE);
   buffersize = MAXOF(3*convertRowLen, buffersize);
   queue_index upqueuelength = (queue_index)getDefault(GEN_DPSO_SIZE_UP);
@@ -1308,6 +1317,7 @@ short HbaseDelete::codeGen(Generator * generator)
 		      returnedDesc,
 		      downqueuelength,
 		      upqueuelength,
+		      expectedRows,
 		      numBuffers,
 		      buffersize,
 
@@ -2003,6 +2013,15 @@ short HbaseUpdate::codeGen(Generator * generator)
 	}
     }
 
+  Cardinality expectedRows = (Cardinality) getEstRowsUsed().getValue();
+  // if run in ESPs
+  if (generator->getNumESPs() > 0)
+    expectedRows /= (Cardinality) generator->getNumESPs();
+
+  // make sure that the number is less than UINT_MAX
+  if (expectedRows > 4294967295.0)
+    expectedRows  = (float)4294967295.0;
+
   ULng32 buffersize = getDefault(GEN_DPSO_BUFFER_SIZE);
   buffersize = MAXOF(3*convertRowLen, buffersize);
 
@@ -2112,6 +2131,7 @@ short HbaseUpdate::codeGen(Generator * generator)
 		      returnedDesc,
 		      downqueuelength,
 		      upqueuelength,
+		      expectedRows,
 		      numBuffers,
 		      buffersize,
 
@@ -2594,6 +2614,15 @@ short HbaseInsert::codeGen(Generator *generator)
 	stt = ComTdbDp2Oper::KEY_SEQ_;
     }
   
+  Cardinality expectedRows = (Cardinality) getEstRowsUsed().getValue();
+  // if run in ESPs
+  if (generator->getNumESPs() > 0)
+    expectedRows /= (Cardinality) generator->getNumESPs();
+
+  // make sure that the number is less than UINT_MAX
+  if (expectedRows > 4294967295.0)
+    expectedRows  = (float)4294967295.0;
+
   ULng32 buffersize = getDefault(GEN_DP2I_BUFFER_SIZE);
   buffersize = MAXOF(3*insertRowLen, buffersize);
 
@@ -2706,6 +2735,7 @@ short HbaseInsert::codeGen(Generator *generator)
 
 		      downqueuelength,
 		      upqueuelength,
+		      expectedRows,
 		      numBuffers,
 		      buffersize,
 
