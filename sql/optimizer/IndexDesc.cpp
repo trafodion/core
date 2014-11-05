@@ -343,24 +343,31 @@ CollHeap* IndexDesc::wHeap()
   return (cmpContext_) ? cmpContext_->statementHeap() : 0; 
 }
 
-CostScalar IndexDesc::getKbForLocalPred() const
+CostScalar IndexDesc::getKbForLocalPred(NABoolean& isReliable) const
 {
+   isReliable = FALSE;
+
    AppliedStatMan * appStatMan = QueryAnalysis::ASM();
    if ( !appStatMan ) 
-      return csZero;
+      return csMinusOne;
 
    const TableAnalysis * tAnalysis = getPrimaryTableDesc()->getTableAnalysis();
 
    if ( !tAnalysis ) 
-      return csZero;
+      return csMinusOne;
 
    CANodeId tableId = tAnalysis->getNodeAnalysis()->getId();
    const ValueIdList &keys = getIndexKey();
-   CostScalar rowsToScan = appStatMan->
-          getStatsForLocalPredsOnPrefixOfColList(tableId, keys)->
-                getResultCardinality();
 
-   return rowsToScan * getRecordSizeInKb();
+   EstLogPropSharedPtr estLPPtr = appStatMan->
+             getStatsForLocalPredsOnPrefixOfColList(tableId, keys);
+
+   isReliable = ! estLPPtr->getColStats().containsAtLeastOneFake();
+
+   if ( isReliable )  
+      return estLPPtr->getResultCardinality() * getRecordSizeInKb();
+
+   return csMinusOne;
 }
 
 CostScalar
@@ -839,22 +846,25 @@ IndexProperty::compareIndexPromise(const IndexProperty *ixProp) const
 
       return INCOMPATIBLE;
 
-
-     CostScalar myKbForLPred = index->getKbForLocalPred();
-     CostScalar othKbForLPred = otherIndex->getKbForLocalPred();
+     NABoolean isThisStatsReliable = FALSE;
+     NABoolean isOtherStatsReliable = FALSE;
+     CostScalar myKbForLPred = index->getKbForLocalPred(isThisStatsReliable);
+     CostScalar othKbForLPred = otherIndex->getKbForLocalPred(isOtherStatsReliable);
 
      // If stats is available for this and the other index, compare the
      // amount of data accessed through the local predicate. The one
      // that accesses less is more promising. 
 
-     if ( myKbForLPred > csZero && othKbForLPred > csZero ) 
+     if ( isThisStatsReliable && isOtherStatsReliable ) 
      {
-        if ( myKbForLPred < othKbForLPred )
-            return MORE; // more promising
-        else {
-            if( myKbForLPred > othKbForLPred )
-               return LESS;
-            else {  
+        if ( myKbForLPred >= 0 && othKbForLPred >=0 ) 
+        {
+          if ( myKbForLPred < othKbForLPred )
+              return MORE; // more promising
+          else {
+              if( myKbForLPred > othKbForLPred )
+                 return LESS;
+              else {  
 
                // When the amount of data to access is the same, prefer 
                // the index with less # of index key columns
@@ -869,9 +879,9 @@ IndexProperty::compareIndexPromise(const IndexProperty *ixProp) const
                  return LESS;
                else
                  return SAME;
-            }
+              }
          }
-    } else {
+       } else {
         const CostScalar kbPerVol = index->getKbPerVolume();
         const CostScalar othKbPerVol = otherIndex->getKbPerVolume();
         if ( kbPerVol < othKbPerVol )
@@ -883,7 +893,9 @@ IndexProperty::compareIndexPromise(const IndexProperty *ixProp) const
             else 
                 return SAME;
         }
+      }
     }
+
     return INCOMPATIBLE;
 }
 // eof

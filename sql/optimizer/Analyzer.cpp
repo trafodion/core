@@ -2767,6 +2767,23 @@ void ValueIdSet::findAllReferencedBaseCols(ValueIdSet & result) const
 }
 
 // -----------------------------------------------------------------------
+// ValueIdSet::findAllReferencedIndexCols()
+//
+// This method find all index columns referenced directly or indirectly
+// via this ValueIdSet. This includes degging into VEGs and recursively
+// walking ItemExpr trees until the leaf nodes.
+// -----------------------------------------------------------------------
+void ValueIdSet::findAllReferencedIndexCols(ValueIdSet & result) const
+{
+  // Simply loop over all the expressions in the set
+  for (ValueId x= init(); next(x); advance(x) )
+  {
+    x.getItemExpr()->findAll(ITM_INDEXCOLUMN, result, TRUE, TRUE);
+  }
+}
+
+
+// -----------------------------------------------------------------------
 // ValueIdSet::findAllEqualityCols()
 //
 // This method finds all eqaulity columns referenced directly or indirectly
