@@ -610,6 +610,18 @@ protected:
   CostScalar computeCpuResourceForIndexJoinScans(CANodeId tableId);
   CostScalar computeCpuResourceForIndexOnlyScans(CANodeId tableId);
 
+  // Compute the amount of work for one index join scan.
+
+  // indexPredicates specifies the predicates on the index. The amout of the 
+  // work is only computed for the key columns contained in the predicates.
+  CostScalar computeCpuResourceForIndexJoin(CANodeId tableId, IndexDesc* iDesc,
+                                            ValueIdSet& indexPredicates,
+                                            CostScalar& rowsToScan);
+
+  // The work is only computed for the key columns contained in ikeys.
+  CostScalar computeCpuResourceForIndexJoin(CANodeId tableId, IndexDesc* iDesc,
+                                            const ValueIdList& ikeys,
+                                            CostScalar& rowsToScan);
 
 private:
 

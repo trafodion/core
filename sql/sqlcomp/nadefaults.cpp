@@ -1971,7 +1971,8 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
   DDint__(IMPLICIT_UPD_STATS_THRESHOLD,   "-1"), //"10000"),
 
   DDkwd__(INCORPORATE_SKEW_IN_COSTING,		  "ON"),
-  DDkwd__(INDEX_ELIMINATION_LEVEL,              "MAXIMUM"),
+  DDkwd__(INDEX_ELIMINATION_LEVEL,              "AGGRESSIVE"),
+  DDui1__(INDEX_ELIMINATION_THRESHOLD,          "50"),
  SDDkwd__(INFER_CHARSET,			"OFF"),
 
   // UDF initial row cost CQDs
