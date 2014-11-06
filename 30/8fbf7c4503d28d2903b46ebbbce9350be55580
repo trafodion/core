@@ -1,0 +1,11 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Dennis Markt <dennis.markt@hp.com>
+Code-Review+2: Oliver Bucaojit <oliver.bucaojit@hp.com>
+Workflow+1: Oliver Bucaojit <oliver.bucaojit@hp.com>
+Code-Review+2: Narendra Goyal <narendra.goyal@hp.com>
+Workflow+1: Narendra Goyal <narendra.goyal@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 06 Nov 2014 16:29:56 +0000
+Reviewed-on: https://review.trafodion.org/655
+Project: trafodion/core
+Branch: refs/heads/master
