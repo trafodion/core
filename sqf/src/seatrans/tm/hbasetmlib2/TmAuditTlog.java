@@ -62,6 +62,7 @@ import org.apache.hadoop.hbase.regionserver.RegionSplitPolicy;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -553,7 +554,12 @@ public class TmAuditTlog {
       if ((endTimes[lv_TimeIndex] - startTimes[lv_TimeIndex]) < minWriteTime) {
          minWriteTime = (endTimes[lv_TimeIndex] - startTimes[lv_TimeIndex]);
       }
-      if (lv_TimeIndex == 499) {
+
+      if (lv_TimeIndex == 49) {
+         timeIndex.set(1);  // Start over so we don't exceed the array size
+      }
+
+      if (lv_TotalWrites == 59999) {
          avgWriteTime = (double) (totalWriteTime/lv_TotalWrites);
          avgSynchTime = (double) (totalSynchTime/lv_TotalWrites);
          LOG.info("TLog Audit Write Report\n" + 
@@ -969,6 +975,10 @@ public class TmAuditTlog {
                throw e;
             }
          }
+      } catch (ConcurrentModificationException cme){
+          LOG.info("addControlPoint ConcurrentModificationException;  delaying control point ");
+          // Return the current value rather than incrementing this interval.
+          return tLogControlPoint.getCurrControlPt();
       } catch (Exception e){
           LOG.error("addControlPoint Exception " + e);
           e.printStackTrace();
