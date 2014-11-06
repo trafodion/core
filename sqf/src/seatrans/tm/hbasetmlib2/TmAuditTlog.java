@@ -896,7 +896,7 @@ public class TmAuditTlog {
      return true;
    }
 
-   public long addControlPoint (final Map<Long, TransactionState> map) throws IOException, Exception {
+   public long addControlPoint (final ConcurrentHashMap<Long, TransactionState> map) throws IOException, Exception {
       if (LOG.isTraceEnabled()) LOG.trace("addControlPoint start with map size " + map.size());
       long startTime = System.nanoTime();
       long endTime;
