@@ -9278,11 +9278,14 @@ void PCodeCfg::layoutNativeCode(Space* showplanSpace = NULL)
 
 #if 1 /* Use #if 0 to generate/compile, but NOT actually execute generated code */
   // Store offset into evalPtr_
+ for (Int32 jjjjj = 0; jjjjj < 10000000 ; jjjjj++ )
+ {
   expr_->setEvalPtr((ex_expr::evalPtrType)(*offPtr));
 
   // Mark this expression appropriately so that the native function gets called
   expr_->setPCodeMoveFastpath(TRUE);
   expr_->setPCodeNative(TRUE);
+ }
 #endif
 
   if (showplanSpace)
