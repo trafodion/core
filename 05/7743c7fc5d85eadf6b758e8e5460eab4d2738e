@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Joanie Cooper <joanie.cooper@hp.com>
+Code-Review+1: Sean Broeder <sean.broeder@hp.com>
+Code-Review+2: Narendra Goyal <narendra.goyal@hp.com>
+Workflow+1: Narendra Goyal <narendra.goyal@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 11 Nov 2014 01:37:11 +0000
+Reviewed-on: https://review.trafodion.org/666
+Project: trafodion/core
+Branch: refs/heads/master
