@@ -324,6 +324,8 @@ class Generator : public NABasicObject
   // statement. statsType_ contains info about what kind of stats are
   // to be collected.
   NABoolean computeStats_;
+  // TRUE means explain fragment will be stored in RMS shared segment
+  NABoolean explainInRms_;
   ComTdb::CollectStatsType collectStatsType_;
 
   // ---------------------------------------------------------------------
@@ -1341,6 +1343,14 @@ public:
     else
       return ComTdb::NO_STATS;
   }
+
+  NABoolean explainInRms()
+  {
+     if (collectStatsType() == ComTdb::PERTABLE_STATS)
+        explainInRms_ = FALSE;
+     return explainInRms_;
+  }
+
   inline NABoolean collectRtsStats() const { return collectRtsStats_; }
   
   NABoolean isStaticCompMode()    const { return  staticCompMode_; }

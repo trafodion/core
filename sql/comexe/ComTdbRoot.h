@@ -380,7 +380,8 @@ class ComTdbRoot : public ComTdb
          WMS_MONITOR_QUERY      = 0x00000200,
          WMS_CHILD_MONITOR_QUERY= 0x00000400,
          QUERY_USES_SM          = 0x00000800,
-         CHILD_TDB_IS_NULL      = 0x00001000
+         CHILD_TDB_IS_NULL      = 0x00001000,
+         EXPLAIN_IN_RMS_IN_TDB  = 0x00002000
   };
   
   // These values are for 32-bit rtFlags5_
@@ -1336,6 +1337,9 @@ public:
   NABoolean childTdbIsNull() const
   { return (rtFlags4_ & CHILD_TDB_IS_NULL) ? TRUE : FALSE; }
   void setChildTdbIsNull() { rtFlags4_ |= CHILD_TDB_IS_NULL; }
+  NABoolean explainInRms() const
+  { return (rtFlags4_ & EXPLAIN_IN_RMS_IN_TDB) ? TRUE : FALSE; }
+  void setExplainInRms() { rtFlags4_ |= EXPLAIN_IN_RMS_IN_TDB; }
 };
 #pragma warn(1506)  // warning elimination 
 
