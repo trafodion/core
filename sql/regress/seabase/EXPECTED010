@@ -55,7 +55,7 @@
 >>invoke t010t1;
 
 -- Definition of Trafodion table TRAFODION.SCH.T010T1
--- Definition current  Sun Nov  9 00:39:19 2014
+-- Definition current  Fri Nov 14 17:05:04 2014
 
   (
     A                                INT NO DEFAULT NOT NULL NOT DROPPABLE
@@ -67,7 +67,7 @@
 >>invoke hbase."_CELL_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_CELL_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:39:19 2014
+-- Definition current  Fri Nov 14 17:05:04 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -85,7 +85,7 @@
 >>invoke hbase."_ROW_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_ROW_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:39:19 2014
+-- Definition current  Fri Nov 14 17:05:04 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -255,7 +255,7 @@ LC   RC   OP   OPERATOR              OPT       DESCRIPTION           CARD
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282360243429
+PLAN_ID .................. 212282744704939456
 ROWS_OUT ................ 11
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 or b='1';
@@ -309,7 +309,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -331,7 +330,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282360293447
+PLAN_ID .................. 212282744704987204
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 and b='1';
@@ -387,7 +386,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
@@ -407,7 +405,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282360346972
+PLAN_ID .................. 212282744705038058
 ROWS_OUT ................ 10
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where b='1';
@@ -462,7 +460,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -483,7 +480,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282359727493
+PLAN_ID .................. 212282744704453801
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a = 2;
@@ -539,7 +536,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
@@ -783,7 +779,7 @@ A            B           C            D
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X1
-PLAN_ID .................. 212282282362774135
+PLAN_ID .................. 212282744707172964
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -842,7 +838,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -855,7 +850,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X2
-PLAN_ID .................. 212282282362833803
+PLAN_ID .................. 212282744707230500
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -915,7 +910,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -929,7 +923,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X3
-PLAN_ID .................. 212282282362915727
+PLAN_ID .................. 212282744707302786
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -988,7 +982,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -1002,7 +995,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X4
-PLAN_ID .................. 212282282363004245
+PLAN_ID .................. 212282744707379163
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -1089,7 +1082,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -1104,7 +1096,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X5
-PLAN_ID .................. 212282282363170561
+PLAN_ID .................. 212282744707515783
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -1173,7 +1165,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y1
-PLAN_ID .................. 212282282363250292
+PLAN_ID .................. 212282744707583054
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -1233,7 +1225,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -1246,7 +1237,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y2
-PLAN_ID .................. 212282282363308876
+PLAN_ID .................. 212282744707637631
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -1307,7 +1298,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -1321,7 +1311,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y3
-PLAN_ID .................. 212282282363388288
+PLAN_ID .................. 212282744707703483
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -1381,7 +1371,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -1395,7 +1384,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y4
-PLAN_ID .................. 212282282363465014
+PLAN_ID .................. 212282744707768016
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -1483,7 +1472,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -1498,7 +1486,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y5
-PLAN_ID .................. 212282282363626927
+PLAN_ID .................. 212282744707910179
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -1718,7 +1706,7 @@ _SALT_      A            B           C            D
 >>invoke t010t1;
 
 -- Definition of Trafodion table TRAFODION.SCH.T010T1
--- Definition current  Sun Nov  9 00:39:37 2014
+-- Definition current  Fri Nov 14 17:05:20 2014
 
   (
     A                                INT NO DEFAULT NOT NULL NOT DROPPABLE
@@ -1730,7 +1718,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_CELL_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_CELL_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:39:37 2014
+-- Definition current  Fri Nov 14 17:05:20 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -1748,7 +1736,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_ROW_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_ROW_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:39:37 2014
+-- Definition current  Fri Nov 14 17:05:20 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -1918,7 +1906,7 @@ LC   RC   OP   OPERATOR              OPT       DESCRIPTION           CARD
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282377536800
+PLAN_ID .................. 212282744721311360
 ROWS_OUT ................ 11
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 or b='1';
@@ -1972,7 +1960,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -1994,7 +1981,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282377585865
+PLAN_ID .................. 212282744721357604
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 and b='1';
@@ -2049,7 +2036,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 1
   cache_size ........... 100
@@ -2069,7 +2055,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282377633227
+PLAN_ID .................. 212282744721401761
 ROWS_OUT ................ 10
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where b='1';
@@ -2123,7 +2109,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -2144,7 +2129,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282377680255
+PLAN_ID .................. 212282744721445980
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1;
@@ -2199,7 +2184,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 1
   cache_size ........... 100
@@ -2443,7 +2427,7 @@ A            B           C            D
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X1
-PLAN_ID .................. 212282282379589429
+PLAN_ID .................. 212282744723199942
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -2500,7 +2484,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 1,a,1
   unique_rows ............ 4,a,1
@@ -2515,7 +2498,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X2
-PLAN_ID .................. 212282282379619712
+PLAN_ID .................. 212282744723229070
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -2573,7 +2556,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 1,a,1
   unique_rows ............ 1,a,3
@@ -2601,7 +2583,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X3
-PLAN_ID .................. 212282282379653233
+PLAN_ID .................. 212282744723260771
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -2658,7 +2640,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 1,a,1
   unique_rows ............ 1,a,3
@@ -2677,7 +2658,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X4
-PLAN_ID .................. 212282282379684455
+PLAN_ID .................. 212282744723289303
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -2762,7 +2743,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 2,a,1
   unique_rows ............ 2,a,3
@@ -2782,7 +2762,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X5
-PLAN_ID .................. 212282282379772221
+PLAN_ID .................. 212282744723353548
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -2853,7 +2833,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y1
-PLAN_ID .................. 212282282379830125
+PLAN_ID .................. 212282744723408565
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -2911,7 +2891,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -2927,7 +2906,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y2
-PLAN_ID .................. 212282282379862253
+PLAN_ID .................. 212282744723439343
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -2986,7 +2965,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -3003,7 +2981,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y3
-PLAN_ID .................. 212282282379894964
+PLAN_ID .................. 212282744723469266
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -3061,7 +3039,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -3078,7 +3055,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y4
-PLAN_ID .................. 212282282379930686
+PLAN_ID .................. 212282744723501744
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -3164,7 +3141,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -3181,7 +3157,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y5
-PLAN_ID .................. 212282282379998156
+PLAN_ID .................. 212282744723570588
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -3401,7 +3377,7 @@ _SALT_      A            B           C            D
 >>invoke t010t1;
 
 -- Definition of Trafodion table TRAFODION.SCH.T010T1
--- Definition current  Sun Nov  9 00:39:53 2014
+-- Definition current  Fri Nov 14 17:05:37 2014
 
   (
     A                                INT NO DEFAULT NOT NULL NOT DROPPABLE
@@ -3413,7 +3389,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_CELL_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_CELL_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:39:53 2014
+-- Definition current  Fri Nov 14 17:05:37 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -3431,7 +3407,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_ROW_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_ROW_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:39:53 2014
+-- Definition current  Fri Nov 14 17:05:37 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -3601,7 +3577,7 @@ LC   RC   OP   OPERATOR              OPT       DESCRIPTION           CARD
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282394238285
+PLAN_ID .................. 212282744737939475
 ROWS_OUT ................ 11
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 or b='1';
@@ -3655,7 +3631,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -3677,7 +3652,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282394288367
+PLAN_ID .................. 212282744737985181
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 and b='1';
@@ -3733,7 +3708,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
@@ -3753,7 +3727,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282394341217
+PLAN_ID .................. 212282744738034093
 ROWS_OUT ................ 10
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where b='1';
@@ -3808,7 +3782,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -3829,7 +3802,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282393994745
+PLAN_ID .................. 212282744737708904
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a = 2;
@@ -3885,7 +3858,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
@@ -4129,7 +4101,7 @@ A            B           C            D
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X1
-PLAN_ID .................. 212282282396299171
+PLAN_ID .................. 212282744739861424
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -4187,7 +4159,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -4202,7 +4173,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X2
-PLAN_ID .................. 212282282396333039
+PLAN_ID .................. 212282744739894646
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -4261,7 +4232,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -4277,7 +4247,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X3
-PLAN_ID .................. 212282282396365626
+PLAN_ID .................. 212282744739925696
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -4335,7 +4305,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -4351,7 +4320,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X4
-PLAN_ID .................. 212282282396402509
+PLAN_ID .................. 212282744739959609
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -4437,7 +4406,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -4453,7 +4421,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X5
-PLAN_ID .................. 212282282396473469
+PLAN_ID .................. 212282744740030870
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -4522,7 +4490,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y1
-PLAN_ID .................. 212282282396533298
+PLAN_ID .................. 212282744740089466
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -4581,7 +4549,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -4596,7 +4563,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y2
-PLAN_ID .................. 212282282396567176
+PLAN_ID .................. 212282744740121657
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -4656,7 +4623,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -4672,7 +4638,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y3
-PLAN_ID .................. 212282282396600290
+PLAN_ID .................. 212282744740152719
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select *
@@ -4731,7 +4697,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -4747,7 +4712,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y4
-PLAN_ID .................. 212282282396637632
+PLAN_ID .................. 212282744740186926
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -4834,7 +4799,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -4850,7 +4814,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y5
-PLAN_ID .................. 212282282396708066
+PLAN_ID .................. 212282744740286059
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -5070,7 +5034,7 @@ _SALT_      A            B           C            D
 >>invoke t010t1;
 
 -- Definition of Trafodion table TRAFODION.SCH.T010T1
--- Definition current  Sun Nov  9 00:40:10 2014
+-- Definition current  Fri Nov 14 17:05:53 2014
 
   (
     A                                INT NO DEFAULT NOT NULL NOT DROPPABLE
@@ -5082,7 +5046,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_CELL_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_CELL_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:40:10 2014
+-- Definition current  Fri Nov 14 17:05:53 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -5100,7 +5064,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_ROW_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_ROW_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:40:10 2014
+-- Definition current  Fri Nov 14 17:05:53 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -5270,7 +5234,7 @@ LC   RC   OP   OPERATOR              OPT       DESCRIPTION           CARD
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282410932447
+PLAN_ID .................. 212282744753889792
 ROWS_OUT ................ 11
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 or b='1';
@@ -5324,7 +5288,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -5346,7 +5309,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282410982886
+PLAN_ID .................. 212282744753935771
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 and b='1';
@@ -5401,7 +5364,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 1
   cache_size ........... 100
@@ -5421,7 +5383,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282411032581
+PLAN_ID .................. 212282744753979854
 ROWS_OUT ................ 10
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where b='1';
@@ -5475,7 +5437,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -5496,7 +5457,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282411081409
+PLAN_ID .................. 212282744754023886
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1;
@@ -5551,7 +5512,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 1
   cache_size ........... 100
@@ -5795,7 +5755,7 @@ A            B           C            D
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X1
-PLAN_ID .................. 212282282412942466
+PLAN_ID .................. 212282744755769480
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -5853,7 +5813,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -5866,7 +5825,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X2
-PLAN_ID .................. 212282282412996004
+PLAN_ID .................. 212282744755822834
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -5925,7 +5884,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -5939,7 +5897,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X3
-PLAN_ID .................. 212282282413063964
+PLAN_ID .................. 212282744755901104
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -5997,7 +5955,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -6011,7 +5968,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X4
-PLAN_ID .................. 212282282413131835
+PLAN_ID .................. 212282744755964330
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -6097,7 +6054,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -6112,7 +6068,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X5
-PLAN_ID .................. 212282282413254707
+PLAN_ID .................. 212282744756081825
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -6183,7 +6139,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y1
-PLAN_ID .................. 212282282413314240
+PLAN_ID .................. 212282744756136453
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -6242,7 +6198,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -6255,7 +6210,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y2
-PLAN_ID .................. 212282282413366162
+PLAN_ID .................. 212282744756188041
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -6315,7 +6270,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -6329,7 +6283,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y3
-PLAN_ID .................. 212282282413432576
+PLAN_ID .................. 212282744756255321
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -6388,7 +6342,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -6402,7 +6355,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y4
-PLAN_ID .................. 212282282413498776
+PLAN_ID .................. 212282744756317218
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -6489,7 +6442,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -6504,7 +6456,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y5
-PLAN_ID .................. 212282282413623504
+PLAN_ID .................. 212282744756447704
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -6744,7 +6696,7 @@ _SALT_      A            B           C            D
 >>invoke t010t1;
 
 -- Definition of Trafodion table TRAFODION.SCH.T010T1
--- Definition current  Sun Nov  9 00:40:27 2014
+-- Definition current  Fri Nov 14 17:06:10 2014
 
   (
     A                                INT NO DEFAULT NOT NULL NOT DROPPABLE
@@ -6756,7 +6708,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_CELL_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_CELL_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:40:27 2014
+-- Definition current  Fri Nov 14 17:06:10 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -6774,7 +6726,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_ROW_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_ROW_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:40:27 2014
+-- Definition current  Fri Nov 14 17:06:10 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -6944,7 +6896,7 @@ LC   RC   OP   OPERATOR              OPT       DESCRIPTION           CARD
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282428272481
+PLAN_ID .................. 212282744770324380
 ROWS_OUT ................ 11
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 or b='1';
@@ -6998,7 +6950,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -7020,7 +6971,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282428319688
+PLAN_ID .................. 212282744770368774
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 and b='1';
@@ -7076,7 +7027,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
@@ -7096,7 +7046,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282428371064
+PLAN_ID .................. 212282744770416676
 ROWS_OUT ................ 10
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where b='1';
@@ -7151,7 +7101,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -7172,7 +7121,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282428034011
+PLAN_ID .................. 212282744770096464
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a = 2;
@@ -7228,7 +7177,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
@@ -7472,7 +7420,7 @@ A            B           C            D
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X1
-PLAN_ID .................. 212282282430327419
+PLAN_ID .................. 212282744772237311
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -7531,7 +7479,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -7544,7 +7491,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X2
-PLAN_ID .................. 212282282430377080
+PLAN_ID .................. 212282744772287953
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -7604,7 +7551,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -7618,7 +7564,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X3
-PLAN_ID .................. 212282282430453449
+PLAN_ID .................. 212282744772350198
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -7677,7 +7623,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -7691,7 +7636,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X4
-PLAN_ID .................. 212282282430514456
+PLAN_ID .................. 212282744772412861
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -7778,7 +7723,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -7793,7 +7737,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X5
-PLAN_ID .................. 212282282430638065
+PLAN_ID .................. 212282744772547551
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -7862,7 +7806,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y1
-PLAN_ID .................. 212282282430694560
+PLAN_ID .................. 212282744772602686
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -7922,7 +7866,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -7935,7 +7878,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y2
-PLAN_ID .................. 212282282430741408
+PLAN_ID .................. 212282744772652168
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -7996,7 +7939,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -8010,7 +7952,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y3
-PLAN_ID .................. 212282282430798519
+PLAN_ID .................. 212282744772714812
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -8070,7 +8012,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -8084,7 +8025,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y4
-PLAN_ID .................. 212282282430856650
+PLAN_ID .................. 212282744772775091
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -8172,7 +8113,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -8187,7 +8127,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y5
-PLAN_ID .................. 212282282430978101
+PLAN_ID .................. 212282744772904744
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -8407,7 +8347,7 @@ _SALT_      A            B           C            D
 >>invoke t010t1;
 
 -- Definition of Trafodion table TRAFODION.SCH.T010T1
--- Definition current  Sun Nov  9 00:40:45 2014
+-- Definition current  Fri Nov 14 17:06:26 2014
 
   (
     A                                INT NO DEFAULT NOT NULL NOT DROPPABLE
@@ -8419,7 +8359,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_CELL_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_CELL_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:40:45 2014
+-- Definition current  Fri Nov 14 17:06:26 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -8437,7 +8377,7 @@ _SALT_      A            B           C            D
 >>invoke hbase."_ROW_"."TRAFODION.SCH.T010T1";
 
 -- Definition of Trafodion table HBASE."_ROW_"."TRAFODION.SCH.T010T1"
--- Definition current  Sun Nov  9 00:40:45 2014
+-- Definition current  Fri Nov 14 17:06:26 2014
 
   (
     ROW_ID                           VARCHAR(10) CHARACTER SET ISO88591 COLLATE
@@ -8607,7 +8547,7 @@ LC   RC   OP   OPERATOR              OPT       DESCRIPTION           CARD
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282445530195
+PLAN_ID .................. 212282744787067297
 ROWS_OUT ................ 11
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 or b='1';
@@ -8661,7 +8601,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -8683,7 +8622,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282445578095
+PLAN_ID .................. 212282744787111206
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1 and b='1';
@@ -8738,7 +8677,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 1
   cache_size ........... 100
@@ -8758,7 +8696,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282445623752
+PLAN_ID .................. 212282744787153033
 ROWS_OUT ................ 10
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where b='1';
@@ -8812,7 +8750,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   begin_keys(incl)
   end_keys(incl)
@@ -8833,7 +8770,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... XX
-PLAN_ID .................. 212282282445669413
+PLAN_ID .................. 212282744787195930
 ROWS_OUT ................. 1
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ select * from t010t1 where a=1;
@@ -8888,7 +8825,6 @@ DESCRIPTION
   parent_frag ............ (none)
   fragment_type .......... master
   scan_type .............. subset scan of table TRAFODION.SCH.T010T1
-  object_type ............ Trafodion
   columns ................ all
   unique_rows ............ 1
   cache_size ........... 100
@@ -9132,7 +9068,7 @@ A            B           C            D
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X1
-PLAN_ID .................. 212282282447511620
+PLAN_ID .................. 212282744788920267
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -9190,7 +9126,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -9203,7 +9138,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X2
-PLAN_ID .................. 212282282447557266
+PLAN_ID .................. 212282744788970617
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -9262,7 +9197,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -9276,7 +9210,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X3
-PLAN_ID .................. 212282282447615811
+PLAN_ID .................. 212282744789036651
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -9334,7 +9268,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -9348,7 +9281,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X4
-PLAN_ID .................. 212282282447673876
+PLAN_ID .................. 212282744789095587
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -9434,7 +9367,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -9449,7 +9381,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... X5
-PLAN_ID .................. 212282282447790721
+PLAN_ID .................. 212282744789219576
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -9520,7 +9452,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y1
-PLAN_ID .................. 212282282447841759
+PLAN_ID .................. 212282744789269410
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -9579,7 +9511,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -9592,7 +9523,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y2
-PLAN_ID .................. 212282282447889127
+PLAN_ID .................. 212282744789317021
 ROWS_OUT ................. 5
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -9652,7 +9583,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -9666,7 +9596,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y3
-PLAN_ID .................. 212282282447949294
+PLAN_ID .................. 212282744789379423
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0
 STATEMENT ................ select *
@@ -9725,7 +9655,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -9739,7 +9668,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y4
-PLAN_ID .................. 212282282448007867
+PLAN_ID .................. 212282744789440116
 ROWS_OUT ................. 4
 EST_TOTAL_COST ........... 0.01
 STATEMENT ................ delete from t010t2
@@ -9826,7 +9755,6 @@ DESCRIPTION
   fragment_type .......... master
   scan_type .............. subset scan limited by mdam of table
                              TRAFODION.SCH.T010T2
-  object_type ............ Trafodion
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
@@ -9841,7 +9769,7 @@ DESCRIPTION
 ------------------------------------------------------------------ PLAN SUMMARY
 MODULE_NAME .............. DYNAMICALLY COMPILED
 STATEMENT_NAME ........... Y5
-PLAN_ID .................. 212282282448123426
+PLAN_ID .................. 212282744789566120
 ROWS_OUT ................. 2
 EST_TOTAL_COST ........... 0
 STATEMENT ................ update t010t2
@@ -10191,7 +10119,7 @@ A
 +>                          position('AccessedRows' in variable_info))
 +>            as char(40) character set iso88591) as rows_accessed
 +>from table(statistics(null, 'S'))
-+>where tdb_name like 'SELECT_SEABASE_%';
++>where tdb_name = 'EX_HBASE_ACCESS';
 
 --- SQL command prepared.
 >>
@@ -10203,7 +10131,7 @@ A
 +>                          position('AccessedRows' in variable_info)-14)
 +>            as integer) > 4000 then 'PASS' else 'FAIL' end
 +>from table(statistics(null, 'S'))
-+>where tdb_name like 'SELECT_SEABASE_%'
++>where tdb_name = 'EX_HBASE_ACCESS'
 +>order by 1,2,3;
 
 --- SQL command prepared.
@@ -10258,10 +10186,9 @@ CNT                   MINC1                  MAXC1                  MINC2       
 FRAG_NUM    INST_NUM    SEQ_NUM     (EXPR)
 ----------  ----------  ----------  ------
 
-         2           0           1  PASS  
-         2           1           1  PASS  
+         0           0           1  PASS  
 
---- 2 row(s) selected.
+--- 1 row(s) selected.
 >>--use statsquery to see rows flowing through each ESP
 >>--execute statsquery ;
 >>
