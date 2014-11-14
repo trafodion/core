@@ -4186,8 +4186,11 @@ ValueIdSet TableAnalysis::getLocalPredsOnPrefixOfList(const ValueIdList & cols,
       result += colLocalPreds;
       prefixSize++;
     }
-    else
-      break;
+    else {
+
+      if ( !cols[i].isSaltedColumn() )
+        break;
+    }
   }
 
   return result;
@@ -10124,4 +10127,5 @@ JBBSubsetAnalysis* Scan::getJBBSubsetAnalysis()
 }
 
 // ****************************************************************
+
 
