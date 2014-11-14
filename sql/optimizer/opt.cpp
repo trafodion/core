@@ -4479,9 +4479,9 @@ RequiredResources * OptDefaults::estimateRequiredResources(RelExpr* rootExpr)
       if (getDefaultAsLong(AFFINITY_VALUE) == -2)
       {
         // take the resouceDoP if it is within the range [dDop, maxDoP], 
-        // otherwise take either the low or the high value
+        // otherwise take either 1 or the high value
         if (resourceDoP < dDoP)
-            maxDoP = dDoP;
+            maxDoP = 1;
         else if (resourceDoP > numCPUs)
           maxDoP = numCPUs;
         else
