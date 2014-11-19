@@ -657,6 +657,81 @@ static void showStrColNames(Queue * listOfColNames, Space * space,
     } // for
 }
 
+const char *
+ComTdbHbaseAccess::getNodeName() const
+{
+  if ((sqHbaseTable()) &&
+          ((accessType_ == UPDATE_) ||
+           (accessType_ == MERGE_) ||
+           (accessType_ == DELETE_)))
+    {
+      if (accessType_ == UPDATE_)
+        return (rowsetOper()? "EX_TRAF_ROWSET_UPDATE": "EX_TRAF_UPDATE");
+      if (accessType_ == MERGE_)
+        return (rowsetOper()? "EX_TRAF_ROWSET_MERGE": "EX_TRAF_MERGE");
+      if (accessType_ == DELETE_)
+        return (rowsetOper()? "EX_TRAF_ROWSET_DELETE": "EX_TRAF_DELETE");
+    }
+  else if ((sqHbaseTable()) &&
+           (accessType_ == SELECT_) &&
+           (rowsetOper()))
+    {
+        return ("EX_TRAF_ROWSET_SELECT");
+    }
+  else if (accessType_ == SELECT_)
+    {
+      if (keyMDAMGen())
+        {
+          // must be SQ Seabase table and no listOfScan/Get keys
+          if ((sqHbaseTable()) &&
+              (! listOfGetRows()) &&
+              (! listOfScanRows()))
+            {
+              return ("EX_TRAF_MDAM_SELECT");
+            }
+          // missing else?
+        }
+      else
+        return (sqHbaseTable()? "EX_TRAF_KEY_SELECT": "EX_HBASE_KEY_SELECT");
+    }
+  else if (accessType_ == INSERT_)
+    {
+      if (sqHbaseTable())
+        {
+          if ((vsbbInsert()) && (NOT hbaseSqlIUD()))
+            return (sqHbaseTable()? "EX_TRAF_VSBB_INSERT": "EX_HBASE_VSBB_INSERT");
+          else
+            return ("EX_TRAF_INSERT");
+        }
+      else
+	return ("EX_HBASE_INSERT");  // missing "INSERT_HBASE_VSBB"?
+    }
+  else if (accessType_ == UPSERT_)
+    {
+      if (sqHbaseTable())
+        {
+          if ((vsbbInsert()) && (NOT hbaseSqlIUD()))
+            return (sqHbaseTable()? "EX_TRAF_VSBB_UPSERT": "EX_HBASE_VSBB_UPSERT");
+          else
+            return ("EX_TRAF_UPSERT");
+        }
+      else
+	return ("EX_HBASE_UPSERT");  // missing "INSERT_HBASE_VSBB"?
+    }
+  else if (accessType_ == COPROC_)
+    {
+      if (sqHbaseTable())
+        {
+          return ("EX_TRAF_COPROC_AGGR");
+        }
+      else
+	return ("EX_HBASE_COPROC_AGGR");
+    }
+
+  // all else
+  return ("EX_HBASE_ACCESS");  // default name 
+}
+
 void ComTdbHbaseAccess::displayContents(Space * space,ULng32 flag)
 {
   ComTdb::displayContents(space,flag & 0xFFFFFFFE);
@@ -671,75 +746,8 @@ void ComTdbHbaseAccess::displayContents(Space * space,ULng32 flag)
       str_sprintf(buf, "accessType_ = %s", (char*)getAccessTypeStr(accessType_));
       space->allocateAndCopyToAlignedSpace(buf, str_len(buf), sizeof(short));
 
-      char accessDetail[100];
-      strcpy(accessDetail, "");
-      if ((sqHbaseTable()) &&
-	  ((accessType_ == UPDATE_) ||
-	   (accessType_ == MERGE_) ||
-	   (accessType_ == DELETE_)))
-	{
-	    str_sprintf(accessDetail, "%s%s%s", 
-			(char*)getAccessTypeStr(accessType_),
-			"SEABASE_",
-			(rowsetOper() ? "ROWSET_" : ""));
-	}
-      else if ((sqHbaseTable()) &&
-	   (accessType_ == SELECT_) &&
-	   (rowsetOper()))
-	{
-	  str_sprintf(accessDetail, "%s%s%s", 
-		      (char*)getAccessTypeStr(accessType_),
-		      "SEABASE_",
-		      (rowsetOper() ? "ROWSET_" : ""));
-	}
-      else if (accessType_ == SELECT_)
-	{
-	  if (keyMDAMGen())
-	    {
-	      // must be SQ Seabase table and no listOfScan/Get keys
-	      if ((sqHbaseTable()) &&
-		  (! listOfGetRows()) &&
-		  (! listOfScanRows()))
-		{
-		  str_sprintf(accessDetail, "%s%s%s", 
-			      (char*)getAccessTypeStr(accessType_),
-			      "SEABASE_",
-			      "MDAM_");
-		}
-	    }
-	  else
-	    str_sprintf(accessDetail, "%s%s%s", 
-			(char*)getAccessTypeStr(accessType_),
-			(sqHbaseTable() ? "SEABASE_" : "HBASE_"),
-			"KEY_");
-	}
-      else if ((accessType_ == INSERT_) ||
-	       (accessType_ == UPSERT_))
-	{
-	  if (sqHbaseTable())
-	    {
-	      if ((vsbbInsert()) &&
-		  (NOT hbaseSqlIUD()))
-		str_sprintf(accessDetail, "%s%s%s", 
-			    (char*)getAccessTypeStr(accessType_),
-			    (sqHbaseTable() ? "SEABASE_" : "HBASE_"),
-			    "VSBB_");
-	      else
-		str_sprintf(accessDetail, "%s%s", 
-			    (char*)getAccessTypeStr(accessType_),
-			    "SEABASE_");
-	    }
-	  else
-	    str_sprintf(accessDetail, "%s%s", 
-			(char*)getAccessTypeStr(accessType_),
-			"HBASE_");
-	}
-      
-      if (strlen(accessDetail) > 0)
-	{
-	  str_sprintf(buf, "accessDetail_ = %s", accessDetail);
-	  space->allocateAndCopyToAlignedSpace(buf, str_len(buf), sizeof(short));
-	}
+      str_sprintf(buf, "accessDetail_ = %s", getNodeName());
+      space->allocateAndCopyToAlignedSpace(buf, str_len(buf), sizeof(short));
 
       if (samplingRate_ > 0)
         {

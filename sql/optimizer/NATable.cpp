@@ -7334,7 +7334,7 @@ Int64 NATable::estimateHBaseRowCount()
                            (STMTHEAP, server, port, interface, zkPort);
 
   Int64 estRowCount;
-  Lng32 retcode = ehi->init();
+  Lng32 retcode = ehi->init(NULL);
   if (retcode < 0)
     {
       *CmpCommon::diags()
