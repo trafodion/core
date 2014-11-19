@@ -209,6 +209,14 @@ public:
     : NAVersionedObject(type), 
       pCodeMaxOptBrCnt_(9999999),
       pCodeMaxOptInCnt_(9999999),
+      warningInjection_   (0),   // Zero misc member vars for
+      errorInjection_     (0),   // the sake of precaution.
+      constantsAreaLength_(0),   // Note: There is an assumption
+      persistentLength_   (0),   // that if these *Length vars are 0
+      tempsAreaLength_    (0),   // the associated ptrs are meaningless.
+      pCodeOptFlags_      (0),
+      pCodeMode_          (0),
+      length_             (0),
       flags_(0)
   {
     // Initialize eyeCatcher_ here in this form instead of 

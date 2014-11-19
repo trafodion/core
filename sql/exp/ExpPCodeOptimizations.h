@@ -73,6 +73,8 @@
 #include "exp_clause_derived.h"
 #include "NABitVector.h"
 #include <stdio.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #define NA_LINUX_LLVMJIT
 #undef  NA_LINUX_LIBJIT
@@ -1663,6 +1665,8 @@ public:
     SHORT_CIRCUIT              = 0x200,
     AGGRESSIVE                 = 0x400,
     BULK_HASH                  = 0x800,
+    OPT_PCODE_CACHE_DISABLED   = 0x1000,
+    EXPR_CACHE_CMP_ONLY        = 0x2000,
     LAST_OPT_FLAG              = 0x1FFFFFF
   };
 
@@ -1780,7 +1784,9 @@ public:
   void clearVisitedFlags();
 
   // Setup Routines
-  NABoolean canPCodeBeOptimized( PCodeBinary * pCode );
+  NABoolean canPCodeBeOptimized( PCodeBinary * pCode
+                               , NABoolean   * pExprCacheable
+                               , UInt32      * totalPCodeLen );
   void createCfg();
   NABoolean createInsts (PCodeBinary* pcode);
   NABoolean addOverlappingOperands(NABoolean detectOnly);

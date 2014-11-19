@@ -77,6 +77,7 @@ class OptDebug;
 class CmpMemoryMonitor;
 class OptimizerSimulator;
 class QueryCache;
+class OptPCodeCache ;
 class HistogramCache;
 class CompilerTrackingInfo;
 class OptDefaults;
@@ -386,6 +387,7 @@ public :
   CmpQCache *getQCache() { return qCache_; }
 */
   QueryCache* getQueryCache() { return qcache_; }
+  OptPCodeCache* getOptPCodeCache() { return optPCodeCache_; }
 
   char* getTMFUDF_DLL_InterfaceHostDataBuffer() 
     { return tmfudf_dll_interface_host_data_; };
@@ -536,6 +538,7 @@ private:
   HistogramCache *histogramCache_;
 
   QueryCache* qcache_;
+  OptPCodeCache* optPCodeCache_ ;
 
   // table identifier representing each table, easier to hash on.
   CollIndex tableIdent_;

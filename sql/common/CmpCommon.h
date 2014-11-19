@@ -148,6 +148,7 @@ public:
   static CmpContext* context();
 
   #define CURRENTQCACHE (CmpCommon::context()->getQueryCache())
+  #define CURROPTPCODECACHE (CmpCommon::context()->getOptPCodeCache() )
 
   #define GlobalRuleSet (CmpCommon::context()->getRuleSet())
 

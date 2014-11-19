@@ -49,7 +49,7 @@
 #include "Platform.h"
 
 #if 1   /* NA_LINUX_LLVMJIT */
-#include "ComSysUtils.h"  /* For GETTIMEOFDAY */
+//#include "ComSysUtils.h"  /* For GETTIMEOFDAY */
 #include "NAAssert.h"
 
 // This #define must come *before* the #include "ExpPCodeOptimizations.h" line
@@ -5774,20 +5774,20 @@ void PCodeCfg::layoutNativeCode(Space* showplanSpace = NULL)
   }
 
 #if NExprDbgLvl >= VV_I0
-  timeval begTime;
+  struct rusage begTime;
 
   if ( NExprDbgLvl_ >= VV_I0 )
   {
     std::cout << std::endl ; // Flush anything in the data buffer
-    GETTIMEOFDAY(&begTime, 0);
+    (void) getrusage( RUSAGE_THREAD, &begTime );
 
-    char*  StTime = ctime((const time_t*)&begTime.tv_sec);
+    char*  StTime = ctime((const time_t*)&begTime.ru_utime.tv_sec);
     Int32 StTimeLn = strlen(StTime);
     StTime[StTimeLn-1] = ' ';
 
     DPT2( "VV90000: ", VV_I3,
           "STARTING layoutNativeCode() at %s : Microseconds: %d\n",
-                                       StTime, (int) begTime.tv_usec );
+                                       StTime, (int) begTime.ru_utime.tv_usec );
 
     if ( NExprDbgLvl_ >= VV_I1  &&
          NExDbgInfoPtr_->getNExStmtPrinted() == FALSE )
@@ -9264,11 +9264,11 @@ void PCodeCfg::layoutNativeCode(Space* showplanSpace = NULL)
 #if NExprDbgLvl >= VV_I0
   if ( NExprDbgLvl_ >= VV_I0 )
   {
-     timeval endTime;
-     GETTIMEOFDAY(&endTime, 0);
+     struct rusage endTime;
+     (void) getrusage( RUSAGE_THREAD, &endTime );
 
-     Int64 totalTime = ( endTime.tv_sec - begTime.tv_sec   ) * 1000000 +
-                       ( endTime.tv_usec - begTime.tv_usec ) ;
+     Int64 totalTime = ( endTime.ru_utime.tv_sec - begTime.ru_utime.tv_sec   ) * 1000000 +
+                       ( endTime.ru_utime.tv_usec - begTime.ru_utime.tv_usec ) ;
 
      DPT2( "VVzzz99: ", VV_I0, "NORMAL EXIT from layoutNativeCode(): "
            "%ld microseconds to translate %d PCODE instructions\n",

@@ -67,6 +67,8 @@
 #include "ComDistribution.h"
 #include "CmUtil.h"
 
+#include "PCodeExprCache.h"
+
 // -----------------------------------------------------------------------
 // When called within arkcmp.exe, fixupVTblPtr() translates to a call
 // to fix up the TDB's to the Compiler version. This function is also
@@ -212,11 +214,14 @@ Generator::Generator(CmpContext* currentCmpContext) :
 
   // Initialize the NExDbgInfoObj_ object within the Generator object.
   //
-  NExDbgInfoObj_.setNExDbgLvl( getDefaultAsLong(PCODE_NE_DBG_LEVEL) );
+  Lng32 PCodeNEDbgLvl = getDefaultAsLong(PCODE_NE_DBG_LEVEL) ;
+  NExDbgInfoObj_.setNExDbgLvl( PCodeNEDbgLvl );
+
   NExDbgInfoObj_.setNExStmtSrc( NULL );
   NExDbgInfoObj_.setNExStmtPrinted( FALSE );
-
   NExLogPathNam_[0] = '\0' ;
+
+#if 00  /* PCODE_NE_LOG_PATH now obsolete.  Should use PCODE_DEBUG_LOGDIR instead */
 
   NAString NExLogPth ;
   CmpCommon::getDefault(PCODE_NE_LOG_PATH, NExLogPth, FALSE);
@@ -231,6 +236,45 @@ Generator::Generator(CmpContext* currentCmpContext) :
      NExDbgInfoObj_.setNExLogPath( &NExLogPathNam_[0] );
   else
      NExDbgInfoObj_.setNExLogPath( NULL );
+#endif /* 00 */
+
+  Lng32 PCEC_Dbg = getDefaultAsLong(PCODE_EXPR_CACHE_DEBUG) ;
+  CURROPTPCODECACHE->setPCECLoggingEnabled( PCEC_Dbg );
+
+  NAString PCDLogDir ;
+  CmpCommon::getDefault(PCODE_DEBUG_LOGDIR, PCDLogDir, FALSE);
+  Int32 logDirLen = PCDLogDir.length() ;
+
+  if ( logDirLen == 0 )
+  {
+     CURROPTPCODECACHE->setPCDlogDirPath( NULL );
+     NExDbgInfoObj_.setNExLogPath( NULL );
+  }
+  else
+  {
+     if ( CURROPTPCODECACHE->getPCDlogDirPath() == NULL )
+          CURROPTPCODECACHE->setPCDlogDirPath( &PCDLogDir );
+
+     logDirLen = strlen( CURROPTPCODECACHE->getPCDlogDirPath() ) ;
+     if ( logDirLen < (sizeof(NExLogPathNam_) -1) )
+     {
+       strncpy( NExLogPathNam_ , PCDLogDir.data(), logDirLen );
+
+       // Add a unique value to end of PCODE_DEBUG_LOGDIR name
+       char uniq_part[24]; 
+       sprintf( uniq_part, "/NELOG.%x.%lx"
+              , CURROPTPCODECACHE->getUniqFileNamePid()
+              , CURROPTPCODECACHE->getUniqFileNameTime() );
+
+       Int32 spaceNeeded = logDirLen + strlen( uniq_part ) ; 
+       if ( spaceNeeded <= sizeof(NExLogPathNam_) )
+         strcpy( &NExLogPathNam_[logDirLen], uniq_part );
+       else NExLogPathNam_[0] = '\0';
+
+       NExDbgInfoObj_.setNExLogPath( &NExLogPathNam_[0] );
+     }
+  }
+
   computeStats_ = FALSE;
   explainInRms_ = TRUE;
 }

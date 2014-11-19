@@ -350,6 +350,12 @@ class Validate_1_200000   : public ValidateNumericRange
     : ValidateNumericRange(VALID_UINT, 1, (float)200000) {}
 };
 
+class Validate_0_10485760   : public ValidateNumericRange
+{public:
+  Validate_0_10485760()
+    : ValidateNumericRange(VALID_UINT, 0, (float)10485760) {}
+};
+
 class Validate_30_32000 : public ValidateNumericRange
 {
 public:

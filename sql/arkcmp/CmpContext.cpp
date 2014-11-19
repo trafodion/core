@@ -68,6 +68,7 @@
 #include "sqludr.h"
 #include "hs_globals.h"
 
+#include "PCodeExprCache.h"
 #ifdef NA_CMPDLL
 #include "CompException.h"
 #include "CostMethod.h"
@@ -259,6 +260,15 @@ CmpContext::CmpContext(UInt32 f, CollHeap * h)
   // set the QCache memory upper limit - currently only used to test setjmp/lonjmp logic
   qcache_->setHeapUpperLimit((size_t) 1024 * CmpCommon::getDefaultLong(MEMORY_LIMIT_QCACHE_UPPER_KB));
 
+  // Initialize context-local optimized PCode Expression cache
+  Int32 PCEC_maxsize      = 400000 ;
+  const char * envPCCsize = getenv("PCEC_CACHE_SIZE");
+
+  if (envPCCsize)
+    PCEC_maxsize = atoi(envPCCsize);
+
+  optPCodeCache_ = new (heap_) OptPCodeCache( PCEC_maxsize );
+  
   tableIdent_ = 0;
 
 

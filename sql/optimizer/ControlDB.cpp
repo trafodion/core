@@ -58,6 +58,8 @@
 
 #include "hs_log.h"
 
+#include "PCodeExprCache.h"
+
 extern THREAD_P CmpMemoryMonitor *cmpMemMonitor;
 
 #define CONTROLDBHEAP CTXTHEAP
@@ -395,6 +397,19 @@ void ControlDB::setControlDefault(ControlQueryDefault *def)
   case METADATA_CACHE_SIZE:
     metadata_cache_size = getDefaultAsLong(METADATA_CACHE_SIZE)*1024*1024;
     ActiveSchemaDB()->getNATableDB()->resizeCache(metadata_cache_size);
+    break;
+  case PCODE_EXPR_CACHE_SIZE:
+    {
+      Lng32 newsiz = getDefaultAsLong(PCODE_EXPR_CACHE_SIZE);
+      if (newsiz >= 0) // Note: If negative, just leave cache alone
+      {
+         if ( newsiz != CURROPTPCODECACHE->getMaxSize() )
+         {
+            CURROPTPCODECACHE->resizeCache( newsiz );
+            CURROPTPCODECACHE->clearStats(); // Do this after resizeCache(...)
+         }
+      }
+    }
     break;
   case QUERY_CACHE:
     {
