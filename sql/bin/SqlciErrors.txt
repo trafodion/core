@@ -447,24 +447,23 @@
 1567 ZZZZZ 99999 ADVANCED MAJOR DBADMIN An error was encountered processing metadata for function $0~String0.
 1568 ZZZZZ 99999 ADVANCED MAJOR DBADMIN An error was encountered processing metadata for format or model '$0~String0'.
 1569 ZZZZZ 99999 ADVANCED MAJOR DBADMIN Subqueries are not allowed as arguments to user-defined functions.
-1570 ZZZZZ 99999 BEGINNER MAJOR DBADMIN MAXVALUE must be greater than MINVALUE for $0~string0.
-1571 ZZZZZ 99999 BEGINNER MAJOR DBADMIN $0~string0 value cannot be zero for $1~string1.
-1572 ZZZZZ 99999 BEGINNER MAJOR DBADMIN $0~string0 value cannot be a negative number for $0~string1.
-1573 ZZZZZ 99999 BEGINNER MAJOR DBADMIN START WITH value must be greater than or equal to MINVALUE and less than or equal to MAXVALUE for $0~string0.
+1570 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The MAXVALUE for the sequence generator must be greater than the MINVALUE for $0~string0.
+1571 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The $0~string0 value cannot be zero for $1~string1.
+1572 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The $0~string0 value cannot be a negative number for $0~string1.
+1573 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The START WITH value must be greater than or equal to the MINVALUE and less than or equal to the MAXVALUE for $0~string0.
 1574 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The CYCLE option is currently not supported for $0~string0.   
-1575 ZZZZZ 99999 BEGINNER MAJOR DBADMIN INCREMENT BY value cannot be greater than the difference between MINVALUE and MAXVALUE for $0~string0.
-1576 ZZZZZ 99999 BEGINNER MAJOR DBADMIN $0~string0 value is greater than maximum allowed for this sequence.
-1577 ZZZZZ 99999 BEGINNER MAJOR DBADMIN CACHE value must be greater than 1 and less than or equal to (maxValue-startValue+1)/incrementValue for $0~string0.
-1578 ZZZZZ 99999 BEGINNER MAJOR DBADMIN START WITH option cannot be used for $0~string0.
+1575 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The INCREMENT BY value cannot be greater than the difference between MINVALUE and MAXVALUE for $0~string0.
+1576 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The $0~string0 value is greater than the maximum allowed for the $0~string1 data type.
+1577 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The CACHE value must be greater than 1 and less than or equal to (maxValue-minValue)/incrementValue for $0~string0.
+1578 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The START WITH option cannot be used for $0~string0.
 1579 ZZZZZ 99999 BEGINNER MAJOR DBADMIN This sequence has reached its max and cannot provide a new value.
 1580 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Catalog $0~string0 uses an unsupported collation.
 1581 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Schema $0~string0 uses an unsupported collation.
 1582 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Internal Error: Sequence information does not exist in metadata.
 1583 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Sequence metadata could not be updated.
-1584 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Timestamp mismatch detected on Sequence object.
 1590 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Column $0~ColumnName is not an IDENTITY column.
 1591 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The MAXVALUE option for the $0~string0 must be greater than the current value of $0~string1.
-1592 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Only MAXVALUE or INCREMENT BY options can be specified for $0~string0.
+1592 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Only the MAXVALUE or INCREMENT BY option can be altered for the $0~string0.
 1593 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Only one $0~string0 option can be altered at a time.
 1594 ZZZZZ 99999 BEGINNER MAJOR DBADMIN An error occurred trying to access the current value of the $0~string0.
 1595 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The MAXVALUE option for the $0~string0 must be a valid numeric value.  NO MAXVALUE is not allowed.
@@ -1324,12 +1323,12 @@ $1~String1 --------------------------------
 4371 ZZZZZ 99999 BEGINNER MAJOR DBADMIN -- Unused ----
 4372 ZZZZZ 99999 BEGINNER MAJOR DBADMIN -- Unused ----
 4373 ZZZZZ 99999 BEGINNER MAJOR DBADMIN -- Unused ----
-4374 ZZZZZ 99999 BEGINNER MAJOR DBADMIN -- Unused ----
+4374 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Invalid escape sequence specified as BULK UNLOAD field delimiter or record separator. Only the following escape sequences are allowed: \\a, \\b, \\f, \\n, \\r, \\t, or \\v.
 4375 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Window or Sequence function $0~String0 nested within an aggregate function in the same scope is not supported. 
 4376 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The $0~String0 option was used more than once in an UNLOAD statement.
 4377 ZZZZZ 99999 BEGINNER MAJOR DBADMIN SELECT query specified in the UNLOAD statement is not supported.
 4378 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Target location name specified for UNLOAD is invalid. $0~String0.
-4379 ZZZZZ 99999 BEGINNER MAJOR DBADMIN -- Reserved for UNLOAD ----
+4379 ZZZZZ 99999 BEGINNER MAJOR DBADMIN Invalid BULK UNLOAD field delimiter or record separator. A valid field delimiter or record separator must be a single character or an integer between 1 and 255.
 4380 0A000 99999 BEGINNER MAJOR DBADMIN $0~String0 collation is not supported with sequence functions when collated character expressions are used with SEQUENCE BY, RUNNING/MOVING MIN/MAX, or ROWS SINCE CHANGED.
 4381 42000 99999 BEGINNER MINOR LOGONLY Holdable cursor attribute is incompatible for the isolation level.
 4382 42000 99999 BEGINNER MINOR LOGONLY Holdable cursor attribute cannot be set for a CALL statement.
@@ -1773,7 +1772,6 @@ drop the default context
 8934 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The MAXVALUE for the sequence generator has been exceeded.
 8935 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The sequence generator update failed, see additional diagnostics for failure details.
 8936 ZZZZZ 99999 BEGINNER MINOR LOGONLY Reorg status for this qid could not be retrieved. Either the provided qid does not exist or the reorg operation has not started or the reorg operation has finished or reorg stats are not being collected.
-8937 ZZZZZ 99999 BEGINNER MINOR LOGONLY Invalid CPU, PID, TimeStamp, or QueryNumber passed in. Unable to retrieve Runtime Statistics.
 8940 ZZZZZ 99999 BEGINNER MAJOR DBADMIN User-defined function $0~String0 returned invalid data for output value $1~Int0. Details: $2~String1.
 8941 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The buffer to return the session attribute is either null or too small.
 8942 ZZZZZ 99999 BEGINNER MAJOR DBADMIN The buffer to return the database user name is either null or too small.
