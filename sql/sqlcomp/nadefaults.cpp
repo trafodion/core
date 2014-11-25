@@ -2067,7 +2067,7 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   DDui1__(MAX_ACCESS_NODES_PER_ESP,	"1024"),
 
  // max size in bytes of a char or varchar column.
-  DDui2__(MAX_CHARACTER_COL_SIZE,	"200000"),
+  DDui2__(TRAF_MAX_CHARACTER_COL_LENGTH,	"200000"),
 
  // this is the default length of a param which is typed as a VARCHAR.
   DDui2__(MAX_CHAR_PARAM_DEFAULT_SIZE,	"32"),
