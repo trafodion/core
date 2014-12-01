@@ -24,6 +24,8 @@
 #include <errno.h>
 #include "sqludr.h"
 
+extern "C" {
+
 int getVCLen(SQLUDR_PARAM *inParam, char *input_row)
 {
   char *vcInd = ((char *) input_row) + inParam->vc_ind_offset;
@@ -483,3 +485,56 @@ SQLUDR_LIBFUNC SQLUDR_INT32 READEVENTS(SQLUDR_CHAR *input_row,
 
   return SQLUDR_SUCCESS;
 }
+
+} // end extern C
+
+using namespace tmudr;
+
+// compiler interface class for READEVENTS
+
+class ReadEventsUDFInterface : public TMUDRInterface
+{
+  // override any methods where the UDF author would
+  // like to change the default behavior
+
+  void describeParamsAndColumns(UDRInvocationInfo &info); // Binder
+
+};
+
+extern "C" TMUDRInterface * READEVENTS_CreateCompilerInterfaceObject(
+     const UDRInvocationInfo *info)
+{
+  return new ReadEventsUDFInterface();
+}
+
+void ReadEventsUDFInterface::describeParamsAndColumns(
+     UDRInvocationInfo &info)
+{
+  // This UDF is a table-valued function, no table-valued inputs
+  if (info.getNumTableInputs() != 0)
+    throw UDRException(38220,
+                       "There should be no table-valued parameters to the call to %s, got %d",
+                       info.getUDRName().data(),
+                       info.getNumTableInputs());
+
+  // remove any output columns declared in the DDL
+  // (there shouldn't be any since this is a predefined UDR)
+  while (info.getOutputTableInfo().getNumColumns() > 0)
+    info.getOutputTableInfo().deleteColumn(0);
+
+  // add the four output columns
+  info.getOutputTableInfo().addColumn(
+       ColumnInfo("EVENT_TIME",
+                  TypeInfo(TypeInfo::CHAR_ARRAY, 19)));
+  info.getOutputTableInfo().addColumn(
+       ColumnInfo("COMPONENT",
+                  TypeInfo(TypeInfo::CHAR_ARRAY, 10)));
+  info.getOutputTableInfo().addColumn(
+       ColumnInfo("SEVERITY",
+                  TypeInfo(TypeInfo::CHAR_ARRAY, 9)));
+  info.getOutputTableInfo().addColumn(
+       ColumnInfo("TEXT",
+                  TypeInfo(TypeInfo::VARCHAR_ARRAY, 1024)));
+
+}
+

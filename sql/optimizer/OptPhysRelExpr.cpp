@@ -16908,6 +16908,14 @@ CostMethod* PhysicalTableMappingUDF::costMethod() const
   return m;
 } 
 
+PlanWorkSpace * PhysicalTableMappingUDF::allocateWorkSpace() const
+{
+  PlanWorkSpace *result =
+    new(CmpCommon::statementHeap()) TMUDFPlanWorkSpace(getArity());
+
+  return result;
+}
+
 
 //***********************************************************************
 //
