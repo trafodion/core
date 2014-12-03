@@ -767,6 +767,7 @@ public:
            GroupAttributes * groupAttributesPtr,
            const ValueIdSet& selectionPredicates,
            const Disjuncts& disjuncts,
+           const ValueIdSet &generatedCCPreds,
            OperatorTypeEnum otype = REL_FILE_SCAN
            );
 
@@ -862,13 +863,15 @@ public:
   const ValueIdSet&  getExecutorPredicates() const
   { return executorPredicates_; }
   void setExecutorPredicates(const ValueIdSet& executorPredicates)
-  { executorPredicates_ = executorPredicates; }
+  { executorPredicates_ = executorPredicates;
+    executorPredicates_ -= generatedCCPreds_; }
   // Naked access to executorPredicates_ only because there is code
   // in precodegen that needs this (old code) (don't use this, use
   // get/set functions above):
   ValueIdSet& executorPred()                    { return executorPredicates_; }
   ItemExpr * getExecutorPredTree()              { return executorPredTree_; }
   ValueIdSet & retrievedCols()                  { return retrievedCols_; }
+  const ValueIdSet &getComputedPredicates() const { return generatedCCPreds_; }
 
   NABoolean getReverseScan() const              { return reverseScan_; }
 //  void setReverseScan(NABoolean rs)           { reverseScan_ = rs; }
@@ -1006,7 +1009,10 @@ private:
   //--------------- Disjuncts -------------------
   MdamKey *mdamKeyPtr_;
   const Disjuncts *disjunctsPtr_;
-
+  // computed predicates that are reflected in the disjuncts
+  // (those are predicates on computed columns that are
+  // computed from regular predicates)
+  ValueIdSet generatedCCPreds_;
 
   //--------------- Search key ----------------
 
@@ -1183,6 +1189,7 @@ public:
               GroupAttributes * groupAttributesPtr,
               const ValueIdSet& selectionPredicates,
               const Disjuncts& disjuncts,
+              const ValueIdSet& generatedCCPreds,
 	      OperatorTypeEnum otype = REL_HBASE_ACCESS,
               CollHeap *oHeap = CmpCommon::statementHeap());
  

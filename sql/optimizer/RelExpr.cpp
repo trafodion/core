@@ -9398,6 +9398,7 @@ FileScan::FileScan(const CorrName& tableName,
 		   GroupAttributes * groupAttributesPtr,
 		   const ValueIdSet& selectionPredicates,
 		   const Disjuncts& disjuncts,
+                   const ValueIdSet& generatedCCPreds,
                    OperatorTypeEnum otype) :
      Scan (tableName, tableDescPtr, otype),
      indexDesc_(indexDescPtr),
@@ -9405,6 +9406,7 @@ FileScan::FileScan(const CorrName& tableName,
      executorPredTree_(NULL),
      mdamKeyPtr_(NULL),
      disjunctsPtr_(&disjuncts),
+     generatedCCPreds_(generatedCCPreds),
      pathKeys_(NULL),
      partKeys_(NULL),
      hiveSearchKey_(NULL),
@@ -9937,12 +9939,14 @@ HbaseAccess::HbaseAccess(CorrName &corrName,
                          GroupAttributes * groupAttributesPtr,
                          const ValueIdSet& selectionPredicates,
                          const Disjuncts& disjuncts,
+                         const ValueIdSet& generatedCCPreds,
 			 OperatorTypeEnum otype,
                          CollHeap *oHeap)
   : FileScan(corrName, tableDesc, idx, 
              isReverseScan, baseCardinality,
              accessOptions, groupAttributesPtr,
              selectionPredicates, disjuncts,
+             generatedCCPreds,
              otype),
     listOfSearchKeys_(oHeap)
 {
@@ -10148,6 +10152,7 @@ HbaseAccessCoProcAggr::HbaseAccessCoProcAggr(CorrName &corrName,
 		isReverseScan, baseCardinality,
 		accessOptions, groupAttributesPtr,
 		selectionPredicates, disjuncts,
+                ValueIdSet(),
 		REL_HBASE_COPROC_AGGR),
     aggregateExpr_(aggregateExpr)
 {
@@ -10512,7 +10517,8 @@ DP2Scan::DP2Scan(const CorrName& tableName,
 		   accessOpts,
 		   groupAttributesPtr,
 		   selectionPredicates,
-		   disjuncts)
+		   disjuncts,
+                   ValueIdSet())
 {
 }
 
