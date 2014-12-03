@@ -3836,6 +3836,8 @@ void CmpSeabaseDDL::alterSeabaseTableAddPKeyConstraint(
   {
      *CmpCommon::diags() << DgSqlCode(-CAT_NOT_AUTHORIZED);
 
+     deallocEHI(ehi); 
+
      processReturn ();
 
      return;
@@ -4082,6 +4084,8 @@ void CmpSeabaseDDL::alterSeabaseTableAddUniqueConstraint(
   {
      *CmpCommon::diags() << DgSqlCode(-CAT_NOT_AUTHORIZED);
 
+     deallocEHI(ehi); 
+
      processReturn ();
 
      return;
@@ -4280,6 +4284,8 @@ void CmpSeabaseDDL::alterSeabaseTableAddRIConstraint(
   {
      *CmpCommon::diags() << DgSqlCode(-CAT_NOT_AUTHORIZED);
 
+     deallocEHI(ehi); 
+
      processReturn ();
 
      return;
@@ -4336,51 +4342,30 @@ void CmpSeabaseDDL::alterSeabaseTableAddRIConstraint(
     }
 
   // User must have REFERENCES privilege on the referenced table 
-  PrivMgrUserPrivs* pPrivInfo = refdNaTable->getPrivInfo();
-  PrivMgrUserPrivs privs;
-  if (pPrivInfo == NULL)
+  if (isAuthorizationEnabled())
     {
-      // Changes are being added to always set up the privilege details at
-      // naTable construction time.  When these changes are available, the
-      // following error will be activated.
-      //*CmpCommon::diags() << DgSqlCode(-CAT_UNABLE_TO_RETRIEVE_PRIVS);
-      //     deallocEHI(ehi);
-      //     processReturn();
-      //    return;
-          
-      // For now, just go get privileges 
-      NAString privMDLoc;
-      CONCAT_CATSCH(privMDLoc, CmpSeabaseDDL::getSystemCatalogStatic(), SEABASE_MD_SCHEMA);
-      NAString privMgrMDLoc;
-      int64_t objectUID = (int64_t)refdNaTable->objectUid().get_value();
-
-      CONCAT_CATSCH(privMgrMDLoc, CmpSeabaseDDL::getSystemCatalogStatic(), SEABASE_PRIVMGR_SCHEMA);
-      PrivMgrCommands privInterface(std::string(privMDLoc.data()),
-                                    std::string(privMgrMDLoc.data()),
-                                    CmpCommon::diags());
-
-      Int32 userID = ComUser::getCurrentUser();
-      PrivStatus retcode = privInterface.getPrivileges(objectUID, userID, privs);
-      if (retcode == STATUS_ERROR)
-      {
-        if (CmpCommon::diags()->getNumber(DgSqlCode::ERROR_) == 0)
+      PrivMgrUserPrivs* privs = refdNaTable->getPrivInfo();
+      if (privs == NULL)
+        {
           *CmpCommon::diags() << DgSqlCode(-CAT_UNABLE_TO_RETRIEVE_PRIVS);
+
           deallocEHI(ehi);
+
           processReturn();
+
           return;
-      }
-      pPrivInfo = &privs;
-    }
+        }
 
-  if (!pPrivInfo->hasReferencePriv())
-    {
-      *CmpCommon::diags() << DgSqlCode(-CAT_NOT_AUTHORIZED);
+      if (!ComUser::isRootUserID() && !privs->hasReferencePriv())
+        {
+          *CmpCommon::diags() << DgSqlCode(-CAT_NOT_AUTHORIZED);
 
-      deallocEHI(ehi);
+          deallocEHI(ehi);
 
-      processReturn();
+          processReturn();
 
-      return;
+          return;
+        }
     }
 
   ElemDDLColNameArray &ringCols = alterAddConstraint->getConstraint()->castToElemDDLConstraintRI()->getReferencingColumns();
@@ -4907,6 +4892,8 @@ void CmpSeabaseDDL::alterSeabaseTableAddCheckConstraint(
   {
      *CmpCommon::diags() << DgSqlCode(-CAT_NOT_AUTHORIZED);
 
+     deallocEHI(ehi); 
+
      processReturn ();
 
      return;
@@ -5090,6 +5077,8 @@ void CmpSeabaseDDL::alterSeabaseTableDropConstraint(
                                 naTable->getOwner()))
   {
      *CmpCommon::diags() << DgSqlCode(-CAT_NOT_AUTHORIZED);
+
+     deallocEHI(ehi); 
 
      processReturn ();
 
