@@ -4973,7 +4973,7 @@ special_index_table_name : TOK_TABLE '(' TOK_INDEX_TABLE actual_table_name
                            optional_special_utility_open_clause 
                            optional_with_shared_access_clause ')'
                 {
-                  if (Get_SqlParser_Flags(ALLOW_SPECIALTABLETYPE))
+                  //if (Get_SqlParser_Flags(ALLOW_SPECIALTABLETYPE))
                     {
                       // We don't allow a user to do their own index maint,
                       // nor even SELECT from an index (because that
@@ -4997,8 +4997,8 @@ special_index_table_name : TOK_TABLE '(' TOK_INDEX_TABLE actual_table_name
                         }
                       $$ = $4;  // actual_table_name
                     }
-                  else
-                    { yyerror(""); YYERROR; /*internal syntax only!*/}
+                  //else
+                   // { yyerror(""); YYERROR; /*internal syntax only!*/}
                 } 
 
            | TOK_TABLE '(' ghost TOK_INDEX_TABLE actual_table_name
