@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Hans Zeller <hans.zeller@hp.com>
+Workflow+1: Hans Zeller <hans.zeller@hp.com>
+Code-Review+2: Suresh Subbiah <suresh.subbiah@hp.com>
+Code-Review+1: Barry Fritchman <barry.fritchman@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 04 Dec 2014 00:16:50 +0000
+Reviewed-on: https://review.trafodion.org/759
+Project: trafodion/core
+Branch: refs/heads/master
