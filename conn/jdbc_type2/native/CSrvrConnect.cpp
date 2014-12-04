@@ -51,6 +51,7 @@ SRVR_CONNECT_HDL::SRVR_CONNECT_HDL()
 	pSrvrStmtListHead = NULL;
 	pCurrentSrvrStmt = NULL;
 	count = 0;
+	isSPJRS = 0;
 	pSrvrStmtInternal = NULL;
 	CLEAR_WARNING(sqlWarning);
 	CLEAR_ERROR(sqlError);
