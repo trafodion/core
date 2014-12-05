@@ -849,11 +849,10 @@ CoprocessorService, Coprocessor {
     Throwable t = null;
     WrongRegionException wre = null;
     Exception ce = null;
-
+    long transId = request.getTransactionId();
     long scannerId = request.getScannerId();
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: closeScanner - id " + request.getTransactionId() + ", regionName " + regionInfo.getRegionNameAsString() +
-", scannerId " + scannerId);
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: closeScanner - scannerId " + scannerId + ", transaction id " + transId + ", regionName " + regionInfo.getRegionNameAsString());
 
     /* commenting it out for the time-being
     java.lang.String name = ((com.google.protobuf.ByteString) request.getRegionName()).toStringUtf8();
@@ -876,7 +875,7 @@ CoprocessorService, Coprocessor {
              scanner.close();
          }
          else
-           if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  closeScanner scanner was null for scannerId " + scannerId);
+           if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  closeScanner scanner was null for scannerId " + scannerId + ", transaction id " + transId);
 
 /*
          try {
@@ -1234,6 +1233,7 @@ CoprocessorService, Coprocessor {
     LeaseStillHeldException lse = null;                 
     Scan scan = null;
     long scannerId = 0L;
+    long transId = request.getTransactionId();
     boolean isLoadingCfsOnDemandSet = false;
 
     /* commenting it out for the time-being
@@ -1302,16 +1302,15 @@ CoprocessorService, Coprocessor {
 
     if (!exceptionThrown) {
       try {
-        scanner = getScanner(request.getTransactionId(), scan);
+        scanner = getScanner(transId, scan);
         
         if (scanner != null) {
-          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  openScanner called getScanner, scanner is " + scanner + ", transid " + request.getTransactionId());
           // Add the scanner to the map
           scannerId = addScanner(scanner, this.m_Region);
-          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  openScanner called addScanner, scannerId is " + scannerId + ", transid " + request.getTransactionId());
+          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: openScanner called addScanner - scanner id " + scannerId + ", transaction id " + transId + ", regionName " + regionInfo.getRegionNameAsString());
         }
         else
-          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  getScanner returned null, scannerId is " + scannerId + ", transid " + request.getTransactionId());
+          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  getScanner returned null, scannerId is " + scannerId + ", transid " + transId);
        
       } catch (LeaseStillHeldException llse) {
 /*
@@ -1336,7 +1335,7 @@ CoprocessorService, Coprocessor {
     }
 */
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: openScanner - id " + request.getTransactionId() + ", regionName " + regionInfo.getRegionNameAsString());
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: openScanner - scanner id " + scannerId + ", transaction id " + transId + ", regionName " + regionInfo.getRegionNameAsString());
 
     org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.OpenScannerResponse.Builder openResponseBuilder = OpenScannerResponse.newBuilder();
 
@@ -1381,6 +1380,7 @@ CoprocessorService, Coprocessor {
     Throwable t = null;
     ScannerTimeoutException ste = null;
     OutOfOrderScannerNextException ooo = null;
+    UnknownScannerException use = null;
     WrongRegionException wre = null;
     Exception ne = null;
     Scan scan = null;
@@ -1392,10 +1392,11 @@ CoprocessorService, Coprocessor {
     int numberOfRows = request.getNumberOfRows();
     boolean closeScanner = request.getCloseScanner();
     long nextCallSeq = request.getNextCallSeq();
+    long transId = request.getTransactionId();
     long count = 0L;
     boolean shouldContinue = true;
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - scannerId " + scannerId + ", numberOfRows " + numberOfRows + ", nextCallSeq " + nextCallSeq); 
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - scanner id " + scannerId + ", transaction id " + transId + ", numberOfRows " + numberOfRows + ", nextCallSeq " + nextCallSeq + ", closeScanner is " + closeScanner + ", region is " + regionInfo.getRegionNameAsString()); 
 
     /* commenting it out for the time-being
     java.lang.String name = ((com.google.protobuf.ByteString) request.getRegionName()).toStringUtf8();
@@ -1420,7 +1421,7 @@ CoprocessorService, Coprocessor {
 
         if (scanner != null)
         {
-          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - id " + scannerId+ ", scanner is not null"); 
+          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - scanner id " + scannerId + ", scanner is not null"); 
           while (shouldContinue) {
             hasMore = scanner.next(cellResults);
             result = Result.create(cellResults);
@@ -1433,22 +1434,22 @@ CoprocessorService, Coprocessor {
 
             if (count == numberOfRows || !hasMore)
               shouldContinue = false;
-            if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - id " + scannerId + ", count is " + count + ", hasMore is " + hasMore + ", result " + result.isEmpty() + ", row " + result.getRow()); 
+            if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - scanner id " + scannerId + ", count is " + count + ", hasMore is " + hasMore + ", result " + result.isEmpty() + ", row " + result.getRow()); 
           }
         }
         else
         {
-        if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - id " + scannerId+ ", scanner is null"); 
+        if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan -  scanner id " + scannerId + ", transaction id " + transId + ", scanner is null"); 
         }
 
      } catch(OutOfOrderScannerNextException ooone) {
-       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - id " + scannerId + " Caught OutOfOrderScannerNextException  " + ooone.getMessage() + " " + stackTraceToString(ooone));
+       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - scanner id " + scannerId + ", transaction id " + transId + " Caught OutOfOrderScannerNextException: " + ooone.getMessage() + " " + stackTraceToString(ooone));
        ooo = ooone;
      } catch(ScannerTimeoutException cste) {
-       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - id " + scannerId + " Caught ScannerTimeoutException  " + cste.getMessage() + " " + stackTraceToString(cste));
+       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - scanner id " + scannerId + ", transaction id " + transId + " Caught ScannerTimeoutException: " + cste.getMessage() + " " + stackTraceToString(cste));
        ste = cste;
      } catch(Throwable e) {
-       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - id " + scannerId + " Caught exception  " + e.getMessage() + " " + stackTraceToString(e));
+       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - scanner id " + scannerId + ", transaction id " + transId + " Caught exception as Throwable: " + e.getMessage() + " " + stackTraceToString(e));
        t = e;
      }
      finally {
@@ -1456,6 +1457,7 @@ CoprocessorService, Coprocessor {
          try {
            if (closeScanner) {
              scanner.close();
+             if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - scanner id " + scannerId + ", transaction id " + transId + ", close scanner was true, closing the scanner" + ", closeScanner is " + closeScanner + ", region is " + regionInfo.getRegionNameAsString());
 /*
              try {
                scannerLeases.cancelLease(getScannerLeaseId(scannerId));
@@ -1466,7 +1468,7 @@ CoprocessorService, Coprocessor {
 */
            }
          } catch(Exception e) {
-           if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  performScan caught exception " + e.getMessage() + "" + stackTraceToString(e));
+           if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  performScan  transaction id " + transId + ", caught exception " + e.getMessage() + "" + stackTraceToString(e));
            ne = e;
          }
        }
@@ -1478,12 +1480,21 @@ CoprocessorService, Coprocessor {
       scanners.get(scannerId);
 
    nextCallSeq++;
+ 
+   if (rsh == null)
+   {
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan rsh is null, UnknownScannerException for scannerId: " + scannerId + ", transaction id " + transId + ", nextCallSeq was " + nextCallSeq + ", for region " + regionInfo.getRegionNameAsString());
+      use =  new UnknownScannerException(
+             "ScannerId: " + scannerId + ", was scanner already closed?, transaction id " + transId + ", nextCallSeq was " + nextCallSeq + ", for region " + regionInfo.getRegionNameAsString());
+   }
+   else
+   {
+     rsh.nextCallSeq = nextCallSeq;
 
-   rsh.nextCallSeq = nextCallSeq;
+     if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - scanner id " + scannerId + ", transaction id " + transId + ", regionName " + regionInfo.getRegionNameAsString() +
+", nextCallSeq " + nextCallSeq + ", rsh.nextCallSeq " + rsh.nextCallSeq + ", close scanner is " + closeScanner);
 
-   if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - id " + request.getTransactionId() + ", regionName " + regionInfo.getRegionNameAsString() +
-", scannerId " + scannerId + ", nextCallSeq " + nextCallSeq + ", rsh.nextCallSeq " + rsh.nextCallSeq);
-
+   }
     org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.PerformScanResponse.Builder performResponseBuilder = PerformScanResponse.newBuilder();
     performResponseBuilder.setHasMore(hasMore);
     performResponseBuilder.setNextCallSeq(nextCallSeq);
@@ -1527,6 +1538,12 @@ CoprocessorService, Coprocessor {
     {
       performResponseBuilder.setHasException(true);
       performResponseBuilder.setException(ooo.toString());
+    }
+
+    if (use != null)
+    {
+      performResponseBuilder.setHasException(true);
+      performResponseBuilder.setException(use.toString());
     }
 
     PerformScanResponse presponse = performResponseBuilder.build();
@@ -1704,12 +1721,12 @@ CoprocessorService, Coprocessor {
       WrongRegionException wre = null;
 
       if (reconstructIndoubts == 0) {
-         LOG.debug("TrxRegionEndpoint coprocessor:  RECOV recovery Request");
+         if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  RECOV recovery Request");
          constructIndoubtTransactions();
       }
 
       // Placeholder for real work when recovery is added
-      if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: recoveryResponse - id " + request.getTransactionId() + ", regionName " + regionInfo.getRegionNameAsString() + ", tmId" + tmId);
+      if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: recoveryResponse - id " + request.getTransactionId() + ", regionName " + regionInfo.getRegionNameAsString() + ", tmId" + tmId);
 
     /* commenting it out for the time-being
       java.lang.String name = ((com.google.protobuf.ByteString) request.getRegionName()).toStringUtf8();
@@ -1930,7 +1947,7 @@ CoprocessorService, Coprocessor {
         } catch (IOException ignored) {}
       }
     }
-    if (LOG.isDebugEnabled()) LOG.debug("Sum from this region is "
+    if (LOG.isTraceEnabled()) LOG.trace("Sum from this region is "
         + env.getRegion().getRegionNameAsString() + ": " + sum);
     done.run(response);
   }
@@ -2312,27 +2329,27 @@ CoprocessorService, Coprocessor {
     ServerName sn = rss.getServerName();
     lv_hostName = sn.getHostname();
     lv_port = sn.getPort();
-    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: Hostname " + lv_hostName + " port " + lv_port);
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: Hostname " + lv_hostName + " port " + lv_port);
     this.regionInfo = this.m_Region.getRegionInfo();
     this.nextLogSequenceId = this.m_Region.getSequenceId();
     this.t_Region = (TransactionalRegion) tmp_env.getRegion();
     zkw1 = rss.getZooKeeper();
 
-    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: get the reference from Region CoprocessorEnvrionment ");
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: get the reference from Region CoprocessorEnvironment ");
 
     if (tmp_env.getSharedData().isEmpty())
-       if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: shared map is empty ");
+       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: shared map is empty ");
     else
-       if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: shared map is NOT empty Yes ... ");
+       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: shared map is NOT empty Yes ... ");
 
     transactionsByIdTestz = TrxRegionObserver.getRefMap();
 
     if (transactionsByIdTestz.isEmpty())
-       if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: reference map is empty ");
+       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: reference map is empty ");
     else
-       if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: reference map is NOT empty Yes ... ");
+       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: reference map is NOT empty Yes ... ");
 
-    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: UUU Region " + this.m_Region.getRegionNameAsString() + " check indoubt list from reference map ");
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: UUU Region " + this.m_Region.getRegionNameAsString() + " check indoubt list from reference map ");
    
     indoubtTransactionsById = (TreeMap<Long, WALEdit>)transactionsByIdTestz.get(
                                this.m_Region.getRegionNameAsString()+TrxRegionObserver.trxkeypendingTransactionsById);
@@ -2340,10 +2357,10 @@ CoprocessorService, Coprocessor {
     indoubtTransactionsCountByTmid = (TreeMap<Integer,Integer>)transactionsByIdTestz.get(
                                this.m_Region.getRegionNameAsString()+TrxRegionObserver.trxkeyindoubtTransactionsCountByTmid);
     if (indoubtTransactionsCountByTmid != null) {
-       if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:OOO successfully get the reference from Region CoprocessorEnvrionment ");
+       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:OOO successfully get the reference from Region CoprocessorEnvironment ");
     }
 
-    LOG.info("TrxRegionEndpoint coprocessor: start");
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: start");
   }
 
   @Override
@@ -2455,7 +2472,7 @@ CoprocessorService, Coprocessor {
          String str = sb.toString();
          String zNodePathTM = zNodePath + str;
          String zNodePathTMKey = zNodePathTM + "/" + zNodeKey;
-         if (LOG.isDebugEnabled()) LOG.debug("Trafodion Recovery Region Observer CP: ZKW Delete region recovery znode" + node + " zNode Path " + zNodePathTMKey);
+         if (LOG.isTraceEnabled()) LOG.trace("Trafodion Recovery Region Observer CP: ZKW Delete region recovery znode" + node + " zNode Path " + zNodePathTMKey);
           // delete zookeeper recovery zNode, call ZK ...
          try {
              ZKUtil.deleteNodeFailSilent(zkw1, zNodePathTMKey);
@@ -2511,7 +2528,7 @@ CoprocessorService, Coprocessor {
     //if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:commit looking for commit transactionId " + transactionId + ", transactionsById " + transactionsById.size() + ", commitedTransactionsBySequenceNumber " + commitedTransactionsBySequenceNumber.size() + ", commitPendingTransactions " + commitPendingTransactions.size());
      
     if (state.isReinstated()) {
-      if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:  commit Trafodion Recovery: commit reinstated indoubt transactions " + transactionId + 
+      if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  commit Trafodion Recovery: commit reinstated indoubt transactions " + transactionId + 
                               " in region " + m_Region.getRegionInfo().getRegionNameAsString());
       synchronized (indoubtTransactionsById) {  
         b = indoubtTransactionsById.get(transactionId);
@@ -2646,7 +2663,7 @@ CoprocessorService, Coprocessor {
        }
     //}
          if (LOG.isTraceEnabled()) LOG.trace("BBB write commit edit to HLOG after appendNoSync");
-         if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:commit -- EXIT txId: " + transactionId + " HLog seq " + txid);
+         if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:commit -- EXIT txId: " + transactionId + " HLog seq " + txid);
          if (!editGenerated) editGenerated = true;
       // no need to do this.tHLog.sync(txid) for phase 2 due to TLOG enabled
     }
@@ -2662,7 +2679,7 @@ CoprocessorService, Coprocessor {
     }
     }
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  commit(tstate) -- EXIT TransactionState: " + 
+    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:  commit(tstate) -- EXIT TransactionState: " + 
       state.toString());
 
     if (state.isReinstated()) {
@@ -3061,32 +3078,32 @@ CoprocessorService, Coprocessor {
 
       synchronized (recoveryCheckLock) {
             if ((indoubtTransactionsById == null) || (indoubtTransactionsById.size() == 0)) {
-              if (LOG.isDebugEnabled()) LOG.debug("Trafodion Recovery Endpoint Coprocessor: Region " + regionInfo.getRegionNameAsString() + " has no in-doubt transaction, set region START ");
+              if (LOG.isTraceEnabled()) LOG.trace("Trafodion Recovery Endpoint Coprocessor: Region " + regionInfo.getRegionNameAsString() + " has no in-doubt transaction, set region START ");
               regionState = 2; // region is started for transactional access
               reconstructIndoubts = 1; 
               try {
               startRegionAfterRecovery();
                } catch (IOException exp1) {
-                    LOG.debug("Trafodion Recovery: flush error during region start");
+                    if (LOG.isDebugEnabled()) LOG.debug("Trafodion Recovery: flush error during region start");
                }
               return;
             }
 
-            if (LOG.isDebugEnabled()) LOG.debug("Trafodion Recovery Endpoint Coprocessor: Trafodion Recovery RegionObserver to Endpoint coprocessor data exchange test");
-            if (LOG.isDebugEnabled()) LOG.debug("Trafodion Recovery Endpoint Coprocessor: try to access indoubt transaction list with size " + indoubtTransactionsById.size());
+            if (LOG.isTraceEnabled()) LOG.trace("Trafodion Recovery Endpoint Coprocessor: Trafodion Recovery RegionObserver to Endpoint coprocessor data exchange test");
+            if (LOG.isTraceEnabled()) LOG.trace("Trafodion Recovery Endpoint Coprocessor: try to access indoubt transaction list with size " + indoubtTransactionsById.size());
 
             if (reconstructIndoubts == 0) {
             //Retrieve (tid,Edits) from indoubt Transaction and construct/add into desired transaction data list
             for (Entry<Long, WALEdit> entry : indoubtTransactionsById.entrySet()) {
                       long transactionId = entry.getKey();
 		      String key = String.valueOf(transactionId);
-                      if (LOG.isDebugEnabled()) LOG.debug("Trafodion Recovery Endpoint Coprocessor:E11 Region " + regionInfo.getRegionNameAsString() + " process in-doubt transaction " + transactionId);
+                      if (LOG.isTraceEnabled()) LOG.trace("Trafodion Recovery Endpoint Coprocessor:E11 Region " + regionInfo.getRegionNameAsString() + " process in-doubt transaction " + transactionId);
 
                       //TBD Need to get HLOG ???
 		      TransactionState state = new TransactionState(transactionId, 1L /*my_Region.getLog().getSequenceNumber()*/,
                                                                                  regionInfo, m_Region.getTableDesc());
 
-                      if (LOG.isDebugEnabled()) LOG.debug("Trafodion Recovery Endpoint Coprocessor:E22 Region " + regionInfo.getRegionNameAsString() + " create transaction state for " + transactionId);
+                      if (LOG.isTraceEnabled()) LOG.trace("Trafodion Recovery Endpoint Coprocessor:E22 Region " + regionInfo.getRegionNameAsString() + " create transaction state for " + transactionId);
 
 		      state.setStartSequenceNumber(nextSequenceId.get());
     		      transactionsById.put(getTransactionalUniqueId(transactionId), state);
@@ -3097,7 +3114,7 @@ CoprocessorService, Coprocessor {
 		      state.setSequenceNumber(nextSequenceId.getAndIncrement());
 		      commitedTransactionsBySequenceNumber.put(state.getSequenceNumber(), state);
                       int tmid = (int) (transactionId >> 32);
-                      if (LOG.isDebugEnabled()) LOG.debug("Trafodion Recovery Endpoint Coprocessor:E33 Region " + regionInfo.getRegionNameAsString() + " add prepared " + transactionId + " to TM " + tmid);              
+                      if (LOG.isTraceEnabled()) LOG.trace("Trafodion Recovery Endpoint Coprocessor:E33 Region " + regionInfo.getRegionNameAsString() + " add prepared " + transactionId + " to TM " + tmid);              
              } // for all txns in indoubt transcation list
              } // not reconstruct indoubtes yet
              reconstructIndoubts = 1;
@@ -3122,12 +3139,12 @@ CoprocessorService, Coprocessor {
 
     TransactionState state = null; 
 
-    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:  beginTransaction -- ENTRY txId: " + transactionId);
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  beginTransaction -- ENTRY txId: " + transactionId);
     checkClosing(transactionId);
                 
     // TBD until integration with recovery 
     if (reconstructIndoubts == 0) {
-       if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:  RECOV beginTransaction -- ENTRY txId: " + transactionId);
+       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  RECOV beginTransaction -- ENTRY txId: " + transactionId);
        constructIndoubtTransactions();
     }
     if (regionState != 2) {
@@ -3147,7 +3164,7 @@ CoprocessorService, Coprocessor {
         return;
       }
 
-      if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:  beginTransaction -- creating new TransactionState without coprocessorHost txId: " + transactionId);
+      if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  beginTransaction -- creating new TransactionState without coprocessorHost txId: " + transactionId);
 
       state = new TransactionState(transactionId, 
                                 //this.m_Region.getLog().getSequenceNumber(),
@@ -3263,14 +3280,14 @@ CoprocessorService, Coprocessor {
    * @throws IOException 
    */
   public void commit(final long transactionId, final boolean ignoreUnknownTransactionException) throws IOException {
-    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: commit(txId) -- ENTRY txId: " + transactionId +
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commit(txId) -- ENTRY txId: " + transactionId +
               " ignoreUnknownTransactionException: " + ignoreUnknownTransactionException);
     TransactionState state;
     try {
       state = getTransactionState(transactionId);
     } catch (UnknownTransactionException e) {
       if (ignoreUnknownTransactionException == true) {
-         if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:  ignoring UnknownTransactionException in commit : " + transactionId
+         if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:  ignoring UnknownTransactionException in commit : " + transactionId
                 + " in region "
                 + m_Region.getRegionInfo().getRegionNameAsString());
          return;
@@ -3287,8 +3304,9 @@ CoprocessorService, Coprocessor {
       throw new IOException("Asked to commit a non-pending transaction");
     }
 
-    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: commit(txId) -- EXIT txId: " + transactionId);
     commit(state);
+
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commit(txId) -- EXIT txId: " + transactionId);
   } 
 
   /**
@@ -3298,7 +3316,7 @@ CoprocessorService, Coprocessor {
    */
   public int commitRequest(final long transactionId) throws IOException {
     long txid = 0;
-    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: commitRequest -- ENTRY txId: " + transactionId);
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitRequest -- ENTRY txId: " + transactionId);
     TransactionState state;
 
     int lv_totalCommits = 0;
@@ -3325,7 +3343,7 @@ CoprocessorService, Coprocessor {
     try {
       state = getTransactionState(transactionId);
     } catch (UnknownTransactionException e) {
-      if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: Unknown transaction [" + transactionId
+      if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: commitRequest Unknown transaction [" + transactionId
                  + "] in region [" 
                  + m_Region.getRegionInfo().getRegionNameAsString()
                  + "], ignoring");
@@ -3389,9 +3407,9 @@ CoprocessorService, Coprocessor {
                writeToLogTimes[lv_timeIndex] = writeToLogEndTime - commitCheckEndTime;
                writeToLogOperations.getAndIncrement();
              }
-             if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:commitRequest COMMIT_OK -- EXIT txId: " + transactionId + " HLog seq " + txid);
+             if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:commitRequest COMMIT_OK -- EXIT txId: " + transactionId + " HLog seq " + txid);
       } catch (IOException exp) {
-          if (LOG.isInfoEnabled()) LOG.info("TrxRegionEndpoint coprocessor:commitRequest IOException caught in HLOG appendNoSync -- EXIT txId: " + transactionId + " HLog seq " + txid);
+          if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor:commitRequest IOException caught in HLOG appendNoSync -- EXIT txId: " + transactionId + " HLog seq " + txid);
           throw exp;
       }      
       if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: commitRequest COMMIT_OK -- EXIT txId: " + transactionId);
@@ -3547,7 +3565,7 @@ CoprocessorService, Coprocessor {
 
   public void abortTransaction(final long transactionId) throws IOException, UnknownTransactionException {
     long txid = 0;
-    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: abort transactionId: " + transactionId + " " + m_Region.getRegionInfo().getRegionNameAsString());
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: abort transactionId: " + transactionId + " " + m_Region.getRegionInfo().getRegionNameAsString());
 
     TransactionState state;
     try {
@@ -3636,9 +3654,9 @@ CoprocessorService, Coprocessor {
            // change region state to STARTED, and archive the split-thlog
 
            if (indoubtTransactionsById == null)
-             if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: Trafodion Recovery: start region in abort with indoubtTransactionsById null");
+             if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: Trafodion Recovery: start region in abort with indoubtTransactionsById null");
             else
-              if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: Trafodion Recovery: start region in abort with indoubtTransactionsById size " + indoubtTransactionsById.size());
+              if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: Trafodion Recovery: start region in abort with indoubtTransactionsById size " + indoubtTransactionsById.size());
             startRegionAfterRecovery();
          }
        }
@@ -3692,7 +3710,7 @@ CoprocessorService, Coprocessor {
    */
   private Throwable cleanup(final Throwable t, final String msg) {
     if (t instanceof NotServingRegionException) {
-      if (LOG.isDebugEnabled()) LOG.debug("NotServingRegionException; " +  t.getMessage());
+      if (LOG.isTraceEnabled()) LOG.trace("NotServingRegionException; " +  t.getMessage());
       return t;
     }
     if (msg == null) {
