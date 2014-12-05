@@ -127,7 +127,6 @@ public class TmAuditTlog {
 
    private static int     versions;
    private static int     tlogNumLogs;
-   private static boolean distributedFS;
    private boolean useAutoFlush;
    private static boolean ageCommitted;
    private static boolean forceControlPoint;
@@ -236,14 +235,6 @@ public class TmAuditTlog {
       TLOG_TABLE_NAME = config.get("TLOG_TABLE_NAME");
       int fillerSize = 2;
       controlPointDeferred = false;
-
-      if (LocalHBaseCluster.isLocal(config)) {
-         distributedFS = false;
-      }
-      else {
-         distributedFS = true;
-      }
-      LOG.info("distributedFS is " + distributedFS);
 
       forceControlPoint = false;
       try {
@@ -357,12 +348,6 @@ public class TmAuditTlog {
       hcol.setMaxVersions(versions);
       admin = new HBaseAdmin(config);
 
-      if (distributedFS) {
-         fillerSize = 2;
-      }
-      else {
-         fillerSize = 4097;
-      }
       filler = new byte[fillerSize];
       Arrays.fill(filler, (byte) ' ');
       startTimes      =    new long[50];
@@ -819,15 +804,27 @@ public class TmAuditTlog {
       return true;
    }
 
-   public static boolean deleteAgedEntries(final long lvAsn) throws IOException {
+   public boolean deleteAgedEntries(final long lvAsn) throws IOException {
       if (LOG.isTraceEnabled()) LOG.trace("deleteAgedEntries start:  Entries older than " + lvAsn + " will be removed");
+      HTable deleteTable;
       for (int i = 0; i < tlogNumLogs; i++) {
+         String lv_tLogName = new String(TLOG_TABLE_NAME + "_LOG_" + Integer.toHexString(i));
+         HTableDescriptor delDesc = new HTableDescriptor(TableName.valueOf(lv_tLogName));
+         try {
+            if (LOG.isDebugEnabled()) LOG.debug("try new HTable index " + i);
+            deleteTable = new HTable(this.config, delDesc.getName());
+         }
+         catch(Exception e){
+            LOG.error("deleteAgedEntries Exception on index " + i + "; " + e);
+            throw new RuntimeException(e);
+         }
+
          try {
             Scan s = new Scan();
-            s.setCaching(500);
+            s.setCaching(100);
             s.setCacheBlocks(false);
             ArrayList<Delete> deleteList = new ArrayList<Delete>();
-            ResultScanner ss = table[i].getScanner(s);
+            ResultScanner ss = deleteTable.getScanner(s);
 
             try {
                for (Result r : ss) {
@@ -856,7 +853,7 @@ public class TmAuditTlog {
                               String key = new String(r.getRow());
                               Get get = new Get(r.getRow());
                               get.setMaxVersions(versions);  // will return last n versions of row
-                              Result lvResult = table[i].get(get);
+                              Result lvResult = deleteTable.get(get);
                              // byte[] b = lvResult.getValue(TLOG_FAMILY, ASN_STATE);  // returns current version of value
                               List<Cell> list = lvResult.getColumnCells(TLOG_FAMILY, ASN_STATE);  // returns all versions of this column
                               for (Cell element : list) {
@@ -891,9 +888,7 @@ public class TmAuditTlog {
               ss.close();
            }
            if (LOG.isDebugEnabled()) LOG.debug("attempting to delete list with " + deleteList.size() + " elements");
-           synchronized(tlogAuditLock[i]) {
-              table[i].delete(deleteList);
-           }
+           deleteTable.delete(deleteList);
         }
         catch (IOException e) {
            LOG.error("deleteAgedEntries IOException on table index " + i);
