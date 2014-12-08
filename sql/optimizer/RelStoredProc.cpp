@@ -195,6 +195,56 @@ RelExpr* RelInternalSP::bindNode(BindWA *bindWA)
 	  return 0;
 	}      
 
+       //This is for (hybrid)query cache ISP, like querycache('user'|'meta'|'all', 'remote'|'local')
+       //the first param specifying instance(USER, META) to get,
+       //the second specifying location the ISP will be executed, first param should be extracted in sp_process()
+       //local -- within local process
+       //remote  -- if running in embedded compiler exec ISP locally,
+       // if in remote compiler send to remote arkcmp
+      if( getProcAllParamsVids().entries() == 2 &&
+            ( procName_.compareTo("QUERYCACHE", NAString::ignoreCase)==0
+             || procName_.compareTo("QUERYCACHEENTRIES", NAString::ignoreCase)==0
+             || procName_.compareTo("HYBRIDQUERYCACHE", NAString::ignoreCase)==0
+             || procName_.compareTo("HYBRIDQUERYCACHEENTRIES", NAString::ignoreCase)==0 )
+         )
+      {
+          //extract the location parameter
+          const NAString locationParam = getProcAllParamsVids()[1].getItemExpr()->getText();
+          if(locationParam.compareTo("'local'", NAString::ignoreCase)==0)
+          {
+              //set execute in local process
+             arkcmpInfo_ |= executeInLocalProcess;
+          }
+          else//ISP with no params considered to be "remote"
+          {
+              //clear execute in local bit
+             arkcmpInfo_ &= ~executeInLocalProcess;
+          }
+
+          //if this location string is different from previously set one, error
+          const NAString preLoc = bindWA->getISPExecLocation();
+          if(preLoc.isNull()) { //set first time
+              bindWA->setISPExecLocation(locationParam);
+          }
+          //preceding string is not identical to here now
+          else if(preLoc.compareTo(locationParam, NAString::ignoreCase)!=0)
+          {
+             bindWA->setErrStatus();
+             char msg[512];
+             snprintf(msg, 512, "The location %s for %s() does not match with another location %s specified. All location specifications must be identical.", 
+                                 locationParam.data(), procName_.data(), preLoc.data());  
+             *(bindWA->currentCmpContext()->diags()) 
+               << DgSqlCode(-1197) 
+               << DgString0(msg); 
+             return NULL;
+          }
+      }
+      else 
+      {//for other ISPs, by default, execute in local process, 
+       //see ExStoredProcTcb::work()  
+          arkcmpInfo_ |= executeInLocalProcess;
+      }
+      
       // get the ItemExpr for input paramters.
       procTypesTree_ = inputFormat.itemExpr();
       procTypesTree_->convertToValueIdList(procTypes_,bindWA,ITM_ITEM_LIST);

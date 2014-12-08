@@ -258,7 +258,7 @@ void ControlDB::setControlDefault(ControlQueryDefault *def)
     return;
   }
 
-  if (def->getAttrEnum() == NSK_DBG_LOG_FILE)
+  if (def->getAttrEnum() == COMPILE_TIME_MONITOR_OUTPUT_FILE)
   {
     // LCOV_EXCL_START
     DefaultConstants attrEnum = def->getAttrEnum();
@@ -417,6 +417,9 @@ void ControlDB::setControlDefault(ControlQueryDefault *def)
     break;
   case QUERY_CACHE_MAX_VICTIMS:
     CURRENTQCACHE->setMaxVictims(getDefaultAsLong(QUERY_CACHE_MAX_VICTIMS));
+    break;
+  case HQC_MAX_VALUES_PER_KEY:
+    CURRENTQCACHE->setHQCMaxValuesPerKey(getDefaultAsLong(HQC_MAX_VALUES_PER_KEY));
     break;
   case QUERY_CACHE_REQUIRED_PREFIX_KEYS:
   case QUERY_CACHE_STATISTICS_FILE:

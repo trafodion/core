@@ -152,6 +152,7 @@ NAType(charType,heap),
 	encodingCharSet_(charType.encodingCharSet_)
 {}
 virtual short getFSDatatype() const;
+virtual Lng32 getPrecision() const { return getPrecisionOrMaxNumChars(); }
 virtual Lng32 getPrecisionOrMaxNumChars() const;
 virtual Lng32 getScaleOrCharset() const;
 
