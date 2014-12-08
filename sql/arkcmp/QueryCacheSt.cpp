@@ -33,6 +33,92 @@
 #include "QueryCacheSt.h"
 #include "QCache.h"
 #include "CmpMain.h"
+#include "Globals.h"
+#include "Context.h"
+
+class cacheInfoList : public NAList<QueryCache*>
+{
+public:
+    NABoolean initializeList(SP_ROW_DATA  inputData, SP_EXTRACT_FUNCPTR  eFunc, SP_ERROR_STRUCT* error)
+    {
+	 //extract ISP input, find QueryCache belonging to specified context
+	 //and use it for fetch later
+      Lng32 maxSize = 16;
+      char receivingField[maxSize+1];
+      if (eFunc (0, inputData, (Lng32)maxSize, receivingField, FALSE) == SP_ERROR_EXTRACT_DATA)
+      {
+          error->error = arkcmpErrorISPFieldDef;
+          return FALSE;
+      }
+       //choose context
+      NAString qCntxt = receivingField;
+      qCntxt.toLower();
+      const NAArray<CmpContextInfo*> & ctxInfos = GetCliGlobals()->currContext()->getCmpContextInfo();
+      //find the specified context
+      if(ctxInfos.entries() == 0){
+        //for remote compiler
+        if( strncmp(qCntxt.data(), "all", 3)==0 ||strncmp(qCntxt.data(), "user", 4)==0 )
+          insert(CURRENTQCACHE);
+      }
+      else
+      {
+        if(strncmp(qCntxt.data(), "all", 3)==0)
+        {//add caches of all contexts to list
+           for(Int32 i = 0; i < ctxInfos.entries(); i++ )
+               insert(ctxInfos[i]->getCmpContext()->getQueryCache());
+        }
+        else if(strncmp(qCntxt.data(), "user", 4)==0)
+        {//add user query cache to list
+           for(Int32 i = 0; i < ctxInfos.entries(); i++ )
+               if(ctxInfos[i]->isSameClass("NONE")){
+                   insert(ctxInfos[i]->getCmpContext()->getQueryCache());
+                   break;
+               }
+        }
+        else if(strncmp(qCntxt.data(), "meta", 8)==0)
+        {//add metadata query cache to list
+           for(Int32 i = 0; i < ctxInfos.entries(); i++ )
+               if(ctxInfos[i]->isSameClass("META")){
+                   insert(ctxInfos[i]->getCmpContext()->getQueryCache());
+                   break;
+               }
+        }
+        else if(strncmp(qCntxt.data(), "ustats", 8)==0)
+        {//add ustats query cache to list
+           for(Int32 i = 0; i < ctxInfos.entries(); i++ )
+               if(ctxInfos[i]->isSameClass("USTATS")){
+                   insert(ctxInfos[i]->getCmpContext()->getQueryCache());
+                   break;
+               }
+        }
+      }           
+      init();    
+      return TRUE;
+    }
+protected:
+    virtual void init() = 0;
+};
+
+SP_STATUS QueryCacheStatStoredProcedure::sp_InputFormat(SP_FIELDDESC_STRUCT *inputFieldFormat,
+				  Lng32 numFields,
+				  SP_COMPILE_HANDLE spCompileObj,
+				  SP_HANDLE spObj,
+	    			  SP_ERROR_STRUCT *error)
+{
+      if ( numFields != 2 )
+      {
+        //accepts 1 input columns
+        error->error = arkcmpErrorISPWrongInputNum;
+        strcpy(error->optionalString[0], "QueryCache");
+        error->optionalInteger[0] = 2;
+        return SP_FAIL;
+      }
+  
+     //column as input parameter for ISP, specifiy query cache of metadata or user context
+     strcpy(&((inputFieldFormat++)->COLUMN_DEF[0]), "instance    char(16)     character set iso88591 not null");
+     strcpy(&((inputFieldFormat++)->COLUMN_DEF[0]), "location     char(16)     character set iso88591 not null"); 
+     return SP_SUCCESS;
+}
 
 SP_STATUS QueryCacheStatStoredProcedure::sp_NumOutputFields(Lng32 *numFields,
 							    SP_COMPILE_HANDLE spCompileObj,
@@ -55,7 +141,7 @@ SP_STATUS QueryCacheStatStoredProcedure::sp_OutputFormat(SP_FIELDDESC_STRUCT *fo
   strcpy(&((format++)->COLUMN_DEF[0]), "Avg_template_size     	INT UNSIGNED"); //  0
   strcpy(&((format++)->COLUMN_DEF[0]), "Current_size       	INT UNSIGNED"); //  1
   strcpy(&((format++)->COLUMN_DEF[0]), "Max_cache_size        	INT UNSIGNED"); //  2
-  strcpy(&((format++)->COLUMN_DEF[0]), "Max_num_victims        	INT UNSIGNED"); //  3
+  strcpy(&((format++)->COLUMN_DEF[0]), "Max_num_victims       INT UNSIGNED"); //  3
   strcpy(&((format++)->COLUMN_DEF[0]), "Num_entries    	    	INT UNSIGNED"); //  4
   strcpy(&((format++)->COLUMN_DEF[0]), "Num_plans    	    	INT UNSIGNED"); //  5
   strcpy(&((format++)->COLUMN_DEF[0]), "Num_compiles        	INT UNSIGNED"); //  6
@@ -90,36 +176,48 @@ SP_STATUS
 					    SP_HANDLE spObj,
 					    SP_ERROR_STRUCT *error)
 {
-  struct InfoStruct
-  {
-    ULong counter;
-  };
+   struct InfoStruct : public cacheInfoList
+   {
+     InfoStruct(): currCacheIndex(-1) { }
+     NABoolean getNext(QueryCacheStats & details)
+     {
+        if(entries() == 0 || currCacheIndex >= entries())
+          return FALSE;//all entries of all caches are fetched, we are done!
 
+        at(currCacheIndex++)->getCacheStats(details);
+        return TRUE;
+     }
+     Int32 currCacheIndex;
+   protected:
+     virtual void init() {
+       //iterator start with preparser cache entries of first query cache, if any
+       if(entries() > 0) {
+         currCacheIndex = 0;
+       }
+     }
+  };
+  
   if (action == SP_PROC_OPEN) {
+
     InfoStruct *is = new InfoStruct;
-    is->counter = 0;
+    
+    if(!is->initializeList(inputData, eFunc, error))
+      return SP_FAIL;
+
     *spProcHandle = is;
     return SP_SUCCESS;
   }
 
   if (action == SP_PROC_FETCH) {
-    // do nothing if caching is off
-    if (!CURRENTQCACHE->isCachingOn()) { // caching is off
-      return SP_SUCCESS; // we're done!
-    }
     InfoStruct* is = (InfoStruct *)(*spProcHandle);
-    if (is) {
-      if (is->counter > 0) {
-        return SP_SUCCESS;
-      }
-      is->counter++;
-    }
-    else {
+
+    if (!is) {
       return SP_FAIL;
     }
 
     QueryCacheStats stats;
-    CURRENTQCACHE->getCacheStats(stats);
+    if(!is->getNext(stats))
+       return SP_SUCCESS;
 
     ULong kBytes;
 
@@ -186,6 +284,27 @@ void QueryCacheStatStoredProcedure::Initialize(SP_REGISTER_FUNCPTR regFunc)
 	   CMPISPVERSION);
 }
 
+SP_STATUS QueryCacheEntriesStoredProcedure::sp_InputFormat(SP_FIELDDESC_STRUCT *inputFieldFormat,
+				  Lng32 numFields,
+				  SP_COMPILE_HANDLE spCompileObj,
+				  SP_HANDLE spObj,
+	    			  SP_ERROR_STRUCT *error)
+{
+      if ( numFields != 2 )
+      {
+        //accepts 1 input columns
+        error->error = arkcmpErrorISPWrongInputNum;
+        strcpy(error->optionalString[0], "QueryCacheEntries");
+        error->optionalInteger[0] = 2;
+        return SP_FAIL;
+      }
+  
+     //column as input parameter for ISP, specifiy query cache of metadata or user context
+     strcpy(&((inputFieldFormat++)->COLUMN_DEF[0]), "instance    char(16)     character set iso88591 not null");
+     strcpy(&((inputFieldFormat++)->COLUMN_DEF[0]), "location    char(16)     character set iso88591 not null"); 
+     return SP_SUCCESS;
+}
+
 SP_STATUS
   QueryCacheEntriesStoredProcedure::sp_NumOutputFields(Lng32 *numFields,
 						       SP_COMPILE_HANDLE spCompileObj,
@@ -249,46 +368,70 @@ SP_STATUS QueryCacheEntriesStoredProcedure::sp_Process(SP_PROCESS_ACTION action,
 						       SP_HANDLE /* spHandle */,
 						       SP_ERROR_STRUCT*  error )
 {
-  struct InfoStruct
+  struct InfoStruct : public cacheInfoList
   {
-    ULong counter;
-    LRUList::iterator iter;
-    InfoStruct() : counter(0)
-    { iter = CURRENTQCACHE->beginPre(); } // start with preparser cache entries
-  };
+    InfoStruct() : counter(0), currCacheIndex(-1) {} 
+    
+    //initialize need to be called before any getNextDetails
+    NABoolean getNext(QueryCacheDetails & details)
+    {
+      if(entries() == 0 || currCacheIndex >= entries())
+        return FALSE;//all entries of all caches are fetched, we are done!
 
-  InfoStruct *is;
+      if (iter == at(currCacheIndex)->endPre()) {
+        // end of preparser cache, continue with postparser entries
+        iter = at(currCacheIndex)->begin();
+      }
+      
+      if (iter == at(currCacheIndex)->end()) {
+        // end of postparser cache entries, shift to next cache, if any
+        currCacheIndex++;
+        if(entries() > currCacheIndex)
+          iter = at(currCacheIndex)->beginPre();
+        return getNext(details);
+      }
+
+      at(currCacheIndex)->getEntryDetails(iter++, details);
+        
+      return TRUE;
+    }
+
+    Int32 currCacheIndex;
+    Int32 counter;
+    LRUList::iterator iter;
+  protected:
+    void init(){
+      //iterator start with preparser cache entries of first query cache, if any
+      if(entries() > 0){
+         currCacheIndex = 0;
+         iter = at(currCacheIndex)->beginPre();
+      }
+    }
+  };
 
   switch (action) {
   case SP_PROC_OPEN:
-    // No inputs to process
-    *spProcHandle = is = new InfoStruct;
-    return SP_SUCCESS;
+    {
+      InfoStruct *is = new InfoStruct;
+      
+      if(!is->initializeList(inputData, eFunc, error))
+        return SP_FAIL;
+      
+      *spProcHandle = is;
+      return SP_SUCCESS;
+    }
     break;
 
   case SP_PROC_FETCH:
     {
-      // guard against an empty cache
-      if (CURRENTQCACHE->empty()) { // no entries
-        return SP_SUCCESS; // we're done!
-      }
-      // No more data to be returned
-      is = (InfoStruct *)(*spProcHandle);
+      InfoStruct * is = (InfoStruct *)(*spProcHandle);
       if (!is) {
         return SP_FAIL;
       }
-      if (is->iter == CURRENTQCACHE->end()) {
-        // end of postparser cache entries
-        return SP_SUCCESS; // we're done!
-      }
-
-      if (is->iter == CURRENTQCACHE->endPre()) {
-        // end of preparser cache, continue with postparser entries
-        is->iter = CURRENTQCACHE->begin();
-      }
 
       QueryCacheDetails details;
-      CURRENTQCACHE->getEntryDetails(is->iter++, details);
+      if(!is->getNext(details))
+         return SP_SUCCESS;
 
       fFunc(0,  outputData, sizeof(is->counter),	&(is->counter), 0);
       fFunc(1,  outputData, sizeof(details.planId),	&(details.planId), 0);
@@ -469,4 +612,357 @@ void QueryCacheDeleteStoredProcedure::Initialize(SP_REGISTER_FUNCPTR regFunc)
 	  CMPISPVERSION);
 }
 
+//------------------------Hybrid Query Cache Stat--------------------------//
+void HybridQueryCacheStatStoredProcedure::Initialize(SP_REGISTER_FUNCPTR regFunc)
+{
+  regFunc("HYBRIDQUERYCACHE",
+          sp_Compile,
+          sp_InputFormat,
+          0,
+          sp_NumOutputFields,
+          sp_OutputFormat,
+          sp_Process,
+          0,
+	  CMPISPVERSION);
+}
+
+SP_STATUS HybridQueryCacheStatStoredProcedure::sp_InputFormat(SP_FIELDDESC_STRUCT *inputFieldFormat,
+				  Lng32 numFields,
+				  SP_COMPILE_HANDLE spCompileObj,
+				  SP_HANDLE spObj,
+	    			  SP_ERROR_STRUCT *error)
+{
+      if ( numFields != 2 )
+      {
+        //accepts 1 input columns
+        error->error = arkcmpErrorISPWrongInputNum;
+        strcpy(error->optionalString[0], "HybridQueryCache");
+        error->optionalInteger[0] = 2;
+        return SP_FAIL;
+      }
+  
+     //column as input parameter for ISP, specifiy query cache of metadata or user context
+     strcpy(&((inputFieldFormat++)->COLUMN_DEF[0]), "instance    char(16)     character set iso88591 not null");  
+     strcpy(&((inputFieldFormat++)->COLUMN_DEF[0]), "location    char(16)     character set iso88591 not null");  
+     return SP_SUCCESS;
+}
+
+SP_STATUS
+  HybridQueryCacheStatStoredProcedure::sp_NumOutputFields(Lng32 *numFields,
+						       SP_COMPILE_HANDLE spCompileObj,
+						       SP_HANDLE spObj,
+						       SP_ERROR_STRUCT *error)
+{
+  *numFields = 4;
+  return SP_SUCCESS;
+}
+
+SP_STATUS HybridQueryCacheStatStoredProcedure::sp_OutputFormat(
+						SP_FIELDDESC_STRUCT* format,
+						SP_KEYDESC_STRUCT*  /*keyFields */,
+						Lng32*  /*numKeyFields */,
+						SP_COMPILE_HANDLE cmpHandle,
+						SP_HANDLE /* spHandle */,
+						SP_ERROR_STRUCT* /* error */  )
+{
+  strcpy(&((format++)->COLUMN_DEF[0]), "num_hkeys                                    INT UNSIGNED");
+  strcpy(&((format++)->COLUMN_DEF[0]), "num_skeys                                     INT UNSIGNED");
+  strcpy(&((format++)->COLUMN_DEF[0]), "num_max_values_per_key            INT UNSIGNED");
+  strcpy(&((format++)->COLUMN_DEF[0]), "num_hash_table_buckets              INT UNSIGNED");
+  return SP_SUCCESS;
+}
+
+SP_STATUS HybridQueryCacheStatStoredProcedure::sp_Process(SP_PROCESS_ACTION action,
+						       SP_ROW_DATA  inputData ,
+						       SP_EXTRACT_FUNCPTR  eFunc ,
+						       SP_ROW_DATA outputData ,
+						       SP_FORMAT_FUNCPTR fFunc,
+						       SP_KEY_VALUE keys,
+						       SP_KEYVALUE_FUNCPTR kFunc,
+						       SP_PROCESS_HANDLE* spProcHandle,
+						       SP_HANDLE spObj/* spHandle */,
+						       SP_ERROR_STRUCT*  error )		       
+{
+
+   struct InfoStruct : public cacheInfoList
+   {
+     InfoStruct(): currCacheIndex(-1) { }
+
+     NABoolean getNext(HybridQueryCacheStats & details)
+     {
+        if(entries() == 0 || currCacheIndex >= entries())
+          return FALSE;//all entries of all caches are fetched, we are done!
+
+        at(currCacheIndex++)->getHQCStats(details);
+        return TRUE;
+     }
+     Int32 currCacheIndex;
+   protected:
+     virtual void init()
+     {
+       //iterator start with preparser cache entries of first query cache, if any
+       if(entries() > 0){
+         currCacheIndex = 0;
+       }
+     }
+   };
+
+  switch (action) {
+    case SP_PROC_OPEN:
+    {
+        InfoStruct *is = new InfoStruct;
+        
+        if(!is->initializeList(inputData, eFunc, error))
+          return SP_FAIL;
+        
+        *spProcHandle = is;
+        return SP_SUCCESS;
+    }
+    break;
+
+    case SP_PROC_FETCH:
+    {
+      InfoStruct* is = (InfoStruct *)(*spProcHandle);
+      if (!is) {
+        return SP_FAIL;
+      }
+
+      HybridQueryCacheStats stats;
+      if(!is->getNext(stats))
+         return SP_SUCCESS;
+         
+      fFunc(0,  outputData, sizeof(stats.nHKeys),	&(stats.nHKeys), 0);
+      fFunc(1,  outputData, sizeof(stats.nSKeys),	&(stats.nSKeys), 0);
+      fFunc(2,  outputData, sizeof(stats.nMaxValuesPerKey),	&(stats.nMaxValuesPerKey), 0);
+      fFunc(3,  outputData, sizeof(stats.nHashTableBuckets),	&(stats.nHashTableBuckets), 0);
+      
+      return SP_MOREDATA;
+    }
+    break;
+
+    case SP_PROC_CLOSE: {
+       delete (InfoStruct *)(*spProcHandle);
+       return SP_SUCCESS;
+    }
+    break;
+     
+    default: break;
+  } // switch
+  return SP_SUCCESS;
+}
+
+//------------------------Hybrid Query Cache Entries--------------------------//
+void HybridQueryCacheEntriesStoredProcedure::Initialize(SP_REGISTER_FUNCPTR regFunc)
+{
+  regFunc("HYBRIDQUERYCACHEENTRIES",
+          sp_Compile,
+          sp_InputFormat,
+          0,
+          sp_NumOutputFields,
+          sp_OutputFormat,
+          sp_Process,
+          0,
+	  CMPISPVERSION);
+}
+
+SP_STATUS HybridQueryCacheEntriesStoredProcedure::sp_InputFormat(SP_FIELDDESC_STRUCT *inputFieldFormat,
+				  Lng32 numFields,
+				  SP_COMPILE_HANDLE spCompileObj,
+				  SP_HANDLE spObj,
+	    			  SP_ERROR_STRUCT *error)
+{
+      if ( numFields != 2 )
+      {
+        //accepts 1 input columns
+        error->error = arkcmpErrorISPWrongInputNum;
+        strcpy(error->optionalString[0], "HybridQueryCacheEntries");
+        error->optionalInteger[0] = 2;
+        return SP_FAIL;
+      }
+  
+      // Describe input columns
+     strcpy(&((inputFieldFormat++)->COLUMN_DEF[0]), "instance    char(16)     character set iso88591 not null");
+     strcpy(&((inputFieldFormat++)->COLUMN_DEF[0]), "location    char(16)     character set iso88591 not null"); 
+     return SP_SUCCESS;
+}
+
+SP_STATUS
+  HybridQueryCacheEntriesStoredProcedure::sp_NumOutputFields(Lng32 *numFields,
+						       SP_COMPILE_HANDLE spCompileObj,
+						       SP_HANDLE spObj,
+						       SP_ERROR_STRUCT *error)
+{
+  *numFields = 8;
+  return SP_SUCCESS;
+}
+
+SP_STATUS HybridQueryCacheEntriesStoredProcedure::sp_OutputFormat(
+						SP_FIELDDESC_STRUCT* format,
+						SP_KEYDESC_STRUCT*  /*keyFields */,
+						Lng32*  /*numKeyFields */,
+						SP_COMPILE_HANDLE cmpHandle,
+						SP_HANDLE /* spHandle */,
+						SP_ERROR_STRUCT* /* error */  )
+{
+  strcpy(&((format++)->COLUMN_DEF[0]), "plan_id     		LARGEINT");
+  strcpy(&((format++)->COLUMN_DEF[0]), "hkey  			VARCHAR(2048) character set iso88591");
+  strcpy(&((format++)->COLUMN_DEF[0]), "skey        		VARCHAR(2048) character set iso88591");
+  strcpy(&((format++)->COLUMN_DEF[0]), "num_hits  		INT UNSIGNED");
+  strcpy(&((format++)->COLUMN_DEF[0]), "num_PLiterals  		INT UNSIGNED");
+  strcpy(&((format++)->COLUMN_DEF[0]), "PLiterals	VARCHAR(1024) character set utf8");
+  strcpy(&((format++)->COLUMN_DEF[0]), "num_NPLiterals        	INT UNSIGNED");
+  strcpy(&((format++)->COLUMN_DEF[0]), "NPLiterals   VARCHAR(1024) character set utf8");
+  return SP_SUCCESS;
+}
+
+
+SP_STATUS HybridQueryCacheEntriesStoredProcedure::sp_Process(SP_PROCESS_ACTION action,
+						       SP_ROW_DATA  inputData ,
+						       SP_EXTRACT_FUNCPTR  eFunc ,
+						       SP_ROW_DATA outputData ,
+						       SP_FORMAT_FUNCPTR fFunc,
+						       SP_KEY_VALUE keys,
+						       SP_KEYVALUE_FUNCPTR kFunc,
+						       SP_PROCESS_HANDLE* spProcHandle,
+						       SP_HANDLE spObj/* spHandle */,
+						       SP_ERROR_STRUCT*  error )		       
+{
+  struct InfoStruct : public cacheInfoList
+  {
+    InfoStruct()
+      : currEntryIndex_(-1)
+      , currEntriesPerKey_(currEntryIndex_)
+      , currCacheIndex_(currEntryIndex_)
+      , currQCache_(NULL)
+      , iterator_(NULL)
+      , currHKeyPtr_(NULL)
+      , currValueList_(NULL)
+      {}
+      
+    ~InfoStruct()
+    {
+        if(iterator_)
+            delete iterator_;
+    }
+
+   //initialize need to be called before any getNextDetails
+    NABoolean getNext(HybridQueryCacheDetails & details)
+    {
+      //when come to end of query cache list, iterator_ is set to NULL
+      if(iterator_ == NULL)
+        return FALSE;
+        
+      //get next entry valid curQCache, currHKeyPtr_, currValueList_
+      if( currEntryIndex_ >= currEntriesPerKey_ )
+      {
+        //get next key-value pair
+        iterator_->getNext(currHKeyPtr_, currValueList_);
+        if(currHKeyPtr_ && currValueList_ && currQCache_->isCachingOn())
+        {
+          currEntryIndex_ = 0;
+          currEntriesPerKey_ = currValueList_->entries();
+        }
+        else//interator == end
+        {// to next cache in cacheList, and get valid hkeyPtr, valueList
+            currCacheIndex_++;
+            if( entries() > currCacheIndex_)
+            {  //point to begin of next query cache
+               currQCache_ = at(currCacheIndex_);
+               if(iterator_)
+                 delete iterator_;
+               iterator_ = NULL;
+               iterator_ = new HQCHashTblItor (currQCache_->getHQC()->begin());
+            }
+            else
+            {//end of list
+               if(iterator_)
+                 delete iterator_;
+               iterator_ = NULL;
+            }
+            return getNext(details);
+        }
+      }
+      //just get next entry in previous valueList
+      currQCache_->getHQCEntryDetails(currHKeyPtr_, (*currValueList_)[currEntryIndex_++], details);
+      return TRUE;
+    }
+
+    Int32 currEntryIndex_;
+    Int32 currEntriesPerKey_;
+    Int32 currCacheIndex_;
+    QueryCache* currQCache_;
+    HQCHashTblItor* iterator_;
+    HQCCacheKey* currHKeyPtr_;
+    HQCCacheData* currValueList_;
+  protected:
+    virtual void init()
+    {//initialize 
+      if(entries() > 0)
+      { 
+        currCacheIndex_ = 0;
+        currQCache_ = at(currCacheIndex_);
+        iterator_ = new HQCHashTblItor (currQCache_->getHQC()->begin());
+      }
+    }
+  };
+  
+  switch (action) {
+    case SP_PROC_OPEN:
+    {
+        InfoStruct *is = new InfoStruct;
+
+        if(!is->initializeList(inputData, eFunc, error))
+          return SP_FAIL;
+        
+        *spProcHandle = is;
+        return SP_SUCCESS;
+    }
+    break;
+
+    case SP_PROC_FETCH:
+    {
+       InfoStruct* is = (InfoStruct *)(*spProcHandle);
+       if (!is) 
+          return SP_FAIL;
+      
+      //fill data field
+      HybridQueryCacheDetails details;
+      
+      if(!is->getNext(details))
+           return SP_SUCCESS;
+
+      fFunc(0, outputData, sizeof(details.planId), &(details.planId), 0);
+      
+      Lng32 len = (Lng32)details.hkeyTxt.length() < 2048 ? (Lng32)details.hkeyTxt.length() : 2048;
+      fFunc(1, outputData, len, (void*)(details.hkeyTxt.data()),1);
+
+      len = (Lng32)details.skeyTxt.length() < 2048 ? (Lng32)details.skeyTxt.length() : 2048;
+      fFunc(2, outputData,(Lng32)details.skeyTxt.length(), (void*)(details.skeyTxt.data()),1);
+
+      fFunc(3, outputData, sizeof(details.nHits), &(details.nHits), 0);
+      
+      fFunc(4, outputData, sizeof(details.nOfPConst),	&(details.nOfPConst), 0);
+
+      len = (Lng32)details.PConst.length() < 1024 ? (Lng32)details.PConst.length() : 1024;
+      fFunc(5, outputData,(Lng32)details.PConst.length(), (void*)(details.PConst.data()),1);
+      
+      fFunc(6, outputData, sizeof(details.nOfNPConst),	&(details.nOfNPConst), 0);
+
+      len = (Lng32)details.NPConst.length() < 1024 ? (Lng32)details.NPConst.length() : 1024;
+      fFunc(7, outputData,(Lng32)details.NPConst.length(), (void*)(details.NPConst.data()),1);
+      
+      return SP_MOREDATA;
+    }
+    break;
+
+    case SP_PROC_CLOSE: {
+       delete (InfoStruct *)(*spProcHandle);
+       return SP_SUCCESS;
+    }
+    break;
+     
+    default: break;
+  } // switch
+    return SP_SUCCESS;
+}
 

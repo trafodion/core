@@ -63,7 +63,8 @@ public:
   {
     executeInSameArkcmp     = 0x1,
     requiresTMFTransaction  = 0x2,
-    suppressDefaultSchema   = 0x4
+    suppressDefaultSchema   = 0x4,
+    executeInLocalProcess = 0x8
   };
 
   // get the degree of this node (it is a leaf op).
