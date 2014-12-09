@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Hans Zeller <hans.zeller@hp.com>
+Workflow+1: Hans Zeller <hans.zeller@hp.com>
+Code-Review+2: Qifan Chen <qifan.chen@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 09 Dec 2014 00:22:10 +0000
+Reviewed-on: https://review.trafodion.org/771
+Project: trafodion/core
+Branch: refs/heads/master
