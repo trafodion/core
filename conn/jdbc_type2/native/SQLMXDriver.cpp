@@ -388,7 +388,7 @@ JNIEXPORT jint JNICALL Java_org_trafodion_jdbc_t2_T2Driver_getDatabaseMajorVersi
 {
 	FUNCTION_ENTRY("Java_org_trafodion_jdbc_t2_T2Driver_getDatabaseMajorVersionJNI",("..."));
 
-	int databaseMajorVersion = 3;
+	int databaseMajorVersion = 0;
 
 	FUNCTION_RETURN_NUMERIC(databaseMajorVersion,
 		("Database Major Version = %d", databaseMajorVersion));
@@ -402,7 +402,7 @@ JNIEXPORT jint JNICALL Java_org_trafodion_jdbc_t2_T2Driver_getDatabaseMinorVersi
 	// Update needed when SQL provides version directly
 	int databaseMinorVersion;
 
-	short version = 0;
+	short version = 3900;
 	short ret = 0;
 
 //     ret = GETSQLMXSYSTEMVERSION(&version);
@@ -427,6 +427,9 @@ JNIEXPORT jint JNICALL Java_org_trafodion_jdbc_t2_T2Driver_getDatabaseMinorVersi
 	case 3400:
 		databaseMinorVersion = 4;
 		break;
+	case 3900:
+		databaseMinorVersion = 9;
+		break;	
 	default:
 		databaseMinorVersion = 0;
 	}
