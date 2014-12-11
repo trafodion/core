@@ -224,9 +224,9 @@ public class HTableClient {
 
 		Scan scan;
 
-		if (startRow != null && startRow.toString() == "")
+		if (startRow != null && startRow.length == 0)
 			startRow = null;
-		if (stopRow != null && stopRow.toString() == "")
+		if (stopRow != null && stopRow.length == 0)
 			stopRow = null;
 
 		if (startRow != null && stopRow != null)
@@ -234,11 +234,15 @@ public class HTableClient {
 		else
 			scan = new Scan();
 
-		if (cacheBlocks == true)
+		if (cacheBlocks == true) {
 			scan.setCacheBlocks(true);
+			// Disable block cache for full table scan
+			if (startRow == null && stopRow == null)
+				scan.setCacheBlocks(false);
+		}
 		else
 			scan.setCacheBlocks(false);
-
+		
 		scan.setCaching(numCacheRows);
 		numRowsCached = numCacheRows;
 		if (columns != null) {
@@ -764,6 +768,7 @@ public class HTableClient {
                           new TransactionalAggregationClient(customConf);
 		      Scan scan = new Scan();
 		      scan.addFamily(colFamily);
+		      scan.setCacheBlocks(false);
 		      final ColumnInterpreter<Long, Long, EmptyMsg, LongMsg, LongMsg> ci =
 			new LongColumnInterpreter();
 		      byte[] tname = getTableName().getBytes();
