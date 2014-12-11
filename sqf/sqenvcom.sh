@@ -106,16 +106,18 @@ export MY_MPI_ROOT=$MY_ROOT
 # JDK - Using 1.7, but also need 1.6 to create back-compatible jar
 # Use JAVA_HOME if set, else look for installed openjdk, finally toolsdir
 # Likewise for JAVAJDK16
-if [[ -z "$JAVA_HOME" && -d ${TOOLSDIR}/jdk1.7.0_67 ]]
+REQ_JDK_VER="1.7.0_67"
+JAVA7="7"
+JAVA67="67"
+if [[ -z "$JAVA_HOME" && -d "${TOOLSDIR}/jdk${REQ_JDK_VER}" ]]
 then
-  export JAVA_HOME="${TOOLSDIR}/jdk1.7.0_67"
+  export JAVA_HOME="${TOOLSDIR}/jdk${REQ_JDK_VER}"
 elif [[ -z "$JAVA_HOME" && -d /usr/lib/jvm/java-1.7.0-openjdk.x86_64/ ]]
 then
   export JAVA_HOME="/usr/lib/jvm/java-1.7.0-openjdk.x86_64"
 elif [[ -z "$JAVA_HOME" ]]
 then
-#    export JAVA_HOME="${TOOLSDIR}/jdk1.7.0_67"
- echo "Please set JAVA_HOME to version jdk1.7.0_67"
+  echo "Please set JAVA_HOME to version jdk${REQ_JDK_VER}"
 fi
 if [[ -z "$JAVAJDK16" && -d /usr/lib/jvm/java-1.6.0-openjdk.x86_64 ]]
 then
@@ -148,10 +150,10 @@ export HBASE_TRX_JAR=hbase-trx-${TRAFODION_VER}.jar
 # want to make sure SQ_VIRTUAL_NODES is set in the shell running sqstart
 # so we can determine if we are on a workstation or not
 if [[ -e ${MY_SQROOT}/etc/ms.env ]] ; then
-   VIRT_NODES=`awk '/SQ_VIRTUAL_NODES=/ { fields=split($0,virt,"=");  if ( fields == 2 ) { virtnodes=virt[2];}} END {print  virtnodes}' < $MY_SQROOT/etc/ms.env`
-   if [[ -n "$VIRT_NODES" ]] ; then
-      export SQ_VIRTUAL_NODES="$VIRT_NODES"
-   fi
+  VIRT_NODES=`awk '/SQ_VIRTUAL_NODES=/ { fields=split($0,virt,"=");  if ( fields == 2 ) { virtnodes=virt[2];}} END {print  virtnodes}' < $MY_SQROOT/etc/ms.env`
+  if [[ -n "$VIRT_NODES" ]] ; then
+     export SQ_VIRTUAL_NODES="$VIRT_NODES"
+  fi
 fi
 
 export MY_MPI_ROOT="$MY_SQROOT"
@@ -607,7 +609,7 @@ function ckillall {
 }
 export -f ckillall
 
-. tools/sqtools.sh
+source tools/sqtools.sh
 
 #######################
 # BUILD Tools/Libraries
@@ -656,9 +658,9 @@ export PROTOBUFS_INC=$PROTOBUFS/include
 export LD_LIBRARY_PATH=$CC_LIB:$MPI_ROOT/lib/$MPILIB:$MY_SQROOT/export/lib"$SQ_MBTYPE":$HADOOP_LIB_DIR:$LOC_JVMLIBS:$HWMSLIBS:${SP_EXPORT_LIB}:.
 
 ######################
-# Class Path calculation may include local over-rides
+# classpath calculation may include local over-rides
 
-# check for previous invocation of this script
+# check for previous invocation of this script in this shell
 PREV_SQ_CLASSPATH=$SQ_CLASSPATH
 SQ_CLASSPATH=
 
@@ -669,14 +671,14 @@ SQ_CLASSPATH=
 
 # expand jar files in list of directories
 for d in $HADOOP_JAR_DIRS
-  do
-    HADOOP_JAR_FILES="$HADOOP_JAR_FILES $d/*.jar"
-  done
+do
+  HADOOP_JAR_FILES="$HADOOP_JAR_FILES $d/*.jar"
+done
 
 for d in $HIVE_JAR_DIRS
-  do
-    HIVE_JAR_FILES="$HIVE_JAR_FILES $d/*.jar"
-  done
+do
+  HIVE_JAR_FILES="$HIVE_JAR_FILES $d/*.jar"
+done
 
 # assemble all of them into a classpath
 for j in $HBASE_JAR_FILES $HADOOP_JAR_FILES $HIVE_JAR_FILES
@@ -686,14 +688,14 @@ do
     # eliminate jars with unwanted suffixes
     SUPPRESS_FILE=0
     for s in $SUFFIXES_TO_SUPPRESS
-      do
-        if [ ${j%${s}} != $j ]; then
-          SUPPRESS_FILE=1
-        fi
-      done
-      # also eliminate ant jar that may be
-      # incompatible with system ant command
-      [[ $j =~ /ant- ]] && SUPPRESS_FILE=1
+    do
+      if [ ${j%${s}} != $j ]; then
+        SUPPRESS_FILE=1
+      fi
+    done
+    # also eliminate ant jar that may be
+    # incompatible with system ant command
+    [[ $j =~ /ant- ]] && SUPPRESS_FILE=1
 
     # finally, add the jar to the classpath
     if [ $SUPPRESS_FILE -eq 0 ]; then
@@ -712,22 +714,11 @@ if [[ -n "$HIVE_CNF_DIR"   ]]; then SQ_CLASSPATH="$SQ_CLASSPATH:$HIVE_CNF_DIR"; 
 if [[ -n "$SQ_CLASSPATH"   ]]; then SQ_CLASSPATH="$SQ_CLASSPATH:";   fi
 SQ_CLASSPATH=${SQ_CLASSPATH}${HBASE_TRXDIR}:${HBASE_TRXDIR}/${HBASE_TRX_JAR}:$MY_SQROOT/export/lib/trafodion-UDR-${TRAFODION_VER}.jar:$MY_SQROOT/export/lib/trafodion-HBaseAccess-${TRAFODION_VER}.jar:$MY_SQROOT/export/lib/jdbcT2.jar
 
-# check whether we executed this script previously
-
-# take anything from the existing classpath, but not the part that was
-# added by previous invocations of this script (assuming it produced
-# the same classpath).
-
-# Note: this will produce unwanted classpath entries if you do the
-# following: a) source in this file, b) prepend to the classpath and
-# c) source this file in again
-USER_CLASSPATH=${CLASSPATH##${SQ_CLASSPATH}}
-USER_CLASSPATH=${USER_CLASSPATH#:}
-
-# Check whether the environment changed from a previous execution of this
+# Check whether the current shell environment changed from a previous execution of this
 # script.
-if [ -n "$PREV_SQ_CLASSPATH" -a \
-     "$PREV_SQ_CLASSPATH" != "$SQ_CLASSPATH" ]; then
+SQ_CLASSPATH=$(remove_duplicates_in_path "${SQ_CLASSPATH}")
+if [[  ( -n "$PREV_SQ_CLASSPATH" )
+    && ( "$PREV_SQ_CLASSPATH" != "$SQ_CLASSPATH" ) ]]; then
   cat <<EOF
 The environment changed from a previous execution of this script.
 This is not supported. To change environments, do the following:
@@ -741,8 +732,17 @@ This is not supported. To change environments, do the following:
 EOF
 fi
 
+# take anything from the existing classpath, but not the part that was
+# added by previous invocations of this script in this shell (assuming it
+# produced the same classpath).
 
+# Note: There will be unwanted classpath entries if you do the
+# following: a) source in this file;
+#            b) prepend to the classpath;
+#            c) source this file in again
 
+USER_CLASSPATH=${CLASSPATH##${SQ_CLASSPATH}}
+USER_CLASSPATH=$(remove_duplicates_in_path ${USER_CLASSPATH#:})
 
 if [ -n "$USER_CLASSPATH" ]; then
   # new info, followed by the original classpath
@@ -750,32 +750,30 @@ if [ -n "$USER_CLASSPATH" ]; then
 else
   export CLASSPATH="${SQ_CLASSPATH}"
 fi
-export CLASSPATH="${CLASSPATH}:"
+export CLASSPATH=$(remove_duplicates_in_path "${CLASSPATH}:")
+
+PATH=$(remove_duplicates_in_path "$PATH")
 
 ####################
 # Check/Report on key variables
 ###################
 
 # Check that existing JAVA_HOME is suitable
-REQ_VER="1.7.0_67"
-JAVA7="7"
-JAVA67="67"
 if [[ -n "$JAVA_HOME" ]]; then
   THIS_JVM_VER="$($JAVA_HOME/bin/javac -version 2>&1 > /dev/null)"
   temp_JAVA=`echo "${THIS_JVM_VER:6:3}" | sed 's/.*\.//'`
   if [[ "$temp_JAVA" -lt "$JAVA7" ]]; then
-     echo "Warning: Your existing JAVA_HOME is less than 1.7"
-     echo "  Your JAVA_HOME = $JAVA_HOME"
-     echo "  Your Java Version = $THIS_JVM_VER"
-     echo "  Required java version should be greater than $REQ_VER"
+    echo "Warning: Your existing JAVA_HOME is less than 1.7"
+    echo "  Your JAVA_HOME = $JAVA_HOME"
+    echo "  Your Java Version = $THIS_JVM_VER"
+    echo "  Required java version should be greater than $REQ_JDK_VER"
   fi
   if [[ "$temp_JAVA" -eq "$JAVA7" ]] && [[ "${THIS_JVM_VER:12:3}" -lt $JAVA67 ]]; then
-     echo "Warning: Your existing JAVA_HOME is less than 1.7.0_67"
-     echo "  Your JAVA_HOME = $JAVA_HOME"
-     echo "  Your Java Version = $THIS_JVM_VER"
-     echo "  Required java version should be greater than $REQ_VER"
+    echo "Warning: Your existing JAVA_HOME is less than $REQ_JDK_VER"
+    echo "  Your JAVA_HOME = $JAVA_HOME"
+    echo "  Your Java Version = $THIS_JVM_VER"
+    echo "  Required java version should be greater than $REQ_JDK_VER"
   fi
-
 fi
 
 # Check variables that should refer to real directories
