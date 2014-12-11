@@ -51,8 +51,6 @@
 // ***************************************************************************
 // ***************************************************************************
 // NOTE: DO NOT make this enum non-contiguous.
-// Add new defaults after the last entry in this enum. Do not reuse
-// or change the enum value of an existing default.
 // Valid attributes must begin at zero and there must be no holes.
 // The algorithm to read defaults from the defaults table requires this.
 // You must always add a default default in NADefaults.cpp, otherwise
