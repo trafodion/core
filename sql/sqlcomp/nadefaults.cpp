@@ -3319,7 +3319,7 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
   DDkwd__(USTAT_ADD_SALTED_KEY_PREFIXES_FOR_MC, "OFF"),  // When ON, generate MCs for primary key prefixes as well as full key
                                                          //   of salted table when ON EVERY KEY or ON EVERY COLUMN is specified.
   DDkwd__(USTAT_ATTEMPT_ESP_PARALLELISM,        "ON"),   // for reading column values
-  DDui___(USTAT_AUTOMATION_INTERVAL,            "0"),
+  DDui___(USTAT_AUTOMATION_INTERVAL,            "1440"),
  XDDflt0_(USTAT_AUTO_CV_SAMPLE_SLOPE,           "0.5"),  // CV multiplier for sampling %.
   DDkwd__(USTAT_AUTO_EMPTYHIST_TWO_TRANS,       "OFF"),  // When ON empty hist insert will be 2 trans.
   DDkwd__(USTAT_AUTO_FOR_VOLATILE_TABLES,       "OFF"),  // Toggle for vol tbl histogram usage
