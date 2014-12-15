@@ -1,3 +1,6 @@
+>>create schema seqsch;
+
+--- SQL operation complete.
 >>set schema seqsch;
 
 --- SQL operation complete.
@@ -721,7 +724,11 @@ CREATE SEQUENCE TRAFODION.SEQSCH.TEST024SEQ8
 >>invoke trafodion."_MD_".sequences_view;
 
 -- Definition of Trafodion view TRAFODION."_MD_".SEQUENCES_VIEW
+<<<<<<< HEAD
 -- Definition current  Tue Nov 11 18:31:14 2014
+=======
+-- Definition current  Mon Dec  1 13:28:27 2014
+>>>>>>> bff2742... ANSI Schema
 
   (
     CATALOG_NAME                     VARCHAR(256 BYTES) CHARACTER SET UTF8
@@ -819,10 +826,25 @@ TRAFODION                                                                       
 >>create sequence error_seq minvalue 1 maxvalue 3 cache 10;
 
 *** ERROR[1577] CACHE value must be greater than 1 and less than or equal to (maxValue-startValue+1)/incrementValue for CREATE SEQUENCE.
+<<<<<<< HEAD
 
 --- SQL operation failed with errors.
 >>alter sequence error_seq start with 50;
 
+*** ERROR[1389] Object ERROR_SEQ does not exist in Trafodion.
+
+*** ERROR[1389] Object TRAFODION.SEQSCH.ERROR_SEQ does not exist in Trafodion.
+=======
+>>>>>>> bff2742... ANSI Schema
+
+--- SQL operation failed with errors.
+>>create sequence error_seq;
+
+--- SQL operation complete.
+>>alter sequence error_seq start with 50;
+
+<<<<<<< HEAD
+=======
 *** ERROR[1389] Object ERROR_SEQ does not exist in Trafodion.
 
 *** ERROR[1389] Object TRAFODION.SEQSCH.ERROR_SEQ does not exist in Trafodion.
@@ -833,6 +855,7 @@ TRAFODION                                                                       
 --- SQL operation complete.
 >>alter sequence error_seq start with 50;
 
+>>>>>>> bff2742... ANSI Schema
 *** ERROR[1592] START WITH cannot be specified for ALTER SEQUENCE.
 
 --- SQL operation failed with errors.
@@ -876,6 +899,10 @@ TRAFODION                                                                       
 
 --- SQL operation complete.
 >>drop table test024t2;
+
+--- SQL operation complete.
+>>
+>>drop schema seqsch cascade;
 
 --- SQL operation complete.
 >>

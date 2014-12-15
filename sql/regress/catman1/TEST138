@@ -51,12 +51,29 @@ drop sequence user1_seq2;
 -- drop database
 drop schema t138sch cascade;
 
+<<<<<<< HEAD
 -- removes privilege metadata
+=======
+-- removes privilege metadata, including all component privilege grants
+>>>>>>> bff2742... ANSI Schema
 initialize authorization, drop;
 
 ?section set_up
 initialize authorization;
+<<<<<<< HEAD
 
+=======
+-- turn off CREATE_TABLE privilege, so user1 can no longer create objs
+revoke component privilege "CREATE" on SQL_OPERATIONS from sql_user1;
+revoke component privilege CREATE_SEQUENCE on SQL_OPERATIONS from sql_user1;
+revoke component privilege "CREATE_TABLE" on SQL_OPERATIONS from sql_user1;
+revoke component privilege "CREATE_VIEW" on SQL_OPERATIONS from sql_user1;
+revoke component privilege "ALTER" on SQL_OPERATIONS from sql_user2;
+revoke component privilege "ALTER_TABLE" on SQL_OPERATIONS from sql_user2;
+revoke component privilege "DROP" on SQL_OPERATIONS from sql_user2;
+revoke component privilege DROP_SEQUENCE on SQL_OPERATIONS from sql_user2;
+revoke component privilege "DROP_VIEW" on SQL_OPERATIONS from sql_user2;
+>>>>>>> bff2742... ANSI Schema
 ?section test_create
 -- =================================================================
 -- run tests to make sure table related operations are 
@@ -65,6 +82,7 @@ initialize authorization;
 -- they can create and manage their objects
 -- =================================================================
 
+<<<<<<< HEAD
 set schema t138sch;
 get tables;
 
@@ -72,6 +90,14 @@ get tables;
 get privileges on component sql_operations for "PUBLIC";
 revoke component privilege "CREATE" on SQL_OPERATIONS from public;
 get privileges on component sql_operations for "PUBLIC";
+=======
+create private schema t138sch;
+set schema t138sch;
+get tables;
+
+-- Verify sql_user1 does not have CREATE or CREATE_TABLE privilege
+get privileges on component sql_operations for sql_user1;
+>>>>>>> bff2742... ANSI Schema
 sh sqlci -i "TEST138(create_tbl)" -u sql_user1;
 
 -- turn on CREATE_TABLE privilege
@@ -79,6 +105,7 @@ get privileges on component sql_operations for sql_user1;
 grant component privilege CREATE_TABLE on SQL_OPERATIONS to sql_user1;
 get privileges on component sql_operations for sql_user1;
 sh sqlci -i "TEST138(create_tbl)" -u sql_user1;
+<<<<<<< HEAD
 sh sqlci -i "TEST138(alter_tbl)" -u sql_user1;
 sh sqlci -i "TEST138(drop_tbl)" -u sql_user1;
 
@@ -87,6 +114,15 @@ revoke component privilege CREATE_TABLE on SQL_OPERATIONS from sql_user1;
 grant component privilege "CREATE" on SQL_OPERATIONS to public;
 get privileges on component sql_operations for "PUBLIC";
 get privileges on component sql_operations for sql_user1;
+=======
+-- sql_user1 cannot alter or drop
+sh sqlci -i "TEST138(alter_tbl)" -u sql_user1;
+sh sqlci -i "TEST138(drop_tbl)" -u sql_user1;
+
+get tables;
+
+obey TEST138(drop_tbl);
+>>>>>>> bff2742... ANSI Schema
 
 get tables;
 
@@ -101,11 +137,15 @@ get tables;
 set schema t138sch;
 get tables;
 
+<<<<<<< HEAD
 -- turn off privileges
 revoke component privilege "ALTER" on SQL_OPERATIONS from "PUBLIC";
 revoke component privilege "CREATE" on SQL_OPERATIONS from "PUBLIC";
 grant component privilege CREATE_TABLE on SQL_OPERATIONS to sql_user1;
 get privileges on component sql_operations for "PUBLIC";
+=======
+-- Verify sql_user2 does not have ALTER or ALTER_TABLE privilege
+>>>>>>> bff2742... ANSI Schema
 get privileges on component sql_operations for sql_user2;
 
 -- create some tables
@@ -128,7 +168,11 @@ sh sqlci -i "TEST138(alter_tbl)" -u sql_user2;
 revoke component privilege alter_library, alter_routine, alter_sequence, alter_view 
 on sql_operations from sql_user2;
 get component privileges on sql_operations for sql_user2;
+<<<<<<< HEAD
 sh sqlci -i "TEST138(drop_tbl)" -u sql_user1;
+=======
+obey TEST138(drop_tbl);
+>>>>>>> bff2742... ANSI Schema
 
 -- reset
 revoke component privilege CREATE_TABLE on SQL_OPERATIONS from sql_user1;
@@ -144,17 +188,23 @@ get privileges on component sql_operations for sql_user1;
 
 set schema t138sch;
 get views;
+<<<<<<< HEAD
 get privileges on component sql_operations for "PUBLIC";
+=======
+>>>>>>> bff2742... ANSI Schema
 get privileges on component sql_operations for sql_user1;
 get privileges on component sql_operations for sql_user2;
 
 -- create some tables
 sh sqlci -i "TEST138(create_tbl)" -u sql_user1;
 
+<<<<<<< HEAD
 -- turn off create privileges
 revoke component privilege "CREATE" on SQL_OPERATIONS from "PUBLIC";
 get privileges on component sql_operations for "PUBLIC";
 
+=======
+>>>>>>> bff2742... ANSI Schema
 -- user1 should not be able to create any views
 sh sqlci -i "TEST138(create_view)" -u sql_user1;
 
@@ -174,11 +224,17 @@ sh sqlci -i "TEST138(drop_view)" -u sql_user2;
 -- restore
 revoke component privilege DROP_VIEW on SQL_OPERATIONS from sql_user2;
 revoke component privilege CREATE_VIEW on SQL_OPERATIONS from sql_user1;
+<<<<<<< HEAD
 grant component privilege "CREATE" on SQL_OPERATIONS to "PUBLIC";
 get privileges on component sql_operations for "PUBLIC";
 get privileges on component sql_operations for sql_user1;
 get privileges on component sql_operations for sql_user2;
 sh sqlci -i "TEST138(drop_tbl)" -u sql_user1;
+=======
+get privileges on component sql_operations for sql_user1;
+get privileges on component sql_operations for sql_user2;
+obey TEST138(drop_tbl);
+>>>>>>> bff2742... ANSI Schema
 
 ?section test_sequence
 -- =================================================================
@@ -188,6 +244,7 @@ sh sqlci -i "TEST138(drop_tbl)" -u sql_user1;
 
 set schema t138sch;
 get sequences in schema t138sch;
+<<<<<<< HEAD
 get privileges on component sql_operations for "PUBLIC";
 get privileges on component sql_operations for sql_user1;
 get privileges on component sql_operations for sql_user2;
@@ -196,6 +253,11 @@ get privileges on component sql_operations for sql_user2;
 revoke component privilege "CREATE" on SQL_OPERATIONS from "PUBLIC";
 get privileges on component sql_operations for "PUBLIC";
 
+=======
+get privileges on component sql_operations for sql_user1;
+get privileges on component sql_operations for sql_user2;
+
+>>>>>>> bff2742... ANSI Schema
 -- user1 should not be able to create any sequences
 sh sqlci -i "TEST138(create_sequence)" -u sql_user1;
 
@@ -215,8 +277,11 @@ sh sqlci -i "TEST138(drop_sequence)" -u sql_user2;
 -- restore
 revoke component privilege DROP_SEQUENCE on SQL_OPERATIONS from sql_user2;
 revoke component privilege CREATE_SEQUENCE on SQL_OPERATIONS from sql_user1;
+<<<<<<< HEAD
 grant component privilege "CREATE" on SQL_OPERATIONS to "PUBLIC";
 get privileges on component sql_operations for "PUBLIC";
+=======
+>>>>>>> bff2742... ANSI Schema
 get privileges on component sql_operations for sql_user1;
 get privileges on component sql_operations for sql_user2;
 
