@@ -872,7 +872,10 @@ WaitReturnStatus GuaConnectionToServer::wait(IpcTimeout timeout, UInt32 *eventCo
         if (getinfoError != 0)
           guaErrorInfo_ = getinfoError; // not even FILE_GETINFO_ worked
         if (guaErrorInfo_ == GuaTimeoutErr)
+        {
+          guaErrorInfo_ = XZFIL_ERR_OK;
           return WAIT_OK;
+        }
         short fsError = BFILE_CLOSE_(openFile_); // Don't retain unopened ACB
         otherEnd = (GuaProcessHandle *)&getOtherEnd().getPhandle().phandle_;
         otherEnd->decompose(cpu, pin, nodeNumber);
@@ -1596,6 +1599,7 @@ void GuaConnectionToServer::openPhandle(char * processName, NABoolean parallelOp
 
         if (guaErrorInfo_ == GuaTimeoutErr  && env->getAllConnections()->getPendingIOs().isEsp())
         {
+          guaErrorInfo_ = XZFIL_ERR_OK;
           ((GuaReceiveControlConnection *)env->getControlConnection())->wait(IpcImmediately, env->getEventConsumed());
           completed = FALSE;
           continue;
