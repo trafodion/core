@@ -35,6 +35,7 @@
 #include "CmpSeabaseDDLincludes.h"
 #include "CmpDDLCatErrorCodes.h"
 #include "CmpSeabaseDDLupgrade.h"
+#include "PrivMgrMD.h"
 
 // get software major and minor versions from -D defs defined in sqlcomp/Makefile.
 // These defs pick up values from export vars defined in sqf/sqenvcom.sh.
@@ -1204,6 +1205,7 @@ short CmpSeabaseMDupgrade::executeSeabaseMDupgrade(CmpMDupgradeInfo &mdui,
 
 		      mdui.setStep(UPGRADE_FAILED_RESTORE_OLD_MD);
 		      mdui.setSubstep(0);
+<<<<<<< HEAD
 
 		      break;
 		    }
@@ -1213,6 +1215,17 @@ short CmpSeabaseMDupgrade::executeSeabaseMDupgrade(CmpMDupgradeInfo &mdui,
 		    {
 		      OutputInfo * oi = (OutputInfo*)tablesQueue->getNext(); 
 
+=======
+
+		      break;
+		    }
+		  
+		  tablesQueue->position();
+		  for (int idx = 0; idx < tablesQueue->numEntries(); idx++)
+		    {
+		      OutputInfo * oi = (OutputInfo*)tablesQueue->getNext(); 
+
+>>>>>>> bff2742... ANSI Schema
 		      Int64 tableUID = *(Int64*)oi->get(0);
                       NAString hbaseCreateOptions((char*)oi->get(1));
 		      
@@ -1598,10 +1611,17 @@ short CmpSeabaseMDupgrade::executeSeabaseMDupgrade(CmpMDupgradeInfo &mdui,
                                 }
                             }
 			}
+<<<<<<< HEAD
 
 		      if (dropSeabaseObject(ehi, mdti.oldName,
 					    catName, schName,
                                             objType,
+=======
+                      ComObjectType objectType = PrivMgr::ObjectLitToEnum(objType);
+		      if (dropSeabaseObject(ehi, mdti.oldName,
+					    catName, schName,
+                                            objectType,
+>>>>>>> bff2742... ANSI Schema
 					    TRUE, FALSE))
 			{
 			  deallocEHI(ehi); 
@@ -1647,7 +1667,7 @@ short CmpSeabaseMDupgrade::executeSeabaseMDupgrade(CmpMDupgradeInfo &mdui,
 
 		      if (dropSeabaseObject(ehi, oldViewName,
 					    catName, schName,
-					    COM_VIEW_OBJECT_LIT))
+					    COM_VIEW_OBJECT))
 			{
 			  deallocEHI(ehi); 
 
@@ -1958,7 +1978,7 @@ short CmpSeabaseMDupgrade::executeSeabaseMDupgrade(CmpMDupgradeInfo &mdui,
 		      schName += "\"";
 		      if (dropSeabaseObject(ehi, mdti.oldName,
 					    catName, schName,
-					    (mdti.isIndex ? COM_INDEX_OBJECT_LIT : COM_BASE_TABLE_OBJECT_LIT),
+					    (mdti.isIndex ? COM_INDEX_OBJECT : COM_BASE_TABLE_OBJECT),
 					    FALSE, TRUE))
 			{
 			  // ignore errors. Continue dropping old md tables.

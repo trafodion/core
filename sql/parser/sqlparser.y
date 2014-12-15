@@ -1320,6 +1320,7 @@ static void enableMakeQuotedStringISO88591Mechanism()
 %token <tokval> TOK_POPULATE            /* Tandem extension */
 %token <tokval> TOK_PRIMARY
 %token <tokval> TOK_PRIMARY_INDEX
+%token <tokval> TOK_PRIVATE              
 %token <tokval> TOK_PRIVILEGE           /* HP extension non-reserved word */
 %token <tokval> TOK_PRIVILEGES
 %token <tokval> TOK_PUBLIC
@@ -1571,6 +1572,7 @@ static void enableMakeQuotedStringISO88591Mechanism()
   ComRoutinePassThroughInputType passThroughInputType;
   ComAuthenticationType         authTypeEnum;
   ComRCMatchOption  	     	matchTypeEnum;
+  ComSchemaClass                schemaClassEnum;
   ComUnits          	     	fileAttrSizeUnitEnum;
   ComTableFeature		tableFeatureEnum;
   CorrName	       	     	*corrName;
@@ -2213,27 +2215,25 @@ static void enableMakeQuotedStringISO88591Mechanism()
 %type <boolean>   		constraint_setting
 %type <pSchemaName> 		schema_name
 %type <pElemDDLSchemaName>	schema_name_clause
-%type <pElemDDLSchemaName>      schema_name_and_location_clause
+%type <schemaClassEnum>         schema_class
 %type <stringval> 		schema_authorization_identifier
 %type <stringval> 		authorization_identifier
 %type <stringval> 		authorization_identifier_or_public
 %type <pElemDDL>  		authorization_identifier_list
 %type <stringval>               as_auth_clause
+<<<<<<< HEAD
+=======
+%type <pElemDDL>                optional_schema_clause
+>>>>>>> bff2742... ANSI Schema
 %type <stringval>               optional_as_auth_clause
 %type <stringval> 		external_user_identifier
 %type <tokval>	 		user_or_role
 %type <tokval>                  procedure_or_function
-%type <stringval>               schema_subvolume
-%type <stringval>               schema_location_clause
-%type <boolean>                 schema_location_reuse_clause
 %type <pStmtDDL>  		sql_schema_statement
 %type <pStmtDDL>  		sql_schema_definition_statement
 %type <pStmtDDL>  		sql_schema_manipulation_statement
 %type <pStmtDDL>  		sql_schema_statement_prologue
 %type <pStmtDDL>  		schema_definition
-%type <pElemDDL>  		optional_schema_element_list
-%type <pElemDDL>  		schema_element_list
-%type <pElemDDL>  		schema_element
 %type <pStmtDDL>  		routine_definition
 %type <pStmtDDL>                alter_function_statement
 %type <pElemDDL>                routine_params_list
@@ -15645,7 +15645,7 @@ exe_util_init_hbase : TOK_INITIALIZE TOK_TRAFODION
 
 		 DDLExpr * de = new(PARSERHEAP()) DDLExpr(TRUE, FALSE, TRUE, FALSE,
                                                           FALSE, FALSE,
-							  FALSE, FALSE,
+							  FALSE, FALSE, FALSE,
 							  (char*)stmt->data(),
 							  stmtCharSet,
 							  PARSERHEAP());
@@ -15662,7 +15662,7 @@ exe_util_init_hbase : TOK_INITIALIZE TOK_TRAFODION
 
 		 DDLExpr * de = new(PARSERHEAP()) DDLExpr(TRUE, FALSE, FALSE, FALSE,
                                                           FALSE, FALSE,
-							  FALSE, FALSE,
+							  FALSE, FALSE, FALSE,
 							  (char*)stmt->data(),
 							  stmtCharSet,
 							  PARSERHEAP());
@@ -15679,7 +15679,7 @@ exe_util_init_hbase : TOK_INITIALIZE TOK_TRAFODION
 
 		 DDLExpr * de = new(PARSERHEAP()) DDLExpr(FALSE, TRUE, FALSE, TRUE,
                                                           FALSE, FALSE,
-							  FALSE, FALSE,
+							  FALSE, FALSE, FALSE,
 							  (char*)stmt->data(),
 							  stmtCharSet,
 							  PARSERHEAP());
@@ -15696,7 +15696,7 @@ exe_util_init_hbase : TOK_INITIALIZE TOK_TRAFODION
 
 		 DDLExpr * de = new(PARSERHEAP()) DDLExpr(FALSE, FALSE, TRUE, FALSE,
                                                           FALSE, FALSE,
-							  FALSE, FALSE,
+							  FALSE, FALSE, FALSE,
 							  (char*)stmt->data(),
 							  stmtCharSet,
 							  PARSERHEAP());
@@ -15713,7 +15713,7 @@ exe_util_init_hbase : TOK_INITIALIZE TOK_TRAFODION
 
 		 DDLExpr * de = new(PARSERHEAP()) DDLExpr(FALSE, FALSE, FALSE, TRUE,
                                                           FALSE, FALSE,
-							  FALSE, FALSE,
+							  FALSE, FALSE, FALSE,
 							  (char*)stmt->data(),
 							  stmtCharSet,
 							  PARSERHEAP());
@@ -15737,7 +15737,24 @@ exe_util_init_hbase : TOK_INITIALIZE TOK_TRAFODION
 
 		 DDLExpr * de = new(PARSERHEAP()) DDLExpr(FALSE, FALSE, FALSE, FALSE,
                                                           FALSE, FALSE,
-							  TRUE, FALSE,
+							  TRUE, FALSE, FALSE,
+							  (char*)stmt->data(),
+							  stmtCharSet,
+							  PARSERHEAP());
+
+                 $$ = de;
+
+               }
+             | TOK_INITIALIZE TOK_TRAFODION ',' TOK_CREATE TOK_SCHEMA TOK_OBJECTS
+               {
+		 CharInfo::CharSet stmtCharSet = CharInfo::UnknownCharSet;
+		 NAString * stmt = getSqlStmtStr ( stmtCharSet  // out - CharInfo::CharSet &
+						   , PARSERHEAP() 
+	                                       );
+
+		 DDLExpr * de = new(PARSERHEAP()) DDLExpr(FALSE, FALSE, FALSE, FALSE,
+                                                          FALSE, FALSE,
+							  FALSE, FALSE,	TRUE,
 							  (char*)stmt->data(),
 							  stmtCharSet,
 							  PARSERHEAP());
@@ -15753,7 +15770,7 @@ exe_util_init_hbase : TOK_INITIALIZE TOK_TRAFODION
 	                                       );
 		 DDLExpr * ia = new(PARSERHEAP()) DDLExpr(FALSE, FALSE, FALSE, FALSE,
                                                           TRUE, FALSE,
-							  FALSE, FALSE,
+							  FALSE, FALSE, FALSE,
 							  (char*)stmt->data(),
 							  stmtCharSet,
 							  PARSERHEAP());
@@ -15770,7 +15787,7 @@ exe_util_init_hbase : TOK_INITIALIZE TOK_TRAFODION
 
 		 DDLExpr * ia = new(PARSERHEAP()) DDLExpr(FALSE, FALSE, FALSE, FALSE,
                                                           FALSE, TRUE,
-							  FALSE, FALSE,
+							  FALSE, FALSE, FALSE,
 							  (char*)stmt->data(),
 							  stmtCharSet,
 							  PARSERHEAP());
@@ -15788,7 +15805,7 @@ exe_util_init_hbase : TOK_INITIALIZE TOK_TRAFODION
 
 		 DDLExpr * de = new(PARSERHEAP()) DDLExpr(FALSE, FALSE, FALSE, FALSE,
                                                           FALSE, FALSE,
-							  FALSE, TRUE,
+							  FALSE, TRUE, FALSE,
 							  (char*)stmt->data(),
 							  stmtCharSet,
 							  PARSERHEAP());
@@ -15994,6 +16011,15 @@ exe_util_display_explain: explain_starting_tokens interactive_query_expression d
 		  
 		  delete stmt;
 		}
+<<<<<<< HEAD
+
+/* type stringval */
+optional_explain_options : /* empty */
+             { $$ = NULL; }
+         | TOK_OPTIONS QUOTED_STRING
+           /* DEFAULT_CHARSET has no effect on QUOTED_STRING in this context */
+             { $$ = $2; }
+=======
 
 /* type stringval */
 optional_explain_options : /* empty */
@@ -16813,6 +16839,7 @@ purgedata_options : /*empty*/ { $$ = 0; }
                   | TOK_WAITEDIO TOK_IGNORE_TRIGGER TOK_NOLOG { $$ = 7; }
                   | TOK_NOLOG TOK_WAITEDIO TOK_IGNORE_TRIGGER { $$ = 7; }
                   | TOK_IGNORE_TRIGGER TOK_WAITEDIO TOK_NOLOG { $$ = 7; }
+>>>>>>> bff2742... ANSI Schema
 
 
 exe_util_aqr: TOK_GET TOK_ALL TOK_AQR TOK_ENTRIES
@@ -16826,6 +16853,811 @@ exe_util_aqr: TOK_GET TOK_ALL TOK_AQR TOK_ENTRIES
 		 $$ = eua;
 	       }
 
+<<<<<<< HEAD
+exe_util_maintain_object : TOK_MAINTAIN maintain_object_token table_name maintain_object_options
+             {
+	       ExeUtilMaintainObject::MaintainObjectType ot;
+	       if ($2 == 1)
+		 ot = ExeUtilMaintainObject::TABLE_;
+	       else if ($2 == 2)
+		 ot = ExeUtilMaintainObject::INDEX_;
+	       else if ($2 == 3)
+		 ot = ExeUtilMaintainObject::MV_;
+	       else if ($2 == 4)
+		 ot = ExeUtilMaintainObject::MVGROUP_;
+	       else if ($2 == 5)
+		 ot = ExeUtilMaintainObject::SCHEMA_;
+	       else if ($2 == 6)
+		 ot = ExeUtilMaintainObject::CATALOG_;
+	       else  
+		 ot = ExeUtilMaintainObject::MV_INDEX_;
+	           
+	       CorrName cn;
+	       if (ot == ExeUtilMaintainObject::SCHEMA_)
+		 {
+		   if (NOT $3->getQualifiedNameObj().getCatalogName().isNull())
+		     YYERROR;
+
+		   cn = CorrName("DUMMY_OBJECT", PARSERHEAP(),
+				 $3->getQualifiedNameObj().getObjectName(),
+				 $3->getQualifiedNameObj().getSchemaName());
+		 }
+	       else if (ot == ExeUtilMaintainObject::CATALOG_)
+		 {
+		   if ((NOT $3->getQualifiedNameObj().getCatalogName().isNull()) ||
+		       (NOT $3->getQualifiedNameObj().getSchemaName().isNull()))
+		     YYERROR;
+
+		   cn = CorrName("DUMMY_OBJECT", PARSERHEAP(),
+				 "DUMMY_SCHEMA",
+				 $3->getQualifiedNameObj().getObjectName());
+		 }
+	       else
+		 cn = CorrName(*$3, PARSERHEAP());
+
+	       ExeUtilMaintainObject * eue = 
+		 new (PARSERHEAP ()) ExeUtilMaintainObject(
+		      ot,
+		      cn, //CorrName(*$3, PARSERHEAP()),
+		      NULL,
+		      $4,
+		      PARSERHEAP());
+	       
+	       // xn will be started, if needed, when the exeutilstmt stmt
+	       // is processed.
+	       eue->xnNeeded() = FALSE;
+	       
+	       $$ = eue;
+	       
+	       delete $4;
+	     }
+            | TOK_MAINTAIN TOK_DATABASE maintain_object_options
+             {
+	       ExeUtilMaintainObject::MaintainObjectType ot;
+	       ot = ExeUtilMaintainObject::DATABASE_;
+	           
+	       CorrName cn;
+	       cn = CorrName("DUMMY_OBJECT", PARSERHEAP(),
+			     "DUMMY_SCHEMA", "DUMMY_CATALOG");
+
+	       ExeUtilMaintainObject * eue = 
+		 new (PARSERHEAP ()) ExeUtilMaintainObject(
+		      ot,
+		      cn, 
+		      NULL,
+		      $3,
+		      PARSERHEAP());
+	       
+	       // xn will be started, if needed, when the exeutilstmt stmt
+	       // is processed.
+	       eue->xnNeeded() = FALSE;
+	       
+	       $$ = eue;
+	     }
+            | TOK_MAINTAIN TOK_TABLES '(' pipeline_mv_name_list ')' maintain_object_options
+             {
+	       ExeUtilMaintainObject::MaintainObjectType ot;
+	       ot = ExeUtilMaintainObject::TABLES_;
+	           
+	       CorrName cn;
+	       cn = CorrName("DUMMY_OBJECT", PARSERHEAP(),
+			     "DUMMY_SCHEMA", "DUMMY_CATALOG");
+
+	       ExeUtilMaintainObject * eue = 
+		 new (PARSERHEAP ()) ExeUtilMaintainObject(
+		      ot,
+		      cn,
+		      $4,
+		      $6,
+		      PARSERHEAP());
+	       
+	       // xn will be started, if needed, when the exeutilstmt stmt
+	       // is processed.
+	       eue->xnNeeded() = FALSE;
+	       
+	       $$ = eue;
+	     }
+             | TOK_INITIALIZE_MAINTAIN
+             {
+	       NAList<ExeUtilMaintainObject::MaintainObjectOption*> * mtol =
+		 new (PARSERHEAP ()) NAList<ExeUtilMaintainObject::MaintainObjectOption*>;
+
+	       ExeUtilMaintainObject::MaintainObjectOption * mto = 
+		 new (PARSERHEAP ()) 
+		 ExeUtilMaintainObject::MaintainObjectOption
+		 (ExeUtilMaintainObject::INITIALIZE_,
+		  0, NULL);
+			    
+	       mtol->insert(mto);
+
+	       ExeUtilMaintainObject * eue = 
+		 new (PARSERHEAP ()) ExeUtilMaintainObject(
+		      ExeUtilMaintainObject::NOOP_,    // no-op
+		      CorrName("DUMMY", PARSERHEAP()), // no-op
+		      NULL,
+		      mtol,
+		      PARSERHEAP());
+	       
+	       eue->xnNeeded() = FALSE;
+
+	       $$ = eue;
+	     }
+             | TOK_REINITIALIZE_MAINTAIN
+             {
+	       NAList<ExeUtilMaintainObject::MaintainObjectOption*> * mtol =
+		 new (PARSERHEAP ()) NAList<ExeUtilMaintainObject::MaintainObjectOption*>;
+
+	       ExeUtilMaintainObject::MaintainObjectOption * mto = 
+		 new (PARSERHEAP ()) 
+		 ExeUtilMaintainObject::MaintainObjectOption
+		 (ExeUtilMaintainObject::REINITIALIZE_,
+		  0, NULL);
+			    
+	       mtol->insert(mto);
+
+	       ExeUtilMaintainObject * eue = 
+		 new (PARSERHEAP ()) ExeUtilMaintainObject(
+		      ExeUtilMaintainObject::NOOP_,    // no-op
+		      CorrName("DUMMY", PARSERHEAP()), // no-op
+		      NULL,
+		      mtol,
+		      PARSERHEAP());
+	       
+	       eue->xnNeeded() = FALSE;
+
+	       $$ = eue;
+	     }
+             | TOK_REINITIALIZE_MAINTAIN ',' TOK_DROP TOK_ONLY
+             {
+	       NAList<ExeUtilMaintainObject::MaintainObjectOption*> * mtol =
+		 new (PARSERHEAP ()) NAList<ExeUtilMaintainObject::MaintainObjectOption*>;
+
+	       ExeUtilMaintainObject::MaintainObjectOption * mto = 
+		 new (PARSERHEAP ()) 
+		 ExeUtilMaintainObject::MaintainObjectOption
+		 (ExeUtilMaintainObject::DROP_,
+		  0, NULL);
+			    
+	       mtol->insert(mto);
+
+	       ExeUtilMaintainObject * eue = 
+		 new (PARSERHEAP ()) ExeUtilMaintainObject(
+		      ExeUtilMaintainObject::NOOP_,    // no-op
+		      CorrName("DUMMY", PARSERHEAP()), // no-op
+		      NULL,
+		      mtol,
+		      PARSERHEAP());
+	       
+	       eue->xnNeeded() = FALSE;
+
+	       $$ = eue;
+	     }
+             | TOK_REINITIALIZE_MAINTAIN ',' TOK_CREATE TOK_VIEW
+             {
+	       NAList<ExeUtilMaintainObject::MaintainObjectOption*> * mtol =
+		 new (PARSERHEAP ()) NAList<ExeUtilMaintainObject::MaintainObjectOption*>;
+
+	       ExeUtilMaintainObject::MaintainObjectOption * mto = 
+		 new (PARSERHEAP ()) 
+		 ExeUtilMaintainObject::MaintainObjectOption
+		 (ExeUtilMaintainObject::CREATE_VIEW_,
+		  0, NULL);
+			    
+	       mtol->insert(mto);
+
+	       ExeUtilMaintainObject * eue = 
+		 new (PARSERHEAP ()) ExeUtilMaintainObject(
+		      ExeUtilMaintainObject::NOOP_,    // no-op
+		      CorrName("DUMMY", PARSERHEAP()), // no-op
+		      NULL,
+		      mtol,
+		      PARSERHEAP());
+	       
+	       eue->xnNeeded() = FALSE;
+
+	       $$ = eue;
+	     }
+             | TOK_REINITIALIZE_MAINTAIN ',' TOK_DROP TOK_VIEW
+             {
+	       NAList<ExeUtilMaintainObject::MaintainObjectOption*> * mtol =
+		 new (PARSERHEAP ()) NAList<ExeUtilMaintainObject::MaintainObjectOption*>;
+
+	       ExeUtilMaintainObject::MaintainObjectOption * mto = 
+		 new (PARSERHEAP ()) 
+		 ExeUtilMaintainObject::MaintainObjectOption
+		 (ExeUtilMaintainObject::DROP_VIEW_,
+		  0, NULL);
+			    
+	       mtol->insert(mto);
+
+	       ExeUtilMaintainObject * eue = 
+		 new (PARSERHEAP ()) ExeUtilMaintainObject(
+		      ExeUtilMaintainObject::NOOP_,    // no-op
+		      CorrName("DUMMY", PARSERHEAP()), // no-op
+		      NULL,
+		      mtol,
+		      PARSERHEAP());
+	       
+	       eue->xnNeeded() = FALSE;
+
+	       $$ = eue;
+	     }
+	     | TOK_MAINTAIN TOK_CLEAN maintain_object_options
+             {
+	       ExeUtilMaintainObject::MaintainObjectType ot;
+	       
+		   ot = ExeUtilMaintainObject::CLEAN_MAINTAIN_;
+           
+	       ExeUtilMaintainObject * eue = 
+		     new (PARSERHEAP ()) ExeUtilMaintainObject(
+		      ot,
+		      CorrName("DUMMY", PARSERHEAP()), // information only
+		      NULL,
+		      $3,
+		      PARSERHEAP());
+	       
+	       // xn will be started, if needed, when the exeutilstmt stmt
+	       // is processed.
+	       eue->xnNeeded() = FALSE;
+	       
+	       $$ = eue;
+	       
+	       delete $3;
+	     }
+
+maintain_object_token :  TOK_TABLE
+                           {
+			     $$ = 1;
+			   }
+                         | TOK_INDEX
+                           {
+			     $$ = 2;
+			   }
+                         | TOK_MV
+                           {
+			     $$ = 3;
+			   }
+                         | TOK_MVGROUP
+                           {
+			     $$ = 4;
+			   }
+                         | TOK_SCHEMA
+                           {
+			     $$ = 5;
+			   }
+                         | TOK_CATALOG
+                           {
+			     $$ = 6;
+			   }
+
+maintain_object_options : empty
+             {
+	       $$ = NULL;
+	     }
+        | ',' maintain_object_options_list
+             {
+	       $$ = $2;
+	     }
+;
+
+maintain_object_options_list : maintain_object_option
+             {
+	       NAList<ExeUtilMaintainObject::MaintainObjectOption*> * mtol =
+		 new (PARSERHEAP ()) NAList<ExeUtilMaintainObject::MaintainObjectOption*>;
+	       mtol->insert($1);
+	       $$ = mtol;
+	     }
+        | maintain_object_option ',' maintain_object_options_list
+             {
+	       $3->insert($1);
+	       $$ = $3;
+	     }
+;
+
+maintain_object_option : TOK_ALL 
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::ALL_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_UPDATE TOK_STATISTICS optional_mt_options
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::UPD_STATS_TABLE_,
+			       0, ($3 ? (char*)$3->data() : NULL));
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_REFRESH optional_mt_options
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::REFRESH_,
+			       0, ($2 ? (char*)$2->data() : NULL));
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_REFRESH TOK_ALL TOK_MVS optional_mt_options
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::REFRESH_ALL_MVS_,
+			       0, ($4 ? (char*)$4->data() : NULL));
+			    
+			    $$ = mto;
+			  }
+
+// Next maintain task options are not externalized.
+                      | TOK_UPDATE TOK_MVLOG TOK_STATISTICS optional_mt_options
+                          {
+			    if (CmpCommon::getDefault(ALLOW_UNEXTERNALIZED_MAINTAIN_OPTIONS) == DF_OFF)
+			      {
+				YYERROR;
+			      }
+
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::UPD_STATS_MVLOG_,
+			       0, ($4 ? (char*)$4->data() : NULL));
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_REFRESH TOK_MVGROUPS TOK_ONLY optional_mt_options
+                          {
+			    if (CmpCommon::getDefault(ALLOW_UNEXTERNALIZED_MAINTAIN_OPTIONS) == DF_OFF)
+			      {
+				YYERROR;
+			      }
+
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::REFRESH_MVGROUP_,
+			       0, ($4 ? (char*)$4->data() : NULL));
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_REFRESH TOK_MVS TOK_ONLY optional_mt_options
+                          {
+			    if (CmpCommon::getDefault(ALLOW_UNEXTERNALIZED_MAINTAIN_OPTIONS) == DF_OFF)
+			      {
+				YYERROR;
+			      }
+
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::REFRESH_MVS_,
+			       0, ($4 ? (char*)$4->data() : NULL));
+			    
+			    $$ = mto;
+			  }
+			  
+	   	      | TOK_UPDATE TOK_STATISTICS TOK_ALL TOK_MVS optional_mt_options
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::UPD_STATS_ALL_MVS_,
+			       0, ($5 ? (char*)$5->data() : NULL));
+			    
+			    $$ = mto;
+			  }
+
+// end unexternalized maintain task options
+
+                       | TOK_GET TOK_DETAILS
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::GET_DETAILS_,
+			       0, "sf");
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_GET TOK_DETAILS TOK_OPTIONS QUOTED_STRING
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::GET_DETAILS_,
+			       0, (char*)$4->data());
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_GET TOK_STATUS
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::GET_STATUS_,
+			       0, "sf");
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_GET TOK_STATUS TOK_OPTIONS QUOTED_STRING
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::GET_STATUS_,
+			       0, (char*)$4->data());
+			    
+			    $$ = mto;
+			  }
+                      | TOK_GET TOK_LABEL TOK_STATISTICS 
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::GET_LABEL_STATS_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+			  
+                      | TOK_GET TOK_LABEL TOK_STATISTICS TOK_ALL TOK_INDEXES
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::GET_LABELSTATS_INC_INDEXES_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_GET TOK_LABEL TOK_STATISTICS TOK_ALL TOK_INTERNAL
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::GET_LABELSTATS_INC_INTERNAL_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+                      | TOK_GET TOK_LABEL TOK_STATISTICS TOK_ALL TOK_RELATED
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::GET_LABELSTATS_INC_RELATED_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+                     
+                      | TOK_RUN run_from run_to run_for
+                          {
+			    char * fromStr = (char*)($2 ? $2->data() : NULL);
+			    char * toStr = (char*)($3 ? $3->data() : NULL);
+
+			    UInt32 fractionPrec1;
+			    UInt32 fractionPrec2;
+			    DatetimeValue * from = NULL;
+			    DatetimeValue * to = NULL;
+			    Int64 * fromJTS = NULL;
+			    Int64 * toJTS = NULL;
+			    Int64 forVal = $4;
+
+			    if (fromStr)
+			      {
+				from = 
+				  new (PARSERHEAP()) DatetimeValue(fromStr, REC_DATE_YEAR, REC_DATE_SECOND, fractionPrec1);
+			      }
+
+			    if (toStr && (forVal > 0))
+			      YYERROR;
+
+			    if (toStr)
+			      {
+				to = 
+				  new (PARSERHEAP()) DatetimeValue(toStr, REC_DATE_YEAR, REC_DATE_SECOND, fractionPrec2);
+			      }
+
+			    if ((from && (! from->isValid())) ||
+				(to && (! to->isValid())))
+			      YYERROR;
+
+			    if (from)
+			      {
+				fromJTS = (Int64 *)(new (PARSERHEAP()) char[sizeof(Int64)]);
+				*fromJTS = DatetimeType::julianTimestampValue
+				  ((char*)from->getValue(), from->getValueLen(), fractionPrec1);
+				if (*fromJTS <= 0)
+				  YYERROR;
+			      }
+
+			    toJTS = (Int64 *)(new (PARSERHEAP()) char [sizeof(Int64)]);
+			    if (to)
+			      {
+				*toJTS = DatetimeType::julianTimestampValue
+				  ((char*)to->getValue(), to->getValueLen(), fractionPrec2);
+
+				if (*toJTS <= 0)
+				  YYERROR;
+			      }
+				
+			    if (forVal > 0)
+			      {
+				if (! from)
+				  {
+				    *toJTS = CONVERTTIMESTAMP(JULIANTIMESTAMP(0,0,0,-1),0,-1,0);
+				  }
+				*toJTS = *toJTS + forVal * 1000000;
+			      }
+
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::RUN_,
+			       (fromJTS ? sizeof(Int64) : 0),
+			       (fromJTS ? (char*)fromJTS : NULL),
+			       (toJTS ? sizeof(Int64) : 0),
+			       (toJTS ? (char*)toJTS : NULL));
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_IF TOK_NEEDED
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::IF_NEEDED_,
+			       0, NULL, 0, NULL);
+
+			    $$ = mto;
+			  }
+
+                      | TOK_MAX NUMERIC_LITERAL_EXACT_NO_SCALE TOK_TABLES
+                        {
+			  ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			    new (PARSERHEAP ()) 
+			    ExeUtilMaintainObject::MaintainObjectOption
+			    (ExeUtilMaintainObject::MAX_TABLES_,
+			     atol($2->data()), NULL);
+			  
+			  $$ = mto;
+			}
+
+                      | TOK_ENABLE
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::ENABLE_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_DISABLE
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::DISABLE_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_RESET
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::RESET_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+
+                      | TOK_CONTINUE TOK_ON TOK_ERROR
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::CONTINUE_ON_ERROR_,
+			       1, NULL);
+			    
+			    $$ = mto;
+			  }
+                      | TOK_STOP TOK_ON TOK_ERROR
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::CONTINUE_ON_ERROR_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+                      | TOK_RETURN TOK_SUMMARY
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::RETURN_SUMMARY_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+                      | TOK_RETURN TOK_SUMMARY TOK_OPTIONS QUOTED_STRING
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::RETURN_SUMMARY_,
+			       0, (char*)$4->data());
+			    
+			    $$ = mto;
+			  }
+                      | TOK_RETURN TOK_DETAIL TOK_OUTPUT
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::RETURN_DETAIL_OUTPUT_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+                      | TOK_DISPLAY
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::DISPLAY_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+                      | TOK_DISPLAY TOK_DETAIL
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::DISPLAY_DETAIL_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+                      | TOK_NO TOK_OUTPUT
+                          {
+			    ExeUtilMaintainObject::MaintainObjectOption * mto = 
+			      new (PARSERHEAP ()) 
+			      ExeUtilMaintainObject::MaintainObjectOption
+			      (ExeUtilMaintainObject::NO_OUTPUT_,
+			       0, NULL);
+			    
+			    $$ = mto;
+			  }
+
+/* type stringval */
+run_from    :  TOK_FROM TOK_TIMESTAMP QUOTED_STRING 
+                      {
+			$$ = $3;
+		      }
+                   | /* empty */
+                     {
+		       $$ = NULL;
+		     }
+
+/* type stringval */
+run_to      :  TOK_TO TOK_TIMESTAMP QUOTED_STRING 
+                      {
+			$$ = $3;
+		      }
+                   | /* empty */
+                     {
+		       $$ = NULL;
+		     }
+
+/* type longint */
+run_for :  TOK_FOR_MAXRUNTIME maxruntime_interval
+                      {
+			$$ = $2;
+		      }
+                | /* empty */
+                     {
+		       $$ = 0;
+		     }
+
+/* stringval */
+optional_mt_options :   QUOTED_STRING
+                     {
+                       // DEFAULT_CHARSET has no effect on QUOTED_STRING in this context
+		       $$ = $1;
+		     }
+                   | /* empty */
+                     {
+		       $$ = NULL;
+		     }
+
+exe_util_fast_delete:  TOK_PURGEDATA table_name purgedata_options
+		     {
+		       if (CmpCommon::getDefault(EXE_PARALLEL_PURGEDATA) == DF_OFF)
+			 {
+			   YYERROR;
+			 }
+
+		       short noLog = ($3 & 0x1) != 0;
+		       short ignoreTrigger = ($3 & 0x2) != 0;
+
+		       CharInfo::CharSet stmtCharSet = CharInfo::UnknownCharSet;
+		       NAString * stmt = getSqlStmtStr ( stmtCharSet  // out - CharInfo::CharSet &
+		                                       , PARSERHEAP() // in  - NAMemory * heapUsedForOutputBuffers
+		                                       );
+		       // If we can not get a variable-width multi-byte or single-byte string here, report error 
+		       if ( stmt == NULL )
+		       {
+		         *SqlParser_Diags <<  DgSqlCode(-3406);
+		         YYERROR;
+		       }
+		       $$ = new (PARSERHEAP())
+			 ExeUtilFastDelete(CorrName(*$2, PARSERHEAP()),
+					   NULL,
+					   (char*)stmt->data(),
+					   stmtCharSet,
+					   FALSE,
+					   noLog,
+					   ignoreTrigger,
+					   // (($3 == 1) || ($3 == 3)),
+					   // (($3 == 2) || ($3 == 3)),
+					   TRUE,
+					   PARSERHEAP());
+		       
+		       delete $2;
+		     }
+
+purgedata_options : /*empty*/ { $$ = 0; }
+                  | TOK_NOLOG { $$ = 1; }
+                  | TOK_IGNORE_TRIGGER { $$ = 2; }
+                  | TOK_NOLOG TOK_IGNORE_TRIGGER { $$ = 3; }
+                  | TOK_IGNORE_TRIGGER TOK_NOLOG { $$ = 3; }
+                  | TOK_WAITEDIO { $$ = 4; }
+                  | TOK_NOLOG TOK_IGNORE_TRIGGER TOK_WAITEDIO { $$ = 7; }
+                  | TOK_IGNORE_TRIGGER TOK_NOLOG TOK_WAITEDIO { $$ = 7; }
+                  | TOK_WAITEDIO TOK_NOLOG TOK_IGNORE_TRIGGER { $$ = 7; }
+                  | TOK_WAITEDIO TOK_IGNORE_TRIGGER TOK_NOLOG { $$ = 7; }
+                  | TOK_NOLOG TOK_WAITEDIO TOK_IGNORE_TRIGGER { $$ = 7; }
+                  | TOK_IGNORE_TRIGGER TOK_WAITEDIO TOK_NOLOG { $$ = 7; }
+
+
+exe_util_aqr: TOK_GET TOK_ALL TOK_AQR TOK_ENTRIES
+               {
+		 ExeUtilAQR * eua = 
+		   new (PARSERHEAP ()) ExeUtilAQR(
+			ExeUtilAQR::GET_,
+			NULL,
+			PARSERHEAP());
+		 
+		 $$ = eua;
+	       }
+
+=======
+>>>>>>> bff2742... ANSI Schema
 exe_util_aqr: TOK_SET TOK_AQR TOK_CLEAR TOK_ALL TOK_ENTRIES
                {
 		 ExeUtilAQR * eua = 
@@ -21425,11 +22257,10 @@ show_statement:
             }
   
           | TOK_SHOWDDL_COMPONENT identifier
-              optional_showddl_role_option
             {
               $$ = new (PARSERHEAP())
                 RelRoot(new (PARSERHEAP())
-                  Describe(SQLTEXT(), *$2, Describe::LONG_, $3),
+                  Describe(SQLTEXT(), *$2),
                   REL_ROOT,
                   new (PARSERHEAP())
                   ColReference(new (PARSERHEAP()) ColRefName(TRUE, PARSERHEAP())));
@@ -22613,6 +23444,7 @@ extended_label_name : label_name
                  yyerror(""); YYERROR; /*internal syntax only!*/
               }
            }
+<<<<<<< HEAD
 
 schema_location_clause: TOK_LOCATION schema_subvolume
                       {
@@ -22632,13 +23464,14 @@ schema_subvolume :  regular_identifier
                       {
                         $$ = $1;
                       }
+=======
+>>>>>>> bff2742... ANSI Schema
 
 /* type pStmtDDL */
 
-schema_definition : TOK_CREATE TOK_SCHEMA schema_name_and_location_clause char_set collation_option
-                                optional_schema_element_list
+schema_definition : TOK_CREATE schema_class TOK_SCHEMA schema_name_clause char_set collation_option
 				{
-				  NAString extSchName($3->getSchemaName().getSchemaNameAsAnsiString());
+				  NAString extSchName($4->getSchemaName().getSchemaNameAsAnsiString());
 				  if (! validateVolatileSchemaName(extSchName))
 				    {
 				      YYERROR;
@@ -22648,16 +23481,16 @@ schema_definition : TOK_CREATE TOK_SCHEMA schema_name_and_location_clause char_s
           // StmtDDLCreateSchema will free the memory there.
           CharType *charType = new CharType(CharType::LiteralSchema, 
                                             0, 0, FALSE, FALSE, FALSE, FALSE, FALSE,
-                                            $4, $5.collation_, $5.coercibility_ );
+                                            $5, $6.collation_, $6.coercibility_ );
                                                          
           StmtDDLCreateSchema *pNode = new (PARSERHEAP())
 				                          StmtDDLCreateSchema(
-                                      *$3 /*schema_name_clause*/,
-                                      charType,
-                                       $6 /*optional_schema_element_list*/);
+                                      *$4 /*schema_name_clause*/,
+                                      $2, /* schema class */
+                                      charType);
                                   pNode->synthesize();
                                   $$ = pNode;
-				  delete $3 /*schema_name_clause*/;
+				  delete $4 /*schema_name_clause*/;
 				}
 
 schema_definition : TOK_CREATE TOK_VOLATILE TOK_SCHEMA 
@@ -22672,47 +23505,28 @@ schema_definition : TOK_CREATE TOK_VOLATILE TOK_SCHEMA
 				    new (PARSERHEAP())
 				      StmtDDLCreateSchema(
                                       edsn /*schema_name_clause*/,
-                                      NULL,
-                                      NULL /*optional_schema_element_list*/);
+                                      COM_SCHEMA_CLASS_SHARED, /* schema class */
+                                      NULL);
 				  pNode->setIsVolatile(TRUE);
 				  pNode->setProcessAsExeUtil(TRUE);
                                   pNode->synthesize();
                                   $$ = pNode;
 				}
 
-//  
-//  schema_definition : TOK_CREATE TOK_SCHEMA schema_name_clause collation_option
-//                                  optional_schema_element_list
-//                                  {
-//                                    StmtDDLCreateSchema *pNode =
-//                                      new (PARSERHEAP())
-//                                        StmtDDLCreateSchema(
-//                                        *$3 /*schema_name_clause*/,
-//                                         ( ($4.coercibility_ == CharInfo::EXPLICIT) ? 
-//                                              $4.collation_  :  CharInfo::UNKNOWN_COLLATION ),
-//                                         $5 /*optional_schema_element_list*/);
-//                                    pNode->synthesize();
-//                                    $$ = pNode;
-//                                    delete $3 /*schema_name_clause*/;
-//                                  }
-//  
+/* type schemaClassEnum */
+schema_class : empty
+                                { 
+                                  $$ = COM_SCHEMA_CLASS_DEFAULT;
+                                }
+                              | TOK_PRIVATE
+                                {
+                                  $$ = COM_SCHEMA_CLASS_PRIVATE;
+                                }
+                              | TOK_SHARED
+                                {
+                                  $$ = COM_SCHEMA_CLASS_SHARED;
+                                }
 
-schema_name_and_location_clause: schema_name_clause
-                                  |
-                                  schema_name_clause schema_location_clause schema_location_reuse_clause
-                                  {
-                                    ComSubvolumeName subvol ($2->data());
-                                    size_t svMinLength = 4;
-                                    if (subvol.isMXSubvol(svMinLength))
-                                     {
-                                       $1->setSubvolumeName(subvol);
-                                      $1->setLocationReuse($3);
-                                     }
-                                    else
-                                     {
-                                       *SqlParser_Diags << DgSqlCode(-3025) << DgString0(subvol);
-                                     }
-                                  }
 
 /* type pElemDDLSchemaName */
 schema_name_clause: schema_name
@@ -22767,95 +23581,6 @@ external_user_identifier : identifier
                                   // upshift even if delimited
                                   NAString temp (*$$);
                                   $$->toUpper();
-                                }
-
-/* type pElemDDL */
-optional_schema_element_list :  empty
-                                {
-                                  $$ = NULL;
-                                }
-                      | 
-                        schema_element_list
-                        {
-                          if (NOT Get_SqlParser_Flags(ALLOW_SPECIALTABLETYPE))
-                          {
-                            // Don't allow the customer to use this feature
-                            // Internal use is OK.
-                            // Compound create schema is not supported.
-                            *SqlParser_Diags << DgSqlCode(-3080)
-                            << DgString0("object definition");
-                            YYERROR;
-                          }
-                        }
-
-/* type pElemDDL */
-schema_element_list : schema_element
-                      | schema_element_list schema_element
-                                {
-                                  $$ = new (PARSERHEAP())
-				    ElemDDLList(
-						$1 /*schema_element_list*/,
-						$2 /*schema_element*/);
-                                }
-
-/* type pElemDDL */
-schema_element : table_definition
-                                {
-                                  if ($1 /*table_definition*/)
-				    {
-				      $$ = $1->castToElemDDLNode();
-
-				      // volatile or CTAS stmts not supported
-				      // as part of a compound schema stmt.
-				      if (($$->castToStmtDDLCreateTable()->isVolatile()) ||
-					  ($$->castToStmtDDLCreateTable()->getQueryExpression()))
-					{
-					  YYERROR;
-					}
-				    }
-                                  else
-                                    $$ = NULL;
-                                }
-
-                      | view_definition
-                                {
-                                  if ($1 /*view_definition*/)
-                                    $$ = $1->castToElemDDLNode();
-                                  else
-                                    $$ = NULL;
-                                }
-
-                      | index_definition
-                                {
-                                  if ($1 /*index_definition*/)
-				    {
-				      $$ = $1->castToElemDDLNode();
-				      
-				      // volatile stmts not supported
-				      // as part of a compound schema stmt.
-				      if ($$->castToStmtDDLCreateIndex()->isVolatile())
-					{
-					  YYERROR;
-					}
-				    }
-                                  else
-                                    $$ = NULL;
-                                }
-
-                      | trigger_definition
-                                {
-                                  if ($1 != NULL)
-                                    $$ = $1->castToElemDDLNode();
-                                  else
-                                    $$ = NULL;
-                                }
-
-                      | grant_statement
-                                {
-                                  if ($1 /*grant_statement*/)
-                                    $$ = $1->castToElemDDLNode();
-                                  else
-                                    $$ = NULL;
                                 }
 
 /* type pStmtDDL */
@@ -31289,17 +32014,39 @@ component_str_lit : std_char_string_literal
 /* type pStmtDDL */
 /*REGISTER USER*/
 register_user_statement : TOK_REGISTER TOK_USER external_user_identifier
+<<<<<<< HEAD
                              optional_as_auth_clause optional_by_auth_identifier
+=======
+                             optional_as_auth_clause optional_schema_clause
+>>>>>>> bff2742... ANSI Schema
                                 {
                                   $$ = new (PARSERHEAP())
                                   StmtDDLRegisterUser(
                                         *$3 /*external_user*/, 
                                         $4 /*auth_id*/,
-                                        $5 /*by clause*/,
+                                        $5 /*schema clause*/,
                                         PARSERHEAP()); 
                                   delete $3;
                                 }
 
+/* type pElemDDL */
+optional_schema_clause : empty
+                         {
+                           $$ = NULL;
+                         }
+                         /*TODO: Increases shift/reduce conflicts
+                         | schema_class TOK_SCHEMA schema_name
+                         {
+	     	           $$ = new (PARSERHEAP()) ElemDDLAuthSchema(*$3, $1, PARSERHEAP());
+                             if ($3 != NULL)
+                                delete $3;
+                         }
+                         */
+                         | schema_class TOK_SCHEMA 
+                         {
+	     	           $$ = new (PARSERHEAP()) ElemDDLAuthSchema($1, PARSERHEAP());
+                         }
+                     
 /* type pStmtDDL */
 unregister_component_statement : TOK_UNREGISTER TOK_COMPONENT component_name optional_drop_behavior
                                 {
@@ -32073,6 +32820,7 @@ nonreserved_word :      TOK_ABORT
 		      | TOK_PRESERVE
                       | TOK_PRIORITY
                       | TOK_PRIORITY_DELTA
+                      | TOK_PRIVATE
                       | TOK_PRIVILEGE
                       | TOK_PROCESS
                       | TOK_PROGRESS
