@@ -41,7 +41,7 @@ typedef struct {
   int64_t objectUID;
   int32_t objectOwner;
   std::string objectName;
-  std::string objectType;
+  ComObjectType objectType;
   PrivMgrDesc originalPrivs;
   PrivMgrDesc updatedPrivs;
 } ObjectUsage;
@@ -267,10 +267,6 @@ class PrivMgrMDAdmin : public PrivMgr
     PrivStatus getViewsThatReferenceObject(
       const ObjectUsage &objectUsage, 
       std::vector<ViewUsage> &viewUsages);
-
-    PrivStatus getReferencingTablesForConstraints(
-      const ObjectUsage &objectUsage,
-      std::vector<ObjectReference *> &objectReference );
 
     PrivStatus getRIConstraintName(
       const ObjectReference *pObj, 
