@@ -268,6 +268,14 @@ class PrivMgrMDAdmin : public PrivMgr
       const ObjectUsage &objectUsage, 
       std::vector<ViewUsage> &viewUsages);
 
+    PrivStatus getReferencingTablesForConstraints(
+      const ObjectUsage &objectUsage,
+      std::vector<ObjectReference *> &objectReference );
+
+    PrivStatus getRIConstraintName(
+      const ObjectReference *pObj, 
+      std::string &constraintName);
+
     bool isAuthorized (void);
     std::string deriveTableName(const char *name)
     {

@@ -147,6 +147,12 @@ struct objectRefdByMe
   NAString catalogName;
 };
 
+#define CONCAT_CATSCH(tgt,catname,schname)  \
+   (tgt += NAString(catname) + \
+         NAString(".\"") + \
+         NAString(schname) + \
+         NAString("\""))
+
 class CmpSeabaseDDL
 {
  public:

@@ -125,6 +125,21 @@ PrivMgr::PrivMgr(
   setFlags();
 }
 
+PrivMgr::PrivMgr( 
+   const std::string & trafMetadataLocation,
+   const std::string & metadataLocation,
+   ComDiagsArea * pDiags)
+: trafMetadataLocation_ (trafMetadataLocation),
+  metadataLocation_ (metadataLocation),
+  pDiags_(pDiags)
+  
+{
+
+  if (pDiags == NULL)
+     pDiags = CmpCommon::diags();
+
+}
+
 // -----------------------------------------------------------------------
 // Copy constructor
 // -----------------------------------------------------------------------
