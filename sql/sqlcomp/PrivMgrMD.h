@@ -41,7 +41,7 @@ typedef struct {
   int64_t objectUID;
   int32_t objectOwner;
   std::string objectName;
-  std::string objectType;
+  ComObjectType objectType;
   PrivMgrDesc originalPrivs;
   PrivMgrDesc updatedPrivs;
 } ObjectUsage;
