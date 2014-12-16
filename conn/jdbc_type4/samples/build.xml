@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="jdbct4" default="deploy">
+	<tstamp>
+		<format property="now.timestamp" pattern="yyyy_MM_dd" locale="en" />
+	</tstamp>
+	
+	<target name="init">
+		<mkdir dir="target"/>
+		<mkdir dir="target/classes"/>
+	</target>
+	
+	
+	<target name="deploy" depends="clean,init">
+		<javac srcdir="CallableStatementSample" destdir="target/classes" includes="**/IntegerSPJ.java"></javac>
+		<jar basedir="target/classes" includes="IntegerSPJ.class"  destfile="target/qaspj.jar"></jar>
+	</target>
+	
+	<target name="clean">
+		<delete dir="target" deleteonexit="true">
+		</delete>
+	</target>
+</project>
