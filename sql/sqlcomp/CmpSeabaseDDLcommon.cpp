@@ -5469,6 +5469,27 @@ void  CmpSeabaseDDL::dropSeabaseSequence(StmtDDLDropSequence  * dropSequenceNode
 
   }
 
+  // remove any privileges
+  if (isAuthorizationEnabled())
+  {
+    Int64 seqUID = 0;
+    seqUID = getObjectUID(&cliInterface,
+                          catalogNamePart.data(), schemaNamePart.data(), objectNamePart.data(),
+                          COM_SEQUENCE_GENERATOR_OBJECT_LIT);
+
+    if (!deletePrivMgrInfo ( objectNamePart, 
+                             seqUID, 
+                             NAString(COM_SEQUENCE_GENERATOR_OBJECT_LIT) ))
+    {
+      *CmpCommon::diags() << DgSqlCode(-CAT_NOT_ALL_PRIVILEGES_REVOKED);
+
+      processReturn();
+
+      return;
+    }
+
+  }
+
   if (deleteFromSeabaseMDTable(&cliInterface, 
                                catalogNamePart, schemaNamePart, objectNamePart, 
                                COM_SEQUENCE_GENERATOR_OBJECT_LIT))
@@ -5552,7 +5573,7 @@ void CmpSeabaseDDL::initSeabaseAuthorization()
   // define context changed, kill arkcmps, if they are running.
   for (short i = 0; i < GetCliGlobals()->currContext()->getNumArkcmps(); i++)
     GetCliGlobals()->getArkcmp(i)->endConnection();
-
+  
   return;
 }
 
@@ -5572,7 +5593,7 @@ void CmpSeabaseDDL::dropSeabaseAuthorization()
   // define context changed, kill arkcmps, if they are running.
   for (short i = 0; i < GetCliGlobals()->currContext()->getNumArkcmps(); i++)
     GetCliGlobals()->getArkcmp(i)->endConnection();
-
+  
   return;
 }
 
@@ -6837,7 +6858,6 @@ ElemDDLGrantee *grantedBy = pParseNode->getGrantedBy();
       if (grantorID != ComUser::getRootUserID())
       {
          PrivMgrComponentPrivileges componentPrivileges(std::string(privMgrMDLoc.data()),CmpCommon::diags());
-
          if (!componentPrivileges.hasSQLPriv(grantorID,
                                              SQLOperation::MANAGE_ROLES,
                                              true))

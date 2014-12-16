@@ -520,7 +520,7 @@ PrivStatus PrivMgrPrivileges::grantObjectPriv(
     for (size_t i = 0; i < listOfObjects.size(); i++)
     {
       ObjectUsage *pObj = listOfObjects[i];
-      int32_t theGrantor = (pObj->objectType == VIEW_OBJECT_LIT) ? SYSTEM_AUTH_ID : grantorID_;
+      int32_t theGrantor = (pObj->objectType == COM_VIEW_OBJECT) ? SYSTEM_AUTH_ID : grantorID_;
       int32_t theGrantee = pObj->objectOwner;
       int64_t theUID = pObj->objectUID;
       PrivMgrCoreDesc thePrivs = pObj->updatedPrivs.getTablePrivs();
@@ -787,7 +787,7 @@ PrivStatus PrivMgrPrivileges::dealWithViews(
       pUsage->objectUID = viewUsage.viewUID;
       pUsage->objectOwner = viewUsage.viewOwner;
       pUsage->objectName = viewUsage.viewName;
-      pUsage->objectType = VIEW_OBJECT_LIT;
+      pUsage->objectType = COM_VIEW_OBJECT;
       pUsage->originalPrivs = viewUsage.originalPrivs;
       pUsage->updatedPrivs = viewUsage.updatedPrivs;
       listOfAffectedObjects.push_back(pUsage);
@@ -1161,7 +1161,7 @@ PrivStatus PrivMgrPrivileges::revokeObjectPriv (const std::string &objectType,
       }
     }
 
-    int32_t theGrantor = (pObj->objectType == VIEW_OBJECT_LIT) ? SYSTEM_AUTH_ID : grantorID_;
+    int32_t theGrantor = (pObj->objectType == COM_VIEW_OBJECT) ? SYSTEM_AUTH_ID : grantorID_;
     int32_t theGrantee = pObj->objectOwner;
     int64_t theUID = pObj->objectUID;
 
@@ -2771,13 +2771,18 @@ PrivStatus ObjectPrivsMDTable::insertSelect(
            tableBits, libraryBits, sequenceBits);
   std::string grantableClause(buf);
 
-  sprintf(buf, "insert into %s select distinct object_uid, trim(catalog_name) || '.\"' || trim(schema_name) ||  '\".\"' || trim(object_name) || '\"', object_type, object_owner, (select auth_db_name from %s where auth_id = o.object_owner) as auth_db_name, '%s', %d, '%s', '%s', %s, %s from %s o where o.object_type in ('VI','BT','LB','UR','SG')",
-              tableName_.c_str(),
-              authsLocation.c_str(),
-              USER_GRANTEE_LIT,
-              -2, systemGrantor.c_str(), SYSTEM_GRANTOR_LIT,
-              privilegesClause.c_str(), grantableClause.c_str(),
-              objectsLocation.c_str());
+  sprintf(buf, "insert into %s select distinct object_uid, "
+          "trim(catalog_name) || '.\"' || trim(schema_name) ||  '\".\"' || trim(object_name) || '\"', "
+          "object_type, object_owner, "
+          "(select auth_db_name from %s where auth_id = o.object_owner) as auth_db_name, "
+          "'%s', %d, '%s', '%s', %s, %s from %s o " 
+          "where o.object_type in ('VI','BT','LB','UR','SG')",
+          tableName_.c_str(),
+          authsLocation.c_str(),
+          USER_GRANTEE_LIT,
+          SYSTEM_AUTH_ID, SYSTEM_AUTH_NAME, SYSTEM_GRANTOR_LIT,
+          privilegesClause.c_str(), grantableClause.c_str(),
+          objectsLocation.c_str());
 
   // set pointer in diags area
   int32_t diagsMark = pDiags_->mark();
