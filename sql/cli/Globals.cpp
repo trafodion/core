@@ -377,10 +377,7 @@ void CliGlobals::init( NABoolean espProcess,
 #endif 
 
   inConstructor_ = FALSE;
-  pfsValues_[0] = 0;
-  pfsValues_[1] = 0;
-  pfsValues_[2] = 0;
-
+  //
   // could initialize the program file name here but ...
   myProgName_[0] = '\0';
 
@@ -707,19 +704,24 @@ Lng32 CliGlobals::dropContext(ContextCli* context)
 }
 //LCOV_EXCL_STOP
 
-ContextCli * CliGlobals::getContext(SQLCTX_HANDLE context_handle)
+ContextCli * CliGlobals::getContext(SQLCTX_HANDLE context_handle, 
+                                    NABoolean calledFromDrop)
 {
   ContextCli * context;
   cliSemaphore_->get();
   contextList_->position((char*)&context_handle, sizeof(SQLCTX_HANDLE));
-  while (context = (ContextCli *)contextList_->getNext())
-    {
-      if (context_handle == context->getContextHandle())
-      {
+  while ((context = (ContextCli *)contextList_->getNext()) != NULL)
+  {
+     if (context_handle == context->getContextHandle())
+     {
+        if (context->isDropInProgress())
+           context = NULL;
+        else if (calledFromDrop)
+           context->setDropInProgress();
         cliSemaphore_->release();
-	return context;
-      }
-    }
+        return context;
+     }
+  }
   cliSemaphore_->release();
   return NULL;
 }
@@ -766,8 +768,7 @@ Lng32 CliGlobals::switchContext(ContextCli * newContext)
 
   pid_t tid;
   SQLCTX_HANDLE ch, currCh;
-  if (newContext == NULL || tidList_ == NULL)
-     return -1; 
+
   tid = syscall(SYS_gettid);
   if (newContext != defaultContext_  && 
         tsCurrentContextMap != NULL && 
@@ -783,6 +784,7 @@ Lng32 CliGlobals::switchContext(ContextCli * newContext)
      {
         contextTidMap->context_ = newContext;
         tidFound = TRUE;
+        tsCurrentContextMap = contextTidMap;
         break;
      }
   } 
@@ -1083,78 +1085,8 @@ Lng32 CliGlobals::resetContext(ContextCli *theContext, void *contextMsg)
 }
 //LCOV_EXCL_STOP
 
-// The following is commented out because shared Arkcmp is not supported.
-/*void CliGlobals::deleteAndCreateNewArkcmp(){
-  // probably a better way than just deleting it, but it should work until
-  // we find a better way...
-  if ( sharedArkcmp_ )
-    {
-      delete sharedArkcmp_ ;
-      sharedArkcmp_ = new(exCollHeap()) ExSqlComp(0,
-                                            exCollHeap(),
-                                            this);
-      sharedArkcmp_-> setShared(TRUE);
-    } 
-}
-
-*/
-
-//ss_cc_change : This is only applicable to nowaited CLI -obsolete on SQ
-//LCOV_EXCL_START
-NABoolean CliGlobals::checkOperationsPending(Int64 transid) {
-  // This function goes through each context and check if the context transid
-  // matches the param transid.  If there is a match, it looks for statements 
-  // that have outstanding requests and return TRUE, otherwise, FALSE is
-  // returned.
-  // This function is called by FS2^FLUSH^ALL^VSBB via a function ptr. registed
-  // at process startup time.
-
-  // Decrement the pfs sbbcount by the global sbbcount (saved from previous
-  // call to checkOperationsPending). If there are no prior MP sbb operations
-  // the updated pfs sbbcount should be 0.
-  resetGlobalSbbCount(); 
- 
-  contextList_->position();
-
-  ContextCli * cntxt;
-
-  while (cntxt = (ContextCli *)contextList_->getNext())
-  {
-    ExTransaction *trans = cntxt->getTransaction();
-    Int64 contextTransid = cntxt->getTransaction()->getExeXnId();
-    if (contextTransid == transid)
-      {
-	// match transid, loop through each open statement.
-	cntxt->getOpenStatementList()->position();
-        Statement * stmt;
-        while (stmt = (Statement *)cntxt->getOpenStatementList()->getNext())
-	  { 
-	    // Check if statement involves any update, delete or
-	    // insert operations, or stmt is being prepared, or stmt
-	    // involves UDR interactions. If any of the above is true
-	    // and this nowaited operation is pending, return true.
-	    if ( stmt->updateInProgress() ||
-		 stmt->getState() == Statement::PREPARE_ ||
-		 stmt->containsUdrInteractions() )
-	      {
-
-		if (stmt->updateInProgress())
-		  {
-		    // Increment pfs sbbcount to signal FS2^FLUSH^ALL^VSBB to 
-		    // check for outstanding dp2 messages.
-		    // The sbbcount is also updated in CliGlobals so that it can
-		    // be used for adjusting the pfs sbbcount the next time
-		    // this function is called.
-		    incGlobalSbbCount();  
-		  }
-	      }
-	  }
-      }
-  }
-  return FALSE;
-}
 //LCOV_EXCL_STOP
-
+/*
 void CliGlobals::closeAllOpenCursors(Int64 tcbref) {
   // This function goes through each context and check if the context transid
   // matches the param transid.  If there is a match, it looks for statements 
@@ -1175,7 +1107,7 @@ void CliGlobals::closeAllOpenCursors(Int64 tcbref) {
       }
   }
 }
-
+*/
 //ss_cc_change POS featue no longer used
 //LCOV_EXCL_START
 void CliGlobals::clearQualifiedDiskInfo()
@@ -1233,25 +1165,6 @@ void CliGlobals::setProcessIsStopping(NABoolean withinRMSSemaphore)
   {
     cntxt->setStatsArea(NULL, FALSE, FALSE, getSemaphore);
   }
-}
-//LCOV_EXCL_STOP 
-Int16 CliGlobals::getPFSUsage(Int32 &pfsSize, Int32 &pfsCurUse, 
-                           Int32 &pfsMaxUse)
-{
-  Int16 retcode = 0;
-  if (retcode == 0)
-  {
-    pfsSize = pfsValues_[0];
-    pfsCurUse = pfsValues_[1];
-    pfsMaxUse = pfsValues_[2];
-    if (processStats_ != NULL)
-    {
-       processStats_->setPfsSize(pfsSize);
-       processStats_->setPfsCurUse(pfsCurUse);
-       processStats_->setPfsMaxUse(pfsMaxUse);
-    }
-  }
-  return retcode;
 }
 
 NAHeap *CliGlobals::getCurrContextHeap()
