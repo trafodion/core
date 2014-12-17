@@ -2280,7 +2280,7 @@ CoprocessorService, Coprocessor {
     this.t_Region = (TransactionalRegion) tmp_env.getRegion();
     this.fs = this.m_Region.getFilesystem();
 
-    org.apache.hadoop.conf.Configuration conf = env.getConfiguration(); //new org.apache.hadoop.conf.Configuration(); 
+    org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration(); //env.getConfiguration();
     
     synchronized (stoppable) {
       try {
@@ -2357,7 +2357,7 @@ CoprocessorService, Coprocessor {
     this.t_Region = (TransactionalRegion) tmp_env.getRegion();
     zkw1 = rss.getZooKeeper();
 
-    this.configuredEarlyLogging = conf.getBoolean("hbase.regionserver.region.transactional.earlylogging", false);
+    this.configuredEarlyLogging = env.getConfiguration().getBoolean("hbase.regionserver.region.transactional.earlylogging", false);
     if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: HBase transactional early logging is " + this.configuredEarlyLogging);
 
     if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: get the reference from Region CoprocessorEnvironment ");
