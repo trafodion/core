@@ -446,6 +446,10 @@ class ExHbaseTaskTcb : public ExGod
  protected:
 
   ExHbaseAccessTcb * tcb_;
+
+  // To allow cancel, some tasks will need to return to the 
+  // scheduler occasionally.
+  static const Lng32 batchSize_ = 4096;
 };
 
 class ExHbaseScanTaskTcb  : public ExHbaseTaskTcb
