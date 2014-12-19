@@ -94,6 +94,7 @@ CliGlobals::CliGlobals(NABoolean espProcess)
        envvarsContext_(0),
        sharedArkcmp_(NULL),
        arkcmpInitFailed_(arkcmpIS_OK_),
+       defaultContext_(NULL),
        processIsStopping_(FALSE),
        totalCliCalls_(0),
        savedCompilerVersion_ (COM_VERS_COMPILER_VERSION),
