@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Arvind Narain <arvind.narain@hp.com>
+Workflow+1: Arvind Narain <arvind.narain@hp.com>
+Code-Review+2: Roberta Marton <roberta.marton@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Fri, 19 Dec 2014 19:29:27 +0000
+Reviewed-on: https://review.trafodion.org/870
+Project: trafodion/core
+Branch: refs/heads/master
