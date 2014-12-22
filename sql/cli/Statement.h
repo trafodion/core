@@ -685,7 +685,7 @@ public:
  // set the state of a statement. As a side effect the statement
   // is added or removed from the current contexts openStatementList
   // Thus, never set the state directly. Always use this method.
-  // The only "exeception" is the initialization list of the constructor
+  // The only "execption" is the initialization list of the constructor
   // of the statement.
   void setState(State state);
 

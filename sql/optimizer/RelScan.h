@@ -639,11 +639,11 @@ private:
   // the first param to this method, vid, is assumed to a OR predicate
   // that meets all logical conditions such that it can be transformed
   // to a IN subquery to be implemeneted using a semijoin
-  // this method applies various hueristics and returns a TRUE/FALSE
+  // this method applies various hueuistics and returns a TRUE/FALSE
   // answer as to whther applying the transformation will yield
   // better plans. Method is called in Normlizer so we use 
-  // hueristics rather than computed cost.
-  NABoolean passSemiJoinHueristicCheck(ValueId vid, Lng32 numValues, 
+  // heuristics rather than computed cost.
+  NABoolean passSemiJoinHeuristicCheck(ValueId vid, Lng32 numValues, 
                                       Lng32 numParams, ValueId colVid) const ;
 
   // NO_SECURITY_CHECK: if this Scan node was created as part of another

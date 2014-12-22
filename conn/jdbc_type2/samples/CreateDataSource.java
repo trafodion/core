@@ -31,13 +31,13 @@
 //
 // Create a directory dataSources/jdbc before running this program.
 // Make sure providerutil.jar and fscontext.jar are in CLASSPATH
-// You can run this program only once sucessfully.
+// You can run this program only once successfully.
 //
 // If you need to run this program again, delete .bindings file from
 // dataSources/jdbc.
 //
 // The program takes the path name of the location of the dataSources
-// directory as a comand line argument.
+// directory as a command line argument.
 //
 import java.util.*;
 import javax.naming.*;
@@ -66,7 +66,7 @@ public class CreateDataSource {
 
             ds.setDescription("Test SQL/MX Data Source created for Testing data source ");
 
-// As an example, the following lines demostrate how to alter the default
+// As an example, the following lines demonstrate how to alter the default
 // location of the SQL/MX catalog and schema used for this Data Source.
 //            ds.setCatalog("CAT");
 //            ds.setSchema("SCH");
