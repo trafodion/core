@@ -270,12 +270,15 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_T2Driver_setDefaultEncoding(JN
 	FUNCTION_ENTRY("Java_org_trafodion_jdbc_t2_T2Driver_setDefaultEncoding",("encoding=%s",
 		DebugJString(jenv,encoding)));
 	gJNICache.defaultCharset = SQLCHARSETCODE_UNKNOWN;
+	char tmpEncoding[100];
+	memset(tmpEncoding, '\0', 100);
 	if (encoding)
 	{
 		const char *encoding_str = JNI_GetStringUTFChars(jenv,encoding, NULL);
+		strcpy(tmpEncoding, encoding_str);
 		if (encoding_str)
 		{
-			gJNICache.defaultCharset = getCharset(encoding_str);
+			gJNICache.defaultCharset = getCharset(tmpEncoding);
 			JNI_ReleaseStringUTFChars(jenv,encoding, encoding_str);
 		}
 	}
