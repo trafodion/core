@@ -3156,6 +3156,7 @@ func_exit:
 			if (gJNICache.charsetInfo[idx].encodingNameJava==NULL)
 				FUNCTION_RETURN_NUMERIC(FALSE,("FALSE - Encoding NewGlobalRef() == NULL"));
 			gJNICache.charsetInfo[idx].useDefaultEncoding = FALSE;
+			jenv->DeleteLocalRef(encoding);
 		}
 
 		gJEnv = jenv;
