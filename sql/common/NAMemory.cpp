@@ -1276,7 +1276,6 @@ NAMemory::~NAMemory()
   switch (derivedClass_)
   {
   case NAHEAP_CLASS:
-    ((NAHeap *)this)->destroy();
     break;
   case COMSPACE_CLASS:
     ((ComSpace *)this)->destroy();
@@ -2957,6 +2956,7 @@ NAHeap::~NAHeap()
 {
   // destruction will take place through the destroy() call within the NAMemory
   // destructor
+   destroy();
   if (threadSafe_)
      pthread_mutex_destroy(&mutex_);
 }
