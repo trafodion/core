@@ -255,12 +255,21 @@ public class SQLMXDatabaseMetaData extends SQLMXHandle implements
 	public String getDatabaseProductVersion() throws SQLException {
 		if (JdbcDebugCfg.entryActive)
 			debug[methodId_getDatabaseProductVersion].methodEntry();
+		Statement statement = null;
+		ResultSet resultSet = null;
 		try {
-			return new String(Integer.toString(T2Driver
-					.getDatabaseMajorVersion())
-					+ "."
-					+ Integer.toString(T2Driver.getDatabaseMinorVersion()));
+			String productVersion = new String();
+			statement = connection_.createStatement();
+			statement.execute("get version of software");
+			resultSet = statement.getResultSet();
+			while (resultSet.next())
+			{
+				productVersion += resultSet.getString(1);
+			}
+			return productVersion;
 		} finally {
+			resultSet.close();
+			statement.close();
 			if (JdbcDebugCfg.entryActive)
 				debug[methodId_getDatabaseProductVersion].methodExit();
 		}
