@@ -20,8 +20,6 @@ package org.apache.hadoop.hbase.coprocessor.transactional;
 
 import org.apache.hadoop.hbase.util.Bytes; 
 import java.io.*;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,6 +94,9 @@ private Map<Integer, Integer> indoubtTransactionsCountByTmid = new TreeMap<Integ
 // Map for Transactional Region to exchange data structures between Region Observer coprocessor and Endpoint Coprocessor
 static ConcurrentHashMap<String, Object> transactionsRefMap = new ConcurrentHashMap<String, Object>();
 
+private ConcurrentHashMap<String, TransactionState> transactionsById = new ConcurrentHashMap<String, TransactionState>();
+private Set<TransactionState> commitPendingTransactions = Collections.synchronizedSet(new HashSet<TransactionState>());
+
 HRegion my_Region;
 HRegionInfo regionInfo;
 HLog tHLog;
@@ -146,10 +147,54 @@ public void start(CoprocessorEnvironment e) throws IOException {
    zkw1 = rss.getZooKeeper();
 
    String regionName = my_Region.getRegionNameAsString();
-   if (LOG.isTraceEnabled()) LOG.trace("Trafodion Recovery Region Observer CP: HRegion " + regionName + " starts to put transactional data lists into reference map ... ");
+   if (LOG.isTraceEnabled()) {
+       LOG.trace("Trafodion Recovery Region Observer CP: HRegion " + regionName + " starts to put transactional data lists into reference map ... ");
+       if(transactionsRefMap.isEmpty()) {
+           LOG.trace("Empty Shared Map, will put objects -- TrxRegionObserver.");
+       }
+   }
 
-   transactionsRefMap.put(regionName+trxkeypendingTransactionsById, pendingTransactionsById);
-   transactionsRefMap.put(regionName+trxkeyindoubtTransactionsCountByTmid, indoubtTransactionsCountByTmid);
+   @SuppressWarnings("unchecked")
+   SortedMap<Long, List<WALEdit>> pendingTransactionsByIdCheck = (SortedMap<Long, List<WALEdit>>)transactionsRefMap
+                                                                 .get(regionName+trxkeypendingTransactionsById);
+   if(pendingTransactionsByIdCheck != null) {
+       this.pendingTransactionsById = pendingTransactionsByIdCheck;
+   }
+   else {
+       transactionsRefMap.put(regionName+trxkeypendingTransactionsById, this.pendingTransactionsById);
+   }
+
+   @SuppressWarnings("unchecked")
+   Map<Integer, Integer> indoubtTransactionsCountByTmidCheck = (Map<Integer, Integer>)transactionsRefMap
+                                                               .get(regionName+trxkeyindoubtTransactionsCountByTmid);
+   if(indoubtTransactionsCountByTmidCheck != null) {
+       this.indoubtTransactionsCountByTmid = indoubtTransactionsCountByTmidCheck;
+   }
+   else {
+       transactionsRefMap.put(regionName+trxkeyindoubtTransactionsCountByTmid, this.indoubtTransactionsCountByTmid);
+   }
+
+   @SuppressWarnings("unchecked")
+   ConcurrentHashMap<String, TransactionState> transactionsByIdCheck = (ConcurrentHashMap<String, TransactionState>)
+                                                                       transactionsRefMap
+                                                                       .get(regionName+trxkeytransactionsById);
+   if(transactionsByIdCheck != null) {
+       this.transactionsById = transactionsByIdCheck;
+   }
+   else {
+       transactionsRefMap.put(regionName+trxkeytransactionsById, this.transactionsById);
+   }
+
+   @SuppressWarnings("unchecked")
+   Set<TransactionState> commitPendingTransactionsCheck = (Set<TransactionState>)transactionsRefMap
+                                                          .get(regionName+trxkeycommitPendingTransactions);
+   if(commitPendingTransactionsCheck != null) {
+       this.commitPendingTransactions = commitPendingTransactionsCheck;
+   }
+   else {
+       transactionsRefMap.put(regionName+trxkeycommitPendingTransactions,
+                              this.commitPendingTransactions);
+   }
 
     if (LOG.isTraceEnabled()) LOG.trace("Trafodion Recovery Region Observer CP: trxRegionObserver load start complete");
 
@@ -463,5 +508,28 @@ public void createRecoveryzNode(int node, String encodedName, byte [] data) thro
           }
        }
 } // end of createRecoveryzNode
+
+    @Override
+    public void preSplit(ObserverContext<RegionCoprocessorEnvironment> c, byte[] splitRow) throws IOException {
+        HRegion region = c.getEnvironment().getRegion();
+        int sleepCounter = 0;
+        boolean delayed = false;
+        if(LOG.isTraceEnabled()) LOG.trace("preSplit -- ENTRY region: " + region.getRegionNameAsString());
+
+        while(!(transactionsById.isEmpty() && commitPendingTransactions.isEmpty())) {
+               try {
+                       delayed = true;
+                       Thread.sleep(60000);
+                       sleepCounter++;
+                       if(LOG.isDebugEnabled()) LOG.debug("Delaying split due to transactions present. Delayed : " + sleepCounter +
+                                       " minute(s) on " + region.getRegionNameAsString());
+               } catch(InterruptedException e) {
+                       LOG.warn("Problem while calling sleep(), " + e);
+               }
+        }
+        if(delayed) if(LOG.isDebugEnabled()) LOG.debug("Continuing with split operation, no transactions on: " + region.getRegionNameAsString());
+
+        if(LOG.isTraceEnabled()) LOG.trace("preSplit -- EXIT region: " + region.getRegionNameAsString());
+    }
 
 } // end of TrxRegionObserver Class
