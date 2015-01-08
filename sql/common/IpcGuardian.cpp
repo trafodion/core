@@ -1523,11 +1523,13 @@ void GuaConnectionToServer::openPhandle(char * processName, NABoolean parallelOp
    }
    else 			     
    {
+/*
     if (! isEsp)
     {
        openFlags = openFlags | 0x400; // Thread specific completion TSCO
        tscoOpen_ = TRUE;
     }
+*/
    // multi fragment esp
     guaErrorInfo_ = BFILE_OPEN_(procFileName,
                                  procFileNameLen,

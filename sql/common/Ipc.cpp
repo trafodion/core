@@ -5689,7 +5689,8 @@ void IpcAwaitiox::DoAwaitiox(NABoolean ignoreLrec)
 {
   if (!completed_)
   {
-    fileNum_ = ignoreLrec ? -2 : -1; // Reminder: change to -1
+    //fileNum_ = ignoreLrec ? -2 : -1; // Reminder: change to -1
+    fileNum_ = -1;
     bufAddr_ = 0;
     count_ = retCode_ = lastError_ = 0;
     tag_ = 0;
