@@ -1,0 +1,12 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Oliver Bucaojit <oliver.bucaojit@hp.com>
+Code-Review+2: John de Roo <john.deroo@hp.com>
+Workflow+1: John de Roo <john.deroo@hp.com>
+Code-Review+2: Sean Broeder <sean.broeder@hp.com>
+Workflow+1: Sean Broeder <sean.broeder@hp.com>
+Code-Review+1: Shang-Sheng Tung <shang-sheng.tung@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 08 Jan 2015 23:38:06 +0000
+Reviewed-on: https://review.trafodion.org/922
+Project: trafodion/core
+Branch: refs/heads/master
