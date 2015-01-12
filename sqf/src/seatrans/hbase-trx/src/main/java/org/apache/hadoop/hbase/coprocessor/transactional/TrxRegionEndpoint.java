@@ -3288,7 +3288,7 @@ CoprocessorService, Coprocessor {
                long tid = entry.getKey();
                LOG.warn("Trafodion Recovery: region " + regionInfo.getEncodedName() + " still has in-doubt transaction " + tid + " when new transaction arrives ");
            }
-           //throw new IOException("NewTransactionStartedBeforeRecoveryCompleted");
+           throw new IOException("NewTransactionStartedBeforeRecoveryCompleted");
         }
     }
 
