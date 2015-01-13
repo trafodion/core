@@ -14235,6 +14235,9 @@ PhysicalProperty * FileScan::synthHiveScanPhysicalProperty(
     minESPs = partReq->castToRequireApproximatelyNPartitions()->
                                              getCountOfPartitionsLowBound();
 
+  NABoolean requiredESPsFixed = 
+    partReq && partReq->castToFullySpecifiedPartitioningRequirement();
+
   const HHDFSTableStats *tableStats = hiveSearchKey_->getHDFSTableStats();
 
   // stats for partitions/buckets selected by predicates
@@ -14254,24 +14257,29 @@ PhysicalProperty * FileScan::synthHiveScanPhysicalProperty(
   // Take the smallest # of ESPs in the allowed range as a start
   numESPs = MINOF(minESPs, maxESPs);
 
-  // following are soft adjustments to numESPs, within the allowed range
-  double numESPsBasedOnTotalSize = 1;
 
-  // adjust minESPs based on HIVE_MIN_BYTES_PER_ESP_PARTITION CQD
-  if (bytesPerESP > 1.01)
-    numESPsBasedOnTotalSize = selectedStats.getTotalSize()/(bytesPerESP-1.0);
+  // We can adjust #ESPs only when the required ESPs is not fully specified 
+  // from the parent.
+  if ( !requiredESPsFixed ) {
+    // following are soft adjustments to numESPs, within the allowed range
+    double numESPsBasedOnTotalSize = 1;
 
-  if (numESPsBasedOnTotalSize >= maxESPs)
-    numESPs = maxESPs;
-  else
-    numESPs = MAXOF(numESPs, (Int32) ceil(numESPsBasedOnTotalSize));
+    // adjust minESPs based on HIVE_MIN_BYTES_PER_ESP_PARTITION CQD
+    if (bytesPerESP > 1.01)
+      numESPsBasedOnTotalSize = selectedStats.getTotalSize()/(bytesPerESP-1.0);
 
-  // if we use locality, generously increase # of ESPs to cover all the nodes
-  if (useLocality &&
-      maxESPs >= numSQNodes &&
-      (numESPs > numSQNodes / 2 ||
-       numESPs > numSQNodes - 10))
-    numESPs = MAXOF(numESPs, numSQNodes);
+    if (numESPsBasedOnTotalSize >= maxESPs)
+      numESPs = maxESPs;
+    else
+      numESPs = MAXOF(numESPs, (Int32) ceil(numESPsBasedOnTotalSize));
+
+    // if we use locality, generously increase # of ESPs to cover all the nodes
+    if (useLocality &&
+        maxESPs >= numSQNodes &&
+        (numESPs > numSQNodes / 2 ||
+         numESPs > numSQNodes - 10))
+      numESPs = MAXOF(numESPs, numSQNodes);
+  }
 
   if (numESPs > 1)
     {
