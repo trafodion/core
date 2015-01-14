@@ -35,5 +35,10 @@ import org.apache.hadoop.hbase.regionserver.RegionScanner;
       this.rowsRemaining = 0L;
       this.hasMore = false;
     }
+
+    public void cleanHolder() {
+      this.r = null;
+      this.s = null;
+    }
   }
 
