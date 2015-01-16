@@ -220,7 +220,8 @@ testfiles="$prettyfiles"
 prettyfiles=
 
 # skip these tests on all platforms.
-skipTheseTests="TEST021 TEST025"
+#skipTheseTests="TEST021 TEST025"
+skipTheseTests="TEST010 TEST011 TEST012 TEST013 TEST014 TEST016 TEST018 TEST020 TEST021 TEST022 TEST024"
 
 #skip these tests for Seabase
 if [ "$seabase" -ne 0 ]; then
