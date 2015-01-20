@@ -2496,11 +2496,12 @@ void ResStatisticsStatement::SendQueryStats(bool bStart, SRVR_STMT_HDL *pSrvrStm
 	pQuery_info->m_error_code = errorCode;
 	pQuery_info->m_sql_error_code = sqlErrorCode;
 	pQuery_info->m_error_text = getErrorText(inSqlError, inSqlErrorLength, MAX_ERROR_TEXT_LENGTH);
-
-	if(pSrvrStmt->sqlString!=NULL)
-	    pQuery_info->m_query_text =string(pSrvrStmt->sqlString);		
-	
-	UpdateStringText(pQuery_info->m_query_text);
+   	UpdateStringText(pQuery_info->m_error_text);
+    if(pSrvrStmt->sqlString!=NULL)
+    {
+        pQuery_info->m_query_text =string(pSrvrStmt->sqlString);		
+        UpdateStringText(pQuery_info->m_query_text);
+    }
 	if (pSrvrStmt->sqlPlan != NULL)
 	{
 		pQuery_info->m_explain_plan = pSrvrStmt->sqlPlan;
