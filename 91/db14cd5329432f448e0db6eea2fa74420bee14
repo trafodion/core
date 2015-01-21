@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Mike Hanlon <mike.hanlon@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Roberta Marton <roberta.marton@hp.com>
+Workflow+1: Roberta Marton <roberta.marton@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Wed, 21 Jan 2015 22:59:06 +0000
+Reviewed-on: https://review.trafodion.org/1004
+Project: trafodion/core
+Branch: refs/heads/master
