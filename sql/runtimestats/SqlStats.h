@@ -52,6 +52,7 @@ void *getRmsSharedMemoryAddr();
 class ExStatisticsArea;
 class ProcessStats;
 class HashQueue;
+class SyncHashQueue;
 class ExMasterStats;
 class ExRMSStats;
 class RecentSikey;
@@ -180,6 +181,16 @@ public:
     (v ? flags_ |= WMS_MONITORED_CLI_QUERY_ : flags_ &= ~WMS_MONITORED_CLI_QUERY_);
   }
   
+  NABoolean calledFromRemoveQuery()
+  {
+    return (flags_ & CALLED_FROM_REMOVE_QUERY) != 0; 
+  }
+
+  void setCalledFromRemoveQuery(NABoolean v)      
+  {
+    (v ? flags_ |= CALLED_FROM_REMOVE_QUERY : flags_ &= ~CALLED_FROM_REMOVE_QUERY);
+  }
+
   char *getQueryId() { return queryId_; }
   Lng32 getQueryIdLen() { return queryIdLen_; }
   ExMasterStats *getMasterStats();
@@ -201,7 +212,8 @@ private:
     STMT_STATS_USED_ = 0x0010, // Unused Flag
     IS_DELETE_ERROR_ = 0x0020,
     AQR_IN_PROGRESS_ = 0x0040,
-    WMS_MONITORED_CLI_QUERY_=0x0080 // Is this a CLI query monitored by WMS
+    WMS_MONITORED_CLI_QUERY_=0x0080, // Is this a CLI query monitored by WMS
+    CALLED_FROM_REMOVE_QUERY = 0x0100
   };
 
   NAHeap *heap_;
@@ -363,7 +375,7 @@ public:
        short &savedStopMode, NABoolean shouldTimeout = FALSE);
   void cleanupDanglingSemaphore(NABoolean checkForSemaphoreHolder);
   void checkForDeadProcesses(pid_t myPid);
-  HashQueue *getStmtStatsList() { return stmtStatsList_; }
+  SyncHashQueue *getStmtStatsList() { return stmtStatsList_; }
   ExStatisticsArea *getStatsArea(char *queryId, Lng32 queryIdLen);
   StmtStats *getMasterStmtStats(char *queryId, Lng32 queryIdLen, short activeQueryNum);
   StmtStats *getStmtStats(char *queryId, Lng32 queryIdLen);
@@ -486,7 +498,7 @@ public:
   Long ssmpProcSemId_;
   SB_Phandle_Type ssmpProcHandle_;
   GlobalStatsArray *statsArray_;
-  HashQueue *stmtStatsList_;
+  SyncHashQueue *stmtStatsList_;
   short cpu_;
   pid_t semPid_;    // Pid of the process that holds semaphore lock - This element is used for debugging purpose only
   Int64 semPidCreateTime_; // Creation timestamp - pid recycle workaround. 
