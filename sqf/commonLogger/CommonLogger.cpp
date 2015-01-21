@@ -157,6 +157,10 @@ void CommonLogger::log1(const char* cat,
     case LL_DEBUG:
       log4cpp::Category::getInstance(cat).debug(msg);
       break;
+			
+    default:
+      log4cpp::Category::getInstance(cat).info(msg);
+      break;
   }
 }
 
