@@ -32,23 +32,6 @@ extern const char CAT_MXOSRVR[];
 static bool	gv_trace_ems_dll = false;
 static bool	gv_trace_legacy_dll = false;
 
-inline long getLongEventId(int type, int component_id, int event_id, int max_len)
-{
-   char *buff = new char[max_len+1];
-
-   if (buff == 0)
-      return -1;
-
-   int len = sprintf(buff, "%01d%02d%06d", type, component_id, event_id);
-   len = (len > max_len) ? max_len : len;
-   buff[len] = '\0';
-   long long_event_id = atol(buff);
-
-   delete []buff;
-
-   return long_event_id;
-}
-
 inline bool findString(char *p, int *idx, string msg)
 {
    *idx = msg.find(p);
@@ -89,7 +72,6 @@ void send_to_eventlog (short evt_num, short EventLogType, char *ComponentName, c
       if (eventDataMap[i].eventId == evt_num)
       {
          found = TRUE;
-         //sprintf(tmpBuf, "%.30s (%d,%d): %ld ",process_name, nid, pid, getLongEventId(1, SQEVL_NDCS, evt_num, 9));
          sprintf(tmpBuf, "Node Number: %d, CPU: %d, PIN:%ld, Process Name:%.30s , , ,", nid, nid, pid, process_name);
          logMsg.append(tmpBuf);
          for (j=0;eventDataMap[i].msgPtr[j] !=NULL || j>6 ;j++ )
