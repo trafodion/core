@@ -19926,10 +19926,10 @@ delete_statement : TOK_DELETE no_check_log ignore_triggers '[' firstn_sorted NUM
                                           , PARSERHEAP()
                                           , RelInternalSP::executeInSameArkcmp);
   }  
-| TOK_DELETE TOK_ALL TOK_FROM TOK_TABLE '(' TOK_QUERY_CACHE '(' ')' ')'
+| TOK_DELETE TOK_ALL TOK_FROM TOK_TABLE '(' TOK_QUERY_CACHE '(' value_expression_list ')' ')'
   {
     $$ = new (PARSERHEAP()) RelInternalSP("QUERYCACHEDELETE"
-                                          , 0
+                                          , $8
                                           , REL_INTERNALSP
                                           , PARSERHEAP()
                                           , RelInternalSP::executeInSameArkcmp);
