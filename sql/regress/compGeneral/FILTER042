@@ -31,6 +31,7 @@ fi
 #   Lines started with "Start Time", "End Time", "Elapsed Time", 
 #                      "Execution Time", "Table ID: ddddddddd", and  
 #                      "Hist ID: ddddddddd"
+if [[ "$SQ_BUILD_TYPE" = "release" ]]; then
 sed "
 /Start Time.*/d
 " $fil |
@@ -66,3 +67,17 @@ awk '
      print; \
 }
 '
+fi
+
+if [[ "$SQ_BUILD_TYPE" = "debug" ]]; then
+sed "
+/Start Time.*/d
+" $fil |
+sed "/End Time.*/d" |
+sed "/Elapsed Time.*/d" |
+sed "/Execution Time.*/d" |
+sed "/Table ID.*/d" |
+sed "/Hist ID.*/d" |
+sed "/Compile Time.*/d"
+fi
+
