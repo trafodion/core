@@ -1,0 +1,11 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: John de Roo <john.deroo@hp.com>
+Workflow+1: John de Roo <john.deroo@hp.com>
+Code-Review+2: Joanie Cooper <joanie.cooper@hp.com>
+Code-Review+2: Sean Broeder <sean.broeder@hp.com>
+Workflow+1: Sean Broeder <sean.broeder@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Fri, 23 Jan 2015 08:38:42 +0000
+Reviewed-on: https://review.trafodion.org/1022
+Project: trafodion/core
+Branch: refs/heads/master
