@@ -1269,7 +1269,7 @@ CoprocessorService, Coprocessor {
         if (scan == null)
           if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: openScanner - txId " + transId + ", scan was null");
       } catch (Throwable e) {
-        if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: openScanner - txId " + transId + ", Caught exception " + e.getMessage() + " " + stackTraceToString(e));
+        if (LOG.isWarnEnabled()) LOG.warn("TrxRegionEndpoint coprocessor: openScanner - txId " + transId + ", Caught exception " + e.getMessage() + " " + stackTraceToString(e));
         t = e;
         exceptionThrown = true;
       }
@@ -1403,7 +1403,7 @@ CoprocessorService, Coprocessor {
     boolean shouldContinue = true;
     TransactionalRegionScannerHolder rsh = null;
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: performScan - txId " + transId + ", scanner id " + scannerId + ", numberOfRows " + numberOfRows + ", nextCallSeq " + nextCallSeq + ", closeScanner is " + closeScanner + ", region is " + regionInfo.getRegionNameAsString());
+    if (LOG.isDebugEnabled()) LOG.debug("TrxRegionEndpoint coprocessor: performScan - txId " + transId + ", scanner id " + scannerId + ", numberOfRows " + numberOfRows + ", nextCallSeq " + nextCallSeq + ", closeScanner is " + closeScanner + ", region is " + regionInfo.getRegionNameAsString());
 
     /* commenting it out for the time-being
     java.lang.String name = ((com.google.protobuf.ByteString) request.getRegionName()).toStringUtf8();

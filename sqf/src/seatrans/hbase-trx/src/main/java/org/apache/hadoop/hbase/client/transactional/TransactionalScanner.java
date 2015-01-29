@@ -61,7 +61,7 @@ public class TransactionalScanner extends AbstractClientScanner {
         try {
             nextScanner(false);
         }catch (IOException e) {
-            LOG.error("nextScanner error");
+            LOG.error("nextScanner error " + e);
         }
     }
 
@@ -79,7 +79,7 @@ public class TransactionalScanner extends AbstractClientScanner {
     
     @Override
     public void close() {
-        if(LOG.isTraceEnabled()) LOG.trace("close() -- ENTRY txID: " + ts.getTransactionId());
+        if(LOG.isDebugEnabled()) LOG.debug("close() -- ENTRY txID: " + ts.getTransactionId());
         if(closed) {
             if(LOG.isTraceEnabled()) LOG.trace("close()  already closed -- EXIT txID: " + ts.getTransactionId());
             return;
@@ -110,7 +110,7 @@ public class TransactionalScanner extends AbstractClientScanner {
     }
 
     protected boolean nextScanner(final boolean done) throws IOException{
-        if(LOG.isTraceEnabled()) LOG.trace("nextScanner() -- ENTRY txID: " + ts.getTransactionId());
+        if(LOG.isDebugEnabled()) LOG.debug("nextScanner() -- ENTRY txID: " + ts.getTransactionId());
         if(this.currentBeginKey != null) {
             if(LOG.isTraceEnabled()) LOG.trace("nextScanner() currentBeginKey != null txID: " + ts.getTransactionId());
             if (doNotCloseOnLast)
@@ -135,7 +135,7 @@ public class TransactionalScanner extends AbstractClientScanner {
         this.currentRegion = ttable.getRegionLocation(this.currentBeginKey).getRegionInfo();
         this.currentEndKey = this.currentRegion.getEndKey();
 
-        if(LOG.isTraceEnabled()) LOG.trace("Region Info: " + currentRegion.getRegionNameAsString());
+        if(LOG.isDebugEnabled()) LOG.debug("Region Info: " + currentRegion.getRegionNameAsString());
         if(this.currentEndKey != HConstants.EMPTY_END_ROW)
             this.currentEndKey = TransactionManager.binaryIncrementPos(currentRegion.getEndKey(), -1);
 
@@ -160,7 +160,7 @@ public class TransactionalScanner extends AbstractClientScanner {
           this.scannerID = response.getScannerId();
       }
       catch (Throwable e) {
-          String errMsg = "OpenScanner error on coprocessor call, scannerID: " + this.scannerID;
+          String errMsg = "OpenScanner error on coprocessor call, scannerID: " + this.scannerID + " " + e;
           LOG.error(errMsg);
           throw new IOException(errMsg);
       }
@@ -196,14 +196,14 @@ public class TransactionalScanner extends AbstractClientScanner {
                     response = trxService.performScan(null, perfScanRequest);
                     String exception = response.getException();
                     if(response.getHasException()) {
-                        String errMsg = "peformScan encountered Exception txID: " +
+                        String errMsg = "performScan encountered Exception txID: " +
                                 ts.getTransactionId() + " Exception: " + exception;
                             LOG.error(errMsg);
                             throw new IOException(errMsg);
                     }
                 }
                 catch (Throwable e) {
-                    String errMsg = "PerformScan error on coprocessor call, scannerID: " + this.scannerID;
+                    String errMsg = "PerformScan error on coprocessor call, scannerID: " + this.scannerID + " " + e;
                     LOG.error(errMsg);
                     throw new IOException(errMsg);
                 }
@@ -212,7 +212,7 @@ public class TransactionalScanner extends AbstractClientScanner {
 
                 this.nextCallSeq = response.getNextCallSeq();
                 count = response.getResultCount();
-                if (LOG.isTraceEnabled()) LOG.trace("next() nextCallSeq: " + this.nextCallSeq +
+                if (LOG.isDebugEnabled()) LOG.debug("next() nextCallSeq: " + this.nextCallSeq +
                         " count: " + count);
                 if(count == 0) {
                     this.hasMore = false;
@@ -224,8 +224,8 @@ public class TransactionalScanner extends AbstractClientScanner {
                             cache.add(ProtobufUtil.toResult(result));
                         }
                         this.hasMore = response.getHasMore();
-                        if (LOG.isTraceEnabled())
-                            LOG.trace("  PerformScan response count " + count + ", hasMore is " + hasMore + ", result " + result);
+                        if (LOG.isDebugEnabled())
+                            LOG.debug("  PerformScan response count " + count + ", hasMore is " + hasMore + ", result " + result);
                     }
 
                 }
