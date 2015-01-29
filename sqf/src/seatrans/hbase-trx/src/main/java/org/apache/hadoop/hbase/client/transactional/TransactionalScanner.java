@@ -61,7 +61,7 @@ public class TransactionalScanner extends AbstractClientScanner {
         try {
             nextScanner(false);
         }catch (IOException e) {
-            LOG.error("nextScanner error");
+            LOG.error("nextScanner error " + e);
         }
     }
 
@@ -160,7 +160,7 @@ public class TransactionalScanner extends AbstractClientScanner {
           this.scannerID = response.getScannerId();
       }
       catch (Throwable e) {
-          String errMsg = "OpenScanner error on coprocessor call, scannerID: " + this.scannerID;
+          String errMsg = "OpenScanner error on coprocessor call, scannerID: " + this.scannerID + " " + e;
           LOG.error(errMsg);
           throw new IOException(errMsg);
       }
@@ -196,14 +196,14 @@ public class TransactionalScanner extends AbstractClientScanner {
                     response = trxService.performScan(null, perfScanRequest);
                     String exception = response.getException();
                     if(response.getHasException()) {
-                        String errMsg = "peformScan encountered Exception txID: " +
+                        String errMsg = "performScan encountered Exception txID: " +
                                 ts.getTransactionId() + " Exception: " + exception;
                             LOG.error(errMsg);
                             throw new IOException(errMsg);
                     }
                 }
                 catch (Throwable e) {
-                    String errMsg = "PerformScan error on coprocessor call, scannerID: " + this.scannerID;
+                    String errMsg = "PerformScan error on coprocessor call, scannerID: " + this.scannerID + " " + e;
                     LOG.error(errMsg);
                     throw new IOException(errMsg);
                 }
