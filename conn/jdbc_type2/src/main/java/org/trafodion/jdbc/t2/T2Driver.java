@@ -63,7 +63,7 @@ public class T2Driver extends T2Properties implements java.sql.Driver {
 			Connection connect = null;
 			String key;
 			SQLMXDataSource ds = null;
-
+			
 			String delimiter = "|";
 			if (acceptsURL(url)) {
 				weakConnection.gcConnections();

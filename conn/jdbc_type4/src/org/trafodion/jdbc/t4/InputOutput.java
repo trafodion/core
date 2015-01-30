@@ -159,6 +159,8 @@ class InputOutput {
 						// reused if connection
 						// is lost.
 						m_socket.setSoTimeout(0);
+                        // disable/enable Nagle's algorithm
+                        m_socket.setTcpNoDelay(this.m_addr.m_t4props.getTCP_NoDelay());
 						//
 						// Note, I have not set a timeout here for either the
 						// conneciton or for

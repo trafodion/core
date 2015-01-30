@@ -159,6 +159,9 @@ public class T4Properties {
 
 	private static int DEFAULT_MAX_IDLE_TIMEOUT = 0; // Max idle timeout
 	// default = infinite
+    
+	//TCP Nagle's algorithm 
+	private boolean _TCP_NoDelay = true;
 
 	// -----------------------------------------------------------
 	//
@@ -418,6 +421,7 @@ public class T4Properties {
 		setCertificateFile(getProperty("certificateFile"));
 		setKeepAlive(getProperty("keepAlive"));
 		setTokenAuth(getProperty("tokenAuth"));
+        setTCP_NoDelay(getProperty("TCP_NoDelay"));
 	}
 
 	T4Properties getT4Properties() {
@@ -509,7 +513,8 @@ public class T4Properties {
 			props.setProperty("certificateFile", _certificateFile);
 		props.setProperty("keepAlive", String.valueOf(_keepAlive));
 		props.setProperty("tokenAuth", String.valueOf(_tokenAuth));
-		
+        props.setProperty("TCP_NoDelay", String.valueOf(_TCP_NoDelay));
+        
 		return props;
 	}
 
@@ -2211,7 +2216,24 @@ public class T4Properties {
 	public boolean getKeepAlive() {
 		return _keepAlive;
 	}
-	
+
+    public void setTCP_NoDelay(String val) {
+        if(val == null) {
+            _TCP_NoDelay = true;
+        }
+        else {
+            _TCP_NoDelay = Boolean.valueOf(val).booleanValue();
+        }
+    }
+
+    public void setTCP_NoDelay(boolean val) {
+        _TCP_NoDelay = val;
+    }
+
+    public boolean getTCP_NoDelay() {
+        return _TCP_NoDelay;
+    }
+
 	public void setTokenAuth(String val) {
 		if(val == null) 
 		{

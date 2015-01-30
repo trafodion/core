@@ -1983,6 +1983,7 @@ public class TrafT4ResultSet extends HPT4Handle implements java.sql.ResultSet {
 				// the
 				// a negative sign or if number is positive, it is just an extra
 				// space
+				data = Utility.trimRightZeros(data);
 				if (!data.startsWith(hyphen_string)) {
 					data = data.substring(1);
 				}

@@ -367,9 +367,10 @@ public class SQLMXStatement extends SQLMXHandle implements java.sql.Statement {
 			debug[methodId_executeQuery].methodEntry();
 		try {
 			validateExecDirectInvocation(sql);
-			if (!isSelect_)
+			if (!isSelect_){
 				throw Messages.createSQLException(connection_.locale_,
 						"non_select_invalid", null);
+			}
 			try {
 				// Correlate JDBC SQL statements and STMTIDs if enableLog
 				// property is enabled

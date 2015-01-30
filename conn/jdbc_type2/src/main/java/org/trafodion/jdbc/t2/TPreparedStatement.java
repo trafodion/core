@@ -505,4 +505,8 @@ public class TPreparedStatement extends TStatement implements
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public SQLMXPreparedStatement getSqlPreparedStatement(){
+		return (SQLMXPreparedStatement)stmt_;
+	}
 }

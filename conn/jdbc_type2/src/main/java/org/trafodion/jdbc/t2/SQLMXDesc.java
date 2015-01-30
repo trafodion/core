@@ -232,12 +232,16 @@ class SQLMXDesc
 				isNullable_ = ResultSetMetaData.columnNoNulls;
 			sqlDataType_ = dataType;
 			dataType_ = odbcDataType;
+            tmpDataType_ = dataType_;           
 			sqlDatetimeCode_ = datetimeCode;
 			sqlCharset_ = sqlCharset;
 			odbcCharset_ = odbcCharset;
 			isSigned_ = signType;
 			sqlOctetLength_ = maxLen;
 			scale_ = scale;
+            odbcPrecision_ = odbcPrecision;     
+            maxLen_ = maxLen;                   
+
 			switch (dataType_)
 			{
 				case Types.NUMERIC:
@@ -432,6 +436,9 @@ class SQLMXDesc
 	int		paramMode_;
 	int		paramIndex_;
 	int		paramPos_;
+    int     odbcPrecision_;
+    int     maxLen_;
+    int     tmpDataType_;
 	
 	String	columnClassName_;
 	int		displaySize_;

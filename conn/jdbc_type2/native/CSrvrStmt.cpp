@@ -181,7 +181,6 @@ SQLRETURN SRVR_STMT_HDL::Execute(const char *inCursorName, long totalRowCount, s
 		inQueryTimeout));
 	DEBUG_OUT(DEBUG_LEVEL_ENTRY,("  outValueList=0x%08x",
 		outValueList));
-
 	SQLRETURN rc;
 	char *saveptr=NULL;
 	SRVR_CONNECT_HDL *pConnect = NULL;
@@ -389,10 +388,12 @@ SQLRETURN SRVR_STMT_HDL::ExecDirect(const char *inCursorName, const SQLValue_def
 	SQLValueList_def outValueList;
 
 	rc = Prepare(inSqlString, inStmtType, inHoldability, inQueryTimeout);
+
 	if (rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO)
 		CLI_DEBUG_RETURN_SQL(rc);
 	inValueList._buffer = NULL;
 	inValueList._length = 0;
+
 	rc = Execute(inCursorName, 1, inSqlStmtType, &inValueList, FALSE, inQueryTimeout, &outValueList);
 	if (rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO)
 		CLI_DEBUG_RETURN_SQL(rc);
