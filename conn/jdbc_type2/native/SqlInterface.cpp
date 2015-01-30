@@ -988,6 +988,7 @@ SQLRETURN EXECUTE(SRVR_STMT_HDL* pSrvrStmt)
 	if(pSrvrStmt->dialogueId == 0) CLI_DEBUG_RETURN_SQL(SQL_ERROR);
 	pConnect = (SRVR_CONNECT_HDL*)pSrvrStmt->dialogueId;
 
+
 	BOOL isSPJRS = false;
 	long retcode = SQL_SUCCESS;
 	SQLDESC_ID *pInputDesc;

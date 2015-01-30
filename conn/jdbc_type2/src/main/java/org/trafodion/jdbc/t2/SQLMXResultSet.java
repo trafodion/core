@@ -5072,4 +5072,24 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
         public boolean isClosed() throws SQLException {
                return false;
         }
+// added ZO
+    public SQLMXDesc[] getResultSetDesc(){
+        return outputDesc_;
+    }
+    public int getTotalRowsFetched(){
+        return totalRowsFetched_;
+    }
+    public int getCurrentRowNumber(){
+        return currentRow_;
+    }
+    public ArrayList<DataWrapper> getCachedRows(){
+        ArrayList<DataWrapper> lcachedRows_ = cachedRows_;
+        return lcachedRows_;
+    }
+    public byte[] getSQLBytes(int columnIndex)  throws SQLException {
+        DataWrapper row;
+        row = (DataWrapper)cachedRows_.get(currentRow_ - 1);
+        return row.getSQLBytes(columnIndex);
+    }
+//--------------------------
 }

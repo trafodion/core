@@ -282,4 +282,9 @@ public class TResultSetMetaData implements java.sql.ResultSetMetaData
 		// TODO Auto-generated method stub
 		return false;
 	}
+// added ZO
+    public SQLMXResultSetMetaData getSqlResultSetMetaData(){
+        return (SQLMXResultSetMetaData)rsMD_;
+    }
+
 }

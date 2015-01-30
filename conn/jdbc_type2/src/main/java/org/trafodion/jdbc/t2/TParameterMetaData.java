@@ -163,4 +163,10 @@ public class TParameterMetaData implements java.sql.ParameterMetaData
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+// added ZO
+    public SQLMXParameterMetaData getSqlParameterMetaData(){
+        SQLMXParameterMetaData pmd = (SQLMXParameterMetaData)pmd_;
+        return pmd;
+    }
 }

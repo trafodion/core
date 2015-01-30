@@ -670,7 +670,6 @@ odbc_SQLSvc_ExecDirect_sme_(
 		exception_->u.SQLInvalidHandle.sqlcode = sqlcode;
 		FUNCTION_RETURN_VOID(("createSrvrStmt() Failed"));
 	}
-
 	pSrvrStmt->resultSetObject = (jobject) resultSet;
 	rc = pSrvrStmt->ExecDirect(cursorName, sqlString, stmtType, sqlStmtType, holdability, queryTimeout);
 	switch (rc)

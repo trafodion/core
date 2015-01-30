@@ -89,6 +89,7 @@ typedef struct JNICache_def
 	jclass			stringClass;
 	jclass			wrapperClass;
 	jclass			byteArrayClass;
+    jclass          SQLbyteArrayClass;                  //added ZO
 	jmethodID		RSgetSQLDataTypeMethodId;
 	jmethodID		RSgetPrecisionMethodId;
 	jmethodID		RSgetScaleMethodId;
@@ -107,6 +108,7 @@ typedef struct JNICache_def
 	jfieldID		wrapperIsNullFieldId;
 	jfieldID		wrapperObjectFieldId;
 	jfieldID		wrapperBytesFieldId;
+    jfieldID        wrapperSQLBytesFieldId;         //added ZO
 	jfieldID		wrapperByteFieldId;
 	jfieldID		wrapperShortFieldId;
 	jfieldID		wrapperIntFieldId;

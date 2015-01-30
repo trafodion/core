@@ -60,6 +60,11 @@ struct WrapperInfoStruct
 	jboolean *booleanValue;
 	jobjectArray objectValueObject;
 	jobject objectValue;
+// added ZO
+    jobjectArray SQLbytesValueObject;
+    jbyteArray SQLbytesArrayObject;
+    jbyte *SQLbytesArray;
+
 };
 
 extern void throwSetConnectionException(JNIEnv *jenv, ExceptionStruct *exception_);

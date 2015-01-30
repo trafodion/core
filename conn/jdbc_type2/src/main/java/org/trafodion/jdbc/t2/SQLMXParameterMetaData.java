@@ -237,4 +237,106 @@ public class SQLMXParameterMetaData implements java.sql.ParameterMetaData
 		// TODO Auto-generated method stub
 		return false;
 	}
+// added ZO
+    public int getSqlCharset(int param){
+        System.out.println("sqlCharset :" + inputDesc_[param - 1].sqlCharset_);
+        return inputDesc_[param - 1].sqlCharset_;
+    }
+    public int getOdbcCharset(int param){
+        System.out.println("odbcCharset_ :" + inputDesc_[param - 1].odbcCharset_);
+        return inputDesc_[param - 1].odbcCharset_;
+    }
+    public int getSqlDataType(int param){
+        System.out.println("sqlDataType_ :" + inputDesc_[param - 1].sqlDataType_);
+        return inputDesc_[param - 1].sqlDataType_;
+    }
+    public int getDataType(int param){
+        System.out.println("dataType_ :" + inputDesc_[param - 1].dataType_);
+        return inputDesc_[param - 1].dataType_;
+    }
+    public short getSqlPrecision(int param){
+        System.out.println("sqlPrecision_ :" + inputDesc_[param - 1].sqlPrecision_);
+        return inputDesc_[param - 1].sqlPrecision_;     
+    }
+    public int getOdbcPrecision(int param){
+        System.out.println("odbcPrecision_ :" + inputDesc_[param - 1].odbcPrecision_);
+        return inputDesc_[param - 1].odbcPrecision_;
+    }
+    public short getSqlDatetimeCode(int param){
+        System.out.println("sqlDatetimeCode_ :" + inputDesc_[param - 1].sqlDatetimeCode_);
+        return inputDesc_[param - 1].sqlDatetimeCode_;      
+    }
+    public int getSqlOctetLength(int param){
+        System.out.println("sqlOctetLength_ :" + inputDesc_[param - 1].sqlOctetLength_);
+        return inputDesc_[param - 1].sqlOctetLength_;       
+    }
+    public int getMaxLen(int param){
+        System.out.println("maxLen_ :" + inputDesc_[param - 1].maxLen_);
+        return inputDesc_[param - 1].maxLen_;       
+    }
+    public int getIsNullable(int param){
+        System.out.println("isNullable_ :" + inputDesc_[param - 1].isNullable_);
+        return inputDesc_[param - 1].isNullable_;       
+    }
+    public boolean getIsSigned(int param){
+        System.out.println("isSigned_ :" + inputDesc_[param - 1].isSigned_);
+        return inputDesc_[param - 1].isSigned_;     
+    }
+    public boolean getIsCurrency(int param){
+        System.out.println("isCurrency_ :" + inputDesc_[param - 1].isCurrency_);
+        return inputDesc_[param - 1].isCurrency_;       
+    }
+    public boolean getIsCaseSensitive(int param){
+        System.out.println("isCaseSensitive_ :" + inputDesc_[param - 1].isCaseSensitive_);
+        return inputDesc_[param - 1].isCaseSensitive_;      
+    }
+    public int getFsDataType(int param){
+        System.out.println("fsDataType_ :" + inputDesc_[param - 1].fsDataType_);
+        return inputDesc_[param - 1].fsDataType_;       
+    }
+    public int getIntLeadPrec(int param){
+        System.out.println("intLeadPrec_ :" + inputDesc_[param - 1].intLeadPrec_);
+        return inputDesc_[param - 1].intLeadPrec_;      
+    }
+    public int getMode(int param){
+        System.out.println("paramMode_ :" + inputDesc_[param - 1].paramMode_);
+        return inputDesc_[param - 1].paramMode_;        
+    }
+    public int getIndex(int param){
+        System.out.println("paramIndex_ :" + inputDesc_[param - 1].paramIndex_);
+        return inputDesc_[param - 1].paramIndex_;       
+    }
+    public int getPos(int param){
+        System.out.println("paramPos_ :" + inputDesc_[param - 1].paramPos_);
+        return inputDesc_[param - 1].paramPos_;     
+    }
+    public int getDisplaySize(int param){
+        System.out.println("displaySize_ :" + inputDesc_[param - 1].displaySize_);
+        return inputDesc_[param - 1].displaySize_;      
+    }
+    public String getCatalogName(int param){
+        System.out.println("catalogName_ :" + inputDesc_[param - 1].catalogName_);
+        return inputDesc_[param - 1].catalogName_;
+    }
+    public String getSchemaName(int param){
+        System.out.println("schemaName_ :" + inputDesc_[param - 1].schemaName_);
+        return inputDesc_[param - 1].schemaName_;
+    }
+    public String getTableName(int param){
+        System.out.println("tableName_ :" + inputDesc_[param - 1].tableName_);
+        return inputDesc_[param - 1].tableName_;
+    }
+    public String getName(int param){
+        System.out.println("name_ :" + inputDesc_[param - 1].name_);
+        return inputDesc_[param - 1].name_;
+    }
+    public String getLabel(int param){
+        System.out.println("columnLabel_ :" + inputDesc_[param - 1].columnLabel_);
+        return inputDesc_[param - 1].columnLabel_;
+    }
+    public String getClassName(int param){
+        System.out.println("columnClassName_ :" + inputDesc_[param - 1].columnClassName_);
+        return inputDesc_[param - 1].columnClassName_;
+    }
+//------------------------------------------------------
 }
