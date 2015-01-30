@@ -182,10 +182,13 @@ void StatsGlobals::addProcess(pid_t pid, NAHeap *heap)
     for (pid_t i = 0; i < MAX_PID_ARRAY_SIZE ; i++)
     {
       statsArray_[i].processId_ = 0;
-      statsArray_[i].processFlags_ = 0;
       statsArray_[i].processStats_ = NULL;
-      statsArray_[i].removedAtAdd_ = FALSE; 
       statsArray_[i].creationTime_ = 0;
+#ifdef SQ_PHANDLE_VERIFIER
+      statsArray_[i].phandleSeqNum_ = -1;
+#else
+      statsArray_[i].removedAtAdd_ = FALSE;
+#endif
     }
   }
   if (statsArray_[pid].processStats_ != NULL)
@@ -196,12 +199,17 @@ void StatsGlobals::addProcess(pid_t pid, NAHeap *heap)
         "Pid %d,%d got recycled soon or SSMP didn't receive the death message ",
            cpu_, pid);
     SQLMXLoggingArea::logExecRtInfo(__FILE__, __LINE__, msg, 0);
+#ifdef SQ_PHANDLE_VERIFIER
+#else
     statsArray_[pid].removedAtAdd_ = TRUE;
+#endif
     removeProcess(pid, TRUE);
   }   
   statsArray_[pid].processId_ = pid;
-  statsArray_[pid].processFlags_ = 0;
   statsArray_[pid].creationTime_ = GetCliGlobals()->myStartTime();
+#ifdef SQ_PHANDLE_VERIFIER
+  statsArray_[pid].phandleSeqNum_ = GetCliGlobals()->myVerifier();
+#endif
   statsArray_[pid].processStats_ = new (heap) ProcessStats(heap, nodeId_, pid);
   incProcessRegd();
   incProcessStatsHeaps();
@@ -220,6 +228,12 @@ void StatsGlobals::removeProcess(pid_t pid, NABoolean calledAtAdd)
   {
     if (!calledAtAdd)
     {
+#ifdef SQ_PHANDLE_VERIFIER
+    //  Caller is either the process that wishes to be removed,
+    //  or else the caller is StatsGlobals::verifyAndCleanup which
+    //  has used the death message's phandle's verifier to avoid 
+    //  and misidentifcation which PID recycle would cause.
+#else
       if (statsArray_[pid].removedAtAdd_ )
       {
         statsArray_[pid].removedAtAdd_ = FALSE;
@@ -253,6 +267,7 @@ void StatsGlobals::removeProcess(pid_t pid, NABoolean calledAtAdd)
             return;
         }
       }
+#endif
     }
     stmtStatsList_->position();
     StmtStats *ss;
@@ -281,8 +296,10 @@ void StatsGlobals::removeProcess(pid_t pid, NABoolean calledAtAdd)
     }
   }
   statsArray_[pid].processId_ = 0;
-  statsArray_[pid].processFlags_ = 0;
   statsArray_[pid].creationTime_ = 0;
+#ifdef SQ_PHANDLE_VERIFIER
+  statsArray_[pid].phandleSeqNum_ = -1;
+#endif
   statsArray_[pid].processStats_ = NULL;
   if (pid == maxPid_)
   { 
@@ -295,7 +312,6 @@ void StatsGlobals::removeProcess(pid_t pid, NABoolean calledAtAdd)
 }
 
 static bool  DeadPollingInitialized = false;
-static bool  MissingDeathMsgDebug = false;
 static Int32 CheckDeadFreq  = 120;
 static Int32 CheckDeadTs    = 0;
 
@@ -314,10 +330,6 @@ void StatsGlobals::checkForDeadProcesses(pid_t myPid)
       char *cdf = getenv("MXSSMP_CHECK_DEAD_SECONDS");
       if (cdf)
         CheckDeadFreq = str_atoi(cdf, str_len(cdf)); // LCOV_EXCL_LINE
-
-      char *mdmd = getenv("MXSSMP_DEATH_MSG_DEBUG");
-      if (mdmd && (*mdmd == '1'))
-        MissingDeathMsgDebug = true;  // LCOV_EXCL_LINE
     }
   }
 
@@ -549,7 +561,12 @@ short StatsGlobals::getStatsSemaphore(Long &semId, pid_t pid,
     if (isShmDirty())
     {
        genLinuxCorefile("Shared Segment might be corrupted");
+#ifdef SQ_PHANDLE_VERIFIER
+       Int32 ndRetcode = msg_mon_node_down2(getCpu(),
+                       "RMS shared segment is corrupted.");
+#else
        Int32 ndRetcode = msg_mon_node_down(getCpu());
+#endif
        sleep(30);
        NAExit(0);    // already made a core.
     }
@@ -1498,6 +1515,8 @@ void StatsGlobals::cleanup_SQL(
 {
   short savedPriority = 0;
   short savedStopMode = 0;
+#ifdef SQ_PHANDLE_VERIFIER
+#else
   if (statsArray_  && statsArray_[pidToCleanup].processId_ == 0)
   {
     // It is possible that process died before it registered
@@ -1513,6 +1532,7 @@ void StatsGlobals::cleanup_SQL(
     statsArray_[pidToCleanup].removedAtAdd_ = FALSE;
     return;
   }
+#endif
 
   if (myPid != getSsmpPid())
      return;
@@ -1529,6 +1549,23 @@ void StatsGlobals::cleanup_SQL(
                   semId, myPid,
                   savedPriority, savedStopMode);
 }
+#ifdef SQ_PHANDLE_VERIFIER
+void StatsGlobals::verifyAndCleanup(pid_t pidThatDied, SB_Int64_Type seqNum)
+{
+  short savedPriority = 0;
+  short savedStopMode = 0;
+  short error = getStatsSemaphore(ssmpProcSemId_, getSsmpPid(), 
+                                  savedPriority, savedStopMode, FALSE);
+  ex_assert(error == 0, "getStatsSemaphore() returned an error");
+  if (statsArray_ && 
+      (statsArray_[pidThatDied].processId_ == pidThatDied) &&
+      (statsArray_[pidThatDied].phandleSeqNum_ == seqNum))
+    removeProcess(pidThatDied);
+  releaseStatsSemaphore(ssmpProcSemId_, getSsmpPid(),
+                        savedPriority, savedStopMode);
+}
+#endif
+
 void StatsGlobals::updateMemStats(pid_t pid, 
           NAHeap *exeHeap, NAHeap *ipcHeap)
 {

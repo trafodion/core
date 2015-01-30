@@ -67,15 +67,14 @@ class ExProcessStats;
 
 #define MAX_PID_ARRAY_SIZE 65536
 
-enum ProcessStatsFlags {
-  ON_DEATHWATCH           = 0x0002
-};
-
 typedef struct GlobalStatsArray
 {
   pid_t  processId_;
-  short  processFlags_;
+#ifdef SQ_PHANDLE_VERIFIER
+  SB_Verif_Type  phandleSeqNum_;
+#else
   NABoolean      removedAtAdd_;
+#endif
   Int64  creationTime_;
   ProcessStats  *processStats_;
 } GlobalStatsArray;
@@ -475,6 +474,10 @@ public:
   NABoolean isShmDirty() { return isBeingUpdated_; }
   void setShmDirty() { isBeingUpdated_ = TRUE; }
   void cleanup_SQL(pid_t pidToCleanup, pid_t myPid);
+#ifdef SQ_PHANDLE_VERIFIER
+  void verifyAndCleanup(pid_t pidThatDied, SB_Int64_Type seqNum);
+#endif
+
   void updateMemStats(pid_t pid, NAHeap *exeMem, NAHeap *ipcHeap);
 public:
   void *statsSharedSegAddr_;
@@ -515,11 +518,6 @@ public:
   pid_t maxPid_;
   Int64 ssmpDumpedTimestamp_;
 };
-void cleanup_SQL(StatsGlobals *statsGlobals,
-                 Long &semId,
-                 pid_t pidToCleanup,
-                 pid_t myPid 
-                 );
 StatsGlobals * shareStatsSegment(Int32 &shmid, NABoolean checkForSSMP = TRUE);
 short getMasterCpu(char *uniqueStmtId, Lng32 uniqueStmtIdLen, char *nodeName, short maxLen, short &cpu);
 short getStmtNameInQid(char *uniqueStmtId, Lng32 uniqueStmtIdLen, char *stmtName, short maxLen);
