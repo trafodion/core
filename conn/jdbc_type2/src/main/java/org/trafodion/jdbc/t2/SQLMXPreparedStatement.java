@@ -4670,9 +4670,6 @@ public class SQLMXPreparedStatement extends SQLMXStatement implements
 			if (connection_.isClosed_)
 				throw Messages.createSQLException(connection_.locale_,
 						"invalid_connection", null);
-			// close the previous resultset, if any
-			if (resultSet_ != null)
-				resultSet_.close();
 			if (paramRowCount_ > 0)
 				throw Messages.createSQLException(connection_.locale_,
 						"function_sequence_error", null);
