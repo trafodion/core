@@ -3589,6 +3589,9 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 								txid = connection_.getTxid_();
 						}
 
+						//Do not reuse a statement for a new query.
+						//In SQL we do not support reusing the statement id for a new statement.
+						this.stmtId_ = 0;
 						close(connection_.server_,
 								connection_.getDialogueId_(), txid,
 								connection_.autoCommit_,

@@ -647,11 +647,6 @@ odbc_SQLSvc_ExecDirect_sme_(
 		FUNCTION_RETURN_VOID(("sqlString ==  NULL"));
 	}
 
-        // do not reuse a statement for a new query before
-        // dropping the statement.  In SQL we do not support reusing the
-        // statement id for a new statement witout dropping it.
-        currentStmtId = 0;
-
 	// Need to validate the stmtLabel
 	// Given a label find out the SRVR_STMT_HDL
 	pSrvrStmt = createSrvrStmt(dialogueId,
