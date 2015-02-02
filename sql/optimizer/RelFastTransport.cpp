@@ -57,6 +57,7 @@ FastExtract::FastExtract(const FastExtract & other)
   recordSeparator_ = other.recordSeparator_;
   selectList_ = other.selectList_;
   isSequenceFile_ = other.isSequenceFile_;
+  overwriteHiveTable_ = other.overwriteHiveTable_;
 }
 
 //! FastExtract::~FastExtract Destructor

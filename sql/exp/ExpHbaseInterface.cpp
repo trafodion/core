@@ -586,7 +586,12 @@ Lng32 ExpHbaseInterface_JNI::scanOpen(
 				      const TextVec *inColNamesToFilter, 
 				      const TextVec *inCompareOpList,
 				      const TextVec *inColValuesToCompare,
-                                      Float32 samplePercent)
+				      Float32 samplePercent,
+				      NABoolean useSnapshotScan,
+				      Lng32 snapTimeout,
+				      char * snapName,
+				      char * tmpLoc,
+				      Lng32 espNum  )
 {
   htc_ = client_->getHTableClient((NAHeap *)heap_, tblName.val, useTRex_, hbs_);
   if (htc_ == NULL)
@@ -606,7 +611,12 @@ Lng32 ExpHbaseInterface_JNI::scanOpen(
 					  inColNamesToFilter,
 					  inCompareOpList,
 					  inColValuesToCompare,
-					  samplePercent);
+					  samplePercent,
+					  useSnapshotScan,
+					  snapTimeout,
+					  snapName,
+					  tmpLoc,
+					  espNum);
   if (retCode_ == HBC_OK)
     return HBASE_ACCESS_SUCCESS;
   else

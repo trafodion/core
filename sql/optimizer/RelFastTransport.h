@@ -56,7 +56,8 @@ class PhysicalFastExtract;
       STOP_AFTER_N_ERRORS_,
       NO_OUTPUT_,
       COMPRESS_,
-      ONE_FILE_
+      ONE_FILE_,
+      USE_SNAPSHOT_SCAN_
     };
     UnloadOption(UnloadOptionType option, Lng32 numericVal, char * stringVal, char * stringVal2 = NULL )
     : option_(option), numericVal_(numericVal), stringVal_(stringVal)

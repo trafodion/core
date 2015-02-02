@@ -11364,6 +11364,9 @@ RelExpr * HbaseAccess::preCodeGen(Generator * generator,
   if (hbaseFilterColVIDlist_.entries() > 0)
     setExecutorPredicates(newExePreds);
 
+
+  useSnapshotScan_=(CmpCommon::getDefault(TRAF_TABLE_SNAPSHOT_SCAN) == DF_ON);
+
   markAsPreCodeGenned();
   
   // Done.

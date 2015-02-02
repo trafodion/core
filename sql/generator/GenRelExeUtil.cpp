@@ -5406,11 +5406,18 @@ short ExeUtilHBaseBulkUnLoad::codeGen(Generator * generator)
     strcpy(mergePathStr, mergePath_.data());
   }
 
+  char * snapSuffixStr = NULL;
+  if (snapSuffix_.length()>0){
+    snapSuffixStr = space->allocateAlignedSpace(snapSuffix_.length() + 1);
+    strcpy(snapSuffixStr, snapSuffix_.data());
+  }
+
   char * extractLocationStr = NULL;
   if (extractLocation_.length()>0){
     extractLocationStr = space->allocateAlignedSpace(extractLocation_.length() + 1);
     strcpy(extractLocationStr, extractLocation_.data());
   }
+
   // allocate a map table for the retrieved columns
   generator->appendAtEnd();
 
@@ -5497,6 +5504,16 @@ short ExeUtilHBaseBulkUnLoad::codeGen(Generator * generator)
   exe_util_tdb->setMergePath(mergePathStr);
   exe_util_tdb->setSkipWriteToFiles(CmpCommon::getDefault(TRAF_UNLOAD_SKIP_WRITING_TO_FILES) == DF_ON);
   exe_util_tdb->setOverwriteMergeFile(overwriteMergeFile_);
+  exe_util_tdb->setScanType(scanType_);
+  exe_util_tdb->setSnapshotSuffix(snapSuffixStr);
+
+  NAString tlpTmpLocationNAS = ActiveSchemaDB()->getDefaults().getValue(TRAF_TABLE_SNAPSHOT_SCAN_TMP_BASE_LOCATION);
+  char * tlpTmpLocation = space->allocateAlignedSpace(tlpTmpLocationNAS.length() + 1);
+  strcpy(tlpTmpLocation, tlpTmpLocationNAS.data());
+  exe_util_tdb->setTempBaseLocation(tlpTmpLocation);
+
+
+
 
   generator->initTdbFields(exe_util_tdb);
 

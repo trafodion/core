@@ -317,6 +317,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... ((A = 1) or (B = '1'))
 
@@ -393,6 +394,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = %('1'))
   begin_key .............. (A = %(1))
@@ -472,6 +474,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = %('1'))
 
@@ -547,6 +550,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   begin_key .............. (A = %(2))
   end_key ................ (A = %(2))
@@ -851,6 +855,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... ((A = 1) or (A = 4)) and (B = %('a')) and (C = %(1))
 
@@ -925,6 +930,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and (B = %('a'))
                              and (((C = 1) or (C = 3)) or (C >= 5))
@@ -999,6 +1005,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and ((C = 1) or (C
                              = 3)) and (B = %('a'))
@@ -1101,6 +1108,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a'))
   mdam_disjunct .......... (((A = 2) or (A = 4)) or (A = 6)) and ((C = 1) or (C
@@ -1247,6 +1255,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... ((A = 1) or (A = 4)) and (B = %('a')) and (C = %(1))
 
@@ -1322,6 +1331,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and (B = %('a'))
                              and (((C = 1) or (C = 3)) or (C >= 5))
@@ -1397,6 +1407,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and ((C = 1) or (C
                              = 3)) and (B = %('a'))
@@ -1500,6 +1511,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a'))
   mdam_disjunct .......... (((A = 2) or (A = 4)) or (A = 6)) and ((C = 1) or (C
@@ -1994,6 +2006,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... ((A = 1) or (B = '1'))
 
@@ -2071,6 +2084,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = '1')
 
@@ -2147,6 +2161,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = '1')
 
@@ -2223,6 +2238,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
 
 --- SQL operation complete.
@@ -2526,6 +2542,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
 
 --- SQL operation complete.
@@ -2613,6 +2630,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
 
 --- SQL operation complete.
@@ -2690,6 +2708,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
 
 --- SQL operation complete.
@@ -2795,6 +2814,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = 'a')
 
@@ -2942,6 +2962,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = 'a') and (C = 1) and ((A = 1) or (A = 4))
 
@@ -3018,6 +3039,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = 'a') and (((A = 1) or (A = 2)) or (A = 4)) and
                              (((C = 1) or (C = 3)) or (C >= 5))
@@ -3094,6 +3116,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = 'a') and (((A = 1) or (A = 2)) or (A = 4)) and
                              ((C = 1) or (C = 3))
@@ -3198,6 +3221,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = 'a') and (((A = 2) or (A = 4)) or (A = 6)) and
                              ((C = 1) or (C = 3))
@@ -3691,6 +3715,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... ((A = 1) or (B = '1'))
 
@@ -3767,6 +3792,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = %('1'))
   begin_key .............. (A = %(1))
@@ -3846,6 +3872,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = %('1'))
 
@@ -3921,6 +3948,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   begin_key .............. (A = %(2))
   end_key ................ (A = %(2))
@@ -4224,6 +4252,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a')) and (C = %(1)) and ((A = 1) or (A = 4))
   begin_key .............. (A = <min>), (B = %('a')), (C = %(1))
@@ -4299,6 +4328,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a')) and (((A = 1) or (A = 2)) or (A = 4))
                              and (((C = 1) or (C = 3)) or (C >= 5))
@@ -4374,6 +4404,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a')) and (((A = 1) or (A = 2)) or (A = 4))
                              and ((C = 1) or (C = 3))
@@ -4477,6 +4508,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a')) and (((A = 2) or (A = 4)) or (A = 6))
                              and ((C = 1) or (C = 3))
@@ -4623,6 +4655,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a')) and (C = %(1)) and ((A = 1) or (A = 4))
   begin_key .............. (A = <min>), (B = %('a')), (C = %(1))
@@ -4699,6 +4732,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a')) and (((A = 1) or (A = 2)) or (A = 4))
                              and (((C = 1) or (C = 3)) or (C >= 5))
@@ -4775,6 +4809,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a')) and (((A = 1) or (A = 2)) or (A = 4))
                              and ((C = 1) or (C = 3))
@@ -4879,6 +4914,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = %('a')) and (((A = 2) or (A = 4)) or (A = 6))
                              and ((C = 1) or (C = 3))
@@ -5374,6 +5410,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... ((A = 1) or (B = '1'))
 
@@ -5451,6 +5488,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = '1')
 
@@ -5527,6 +5565,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = '1')
 
@@ -5603,6 +5642,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
 
 --- SQL operation complete.
@@ -5904,6 +5944,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... ((A = 1) or (A = 4)) and (B = 'a') and (C = 1)
 
@@ -5977,6 +6018,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and (B = 'a') and
                              (((C = 1) or (C = 3)) or (C >= 5))
@@ -6050,6 +6092,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and ((C = 1) or (C
                              = 3)) and (B = 'a')
@@ -6151,6 +6194,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = 'a')
   mdam_disjunct .......... (((A = 2) or (A = 4)) or (A = 6)) and ((C = 1) or (C
@@ -6298,6 +6342,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... ((A = 1) or (A = 4)) and (B = 'a') and (C = 1)
 
@@ -6372,6 +6417,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and (B = 'a') and
                              (((C = 1) or (C = 3)) or (C >= 5))
@@ -6446,6 +6492,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and ((C = 1) or (C
                              = 3)) and (B = 'a')
@@ -6548,6 +6595,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   executor_predicates .... (B = 'a')
   mdam_disjunct .......... (((A = 2) or (A = 4)) or (A = 6)) and ((C = 1) or (C
@@ -7062,6 +7110,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... ((A = 1) or (B = '1'))
 
@@ -7138,6 +7187,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = %('1'))
   begin_key .............. (A = %(1))
@@ -7217,6 +7267,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = %('1'))
 
@@ -7292,6 +7343,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   begin_key .............. (A = %(2))
   end_key ................ (A = %(2))
@@ -7596,6 +7648,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... ((A = 1) or (A = 4)) and (B = %('a')) and (C = %(1))
 
@@ -7670,6 +7723,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and (B = %('a'))
                              and (((C = 1) or (C = 3)) or (C >= 5))
@@ -7744,6 +7798,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and ((C = 1) or (C
                              = 3)) and (B = %('a'))
@@ -7846,6 +7901,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 2) or (A = 4)) or (A = 6)) and ((C = 1) or (C
                              = 3)) and (B = %('a'))
@@ -7991,6 +8047,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... ((A = 1) or (A = 4)) and (B = %('a')) and (C = %(1))
 
@@ -8066,6 +8123,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and (B = %('a'))
                              and (((C = 1) or (C = 3)) or (C >= 5))
@@ -8141,6 +8199,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and ((C = 1) or (C
                              = 3)) and (B = %('a'))
@@ -8244,6 +8303,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 2) or (A = 4)) or (A = 6)) and ((C = 1) or (C
                              = 3)) and (B = %('a'))
@@ -8737,6 +8797,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... ((A = 1) or (B = '1'))
 
@@ -8814,6 +8875,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = '1')
 
@@ -8890,6 +8952,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
   executor_predicates .... (B = '1')
 
@@ -8966,6 +9029,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed .......... 1
+  use_snapshot_scan ...... FALSE
   key_columns ............ A
 
 --- SQL operation complete.
@@ -9267,6 +9331,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... ((A = 1) or (A = 4)) and (B = 'a') and (C = 1)
 
@@ -9340,6 +9405,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and (B = 'a') and
                              (((C = 1) or (C = 3)) or (C >= 5))
@@ -9413,6 +9479,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and ((C = 1) or (C
                              = 3)) and (B = 'a')
@@ -9514,6 +9581,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 2) or (A = 4)) or (A = 6)) and ((C = 1) or (C
                              = 3)) and (B = 'a')
@@ -9660,6 +9728,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... ((A = 1) or (A = 4)) and (B = 'a') and (C = 1)
 
@@ -9734,6 +9803,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and (B = 'a') and
                              (((C = 1) or (C = 3)) or (C >= 5))
@@ -9808,6 +9878,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 1) or (A = 2)) or (A = 4)) and ((C = 1) or (C
                              = 3)) and (B = 'a')
@@ -9910,6 +9981,7 @@ DESCRIPTION
   cache_size ........... 100
   probes ................. 1
   rows_accessed ........ 100
+  use_snapshot_scan ...... FALSE
   key_columns ............ A, B, C
   mdam_disjunct .......... (((A = 2) or (A = 4)) or (A = 6)) and ((C = 1) or (C
                              = 3)) and (B = 'a')
