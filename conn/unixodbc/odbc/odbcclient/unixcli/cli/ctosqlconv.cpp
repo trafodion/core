@@ -642,11 +642,15 @@ unsigned long ODBC::ConvertCToSQL(SQLINTEGER	ODBCAppVersion,
 		}
 		if (Offset != 0)
 		{
-			if (DataLen > USHRT_MAX)
-				return IDS_22_001;
 //#ifndef MXSUN
-			*(unsigned short *)targetDataPtr = DataLen;
-			outDataPtr = (unsigned char *)targetDataPtr + sizeof(USHORT);
+			if(DataLen>32767){
+				*(int *)targetDataPtr = DataLen;
+				outDataPtr = (unsigned char *)targetDataPtr + sizeof(int);
+			}
+			else{
+				*(unsigned short *)targetDataPtr = DataLen;
+				outDataPtr = (unsigned char *)targetDataPtr + sizeof(USHORT);
+			}
 //#else
 //
 //			temp = DataLen;
@@ -3117,11 +3121,14 @@ unsigned long ODBC::ConvertCToSQL(SQLINTEGER	ODBCAppVersion,
 		}
 		if (Offset != 0)
 		{
-			if (DataLen > USHRT_MAX)
-				return IDS_22_001;
-
-			*(unsigned short *)targetDataPtr = DataLen;
-			outDataPtr = (unsigned char *)targetDataPtr + sizeof(USHORT);
+			if(DataLen>32767){
+				*(int *)targetDataPtr = DataLen;
+				outDataPtr = (unsigned char *)targetDataPtr + sizeof(int);
+			}
+			else{
+				*(unsigned short *)targetDataPtr = DataLen;
+				outDataPtr = (unsigned char *)targetDataPtr + sizeof(USHORT);
+			}
 		}
 		OutLen = DataLen;	// in case user creates a table as datetime year to second,
 							// SQL/MX returns OutLen as 7 bytes

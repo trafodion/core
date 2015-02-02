@@ -28,7 +28,7 @@
 #include <sqlext.h>
 #include "drvrglobal.h"
 #include "charsetconv.h"
-
+  
 #define ENDIAN_PRECISION_MAX	39
 
 namespace ODBC {
@@ -44,6 +44,7 @@ unsigned long ConvertSQLToC(SQLINTEGER	ODBCAppVersion,
 							SQLSMALLINT	srcScale,
 							SQLSMALLINT srcUnsigned,
 							SQLINTEGER	srcCharSet,
+							SQLINTEGER	srcMaxLength,
 							SQLSMALLINT	CDataType,
 							SQLPOINTER	targetDataPtr,
 							SQLINTEGER	targetLength,

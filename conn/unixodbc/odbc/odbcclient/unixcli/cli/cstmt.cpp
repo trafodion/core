@@ -1004,9 +1004,9 @@ SQLRETURN CStmt::SendSQLCommand(BOOL SkipProcess, SQLCHAR *StatementText,
 		}		
 		
 #ifndef unixcli		
-		if (sqlStringLen == 0 || sqlStringLen > USHRT_MAX)
+		if (sqlStringLen == 0 || sqlString > INT_MAX)
 #else
-		if (sqlStringLen == 0 || sqlStringLen > USHRT_MAX)
+		if (sqlStringLen == 0 || sqlStringLen > INT_MAX)
 #endif
 		{
 			setDiagRec(DRIVER_ERROR, IDS_S1_090);
@@ -4260,7 +4260,7 @@ SQLRETURN CStmt::GetData(SQLUSMALLINT ColumnNumber,
 	SQLSMALLINT		SQLUnsigned=0;
 
 	short			SQLDataInd=0;
-	short			SQLDataLength=0;
+	int			SQLDataLength=0;
 	BYTE*			SQLDataRow;
 	BYTE*			SQLDataValue=0;
 
