@@ -1445,6 +1445,7 @@ public:
   ValueIdList hbaseFilterColVIDlist_;
   ValueIdList hbaseFilterValueVIDlist_;
   NAList<NAString> opList_;
+  NABoolean useSnapshotScan_;
 
 }; // class HbaseAccess
 

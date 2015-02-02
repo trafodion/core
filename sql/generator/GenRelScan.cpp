@@ -2450,6 +2450,21 @@ short HbaseAccess::codeGen(Generator * generator)
   char * zkPort = space->allocateAlignedSpace(zkPortNAS.length() + 1);
   strcpy(zkPort, zkPortNAS.data());
 
+  NAString snapNameNAS= tablename;
+ snapNameNAS.append("_");
+ snapNameNAS.append(ActiveSchemaDB()->getDefaults().getValue(TRAF_TABLE_SNAPSHOT_SCAN_SNAP_SUFFIX));
+  char * snapName= space->allocateAlignedSpace(snapNameNAS.length() + 1);
+  strcpy(snapName, snapNameNAS.data());
+
+  NAString tmpLocNAS = ActiveSchemaDB()->getDefaults().getValue(TRAF_TABLE_SNAPSHOT_SCAN_TMP_LOCATION);
+  char * tmpLoc = space->allocateAlignedSpace(tmpLocNAS.length() + 1);
+  strcpy(tmpLoc, tmpLocNAS.data());
+
+//  NAString tabNAS = ActiveSchemaDB()->getDefaults().getValue(TRAF_TABLE_SNAPSHOT_SCAN_HELPER_TABLE);
+//  char * tab = space->allocateAlignedSpace(tabNAS.length() + 1);
+//  strcpy(tab, tabNAS.data());
+
+
   ComTdbHbaseAccess::HbasePerfAttributes * hbpa =
     new(space) ComTdbHbaseAccess::HbasePerfAttributes();
   if (CmpCommon::getDefault(HBASE_CACHE_BLOCKS) == DF_ON)
@@ -2550,7 +2565,20 @@ short HbaseAccess::codeGen(Generator * generator)
         generator->objectUids().insert(
           getTableDesc()->getNATable()->objectUid().get_value());
     }
-
+  if (getTableDesc()->getNATable()->isSeabaseTable() &&
+      !getTableDesc()->getNATable()->isSeabaseMDTable() &&
+      !(getTableDesc()->getNATable()->getTableName().getObjectName()== HBASE_HIST_NAME) &&
+      !(getTableDesc()->getNATable()->getTableName().getObjectName()== HBASE_HISTINT_NAME) )
+  {
+    hbasescan_tdb->setUseSnapshotScan( useSnapshotScan_);
+    if (hbasescan_tdb->getUseSnapshotScan())
+    {
+      hbasescan_tdb->setSnapScanTmpLocation(tmpLoc);
+      hbasescan_tdb->setSnapshotName(snapName);
+      hbasescan_tdb->setSnapshotTimeout(getDefault(TRAF_TABLE_SNAPSHOT_SCAN_TIMEOUT));
+    }
+ }
+ 
   if (keyInfo && searchKey() && searchKey()->isUnique())
     hbasescan_tdb->setUniqueKeyInfo(TRUE);
 

@@ -3314,6 +3314,24 @@ public:
       {(v ? flags_ |= OVERWRITE_MERGE_FILE : flags_ &= ~OVERWRITE_MERGE_FILE); };
   NABoolean getOverwriteMergeFile() { return (flags_ & OVERWRITE_MERGE_FILE) != 0; };
 
+  void setScanType(UInt8 v){
+    scanType_ = v;
+  };
+  UInt8 getScanType() {
+    return scanType_;
+  };
+  void setSnapshotSuffix(char * v){
+    snapshotSuffix_ = v;
+  }
+  char * getSnapshotSuffix() const {
+     return snapshotSuffix_;
+  }
+  void setTempBaseLocation(char * v){
+    tempBaseLocation_ = v;
+  }
+  char * getTempBaseLocation() const {
+     return tempBaseLocation_;
+  }
   // ---------------------------------------------------------------------
   // Used by the internal SHOWPLAN command to get attributes of a TDB.
   // ---------------------------------------------------------------------
@@ -3336,7 +3354,10 @@ private:
   NABasicPtr   extractLocation_;                        // 16 - 23
   UInt32       flags_;                                  // 24 - 27
   UInt8        compressType_;                           // 28 - 28
-  char         fillersExeUtilHbaseUnLoad_[3];           // 29 - 31
+  UInt8        scanType_;                               // 29 - 29
+  NABasicPtr   snapshotSuffix_;                         // 30 - 37
+  NABasicPtr   tempBaseLocation_;                       // 38 - 45
+  char         fillersExeUtilHbaseUnLoad_[8];           // 46 - 53
 };
 #endif
 

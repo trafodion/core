@@ -293,6 +293,7 @@ DESCRIPTION
   cache_size ........ 10,000
   probes ................. 1
   rows_accessed .......... 1e+09
+  use_snapshot_scan ...... FALSE
   key_columns ............ _SALT_, A, B
   begin_key .............. (_SALT_ = (\:_sys_HostVarLoHashPart Hash2Distrib
                              8)), (A = <min>), (B = <min>)
@@ -436,6 +437,7 @@ DESCRIPTION
   cache_size ........ 10,000
   probes ................. 1
   rows_accessed .......... 1e+09
+  use_snapshot_scan ...... FALSE
   key_columns ............ _SALT_, A, B
   begin_key .............. (_SALT_ = (\:_sys_HostVarLoHashPart Hash2Distrib
                              8)), (A = <min>), (B = <min>)
@@ -579,6 +581,7 @@ DESCRIPTION
   cache_size ........ 10,000
   probes ................. 1
   rows_accessed .......... 1e+09
+  use_snapshot_scan ...... FALSE
   key_columns ............ _SALT_, A, B
   begin_key .............. (_SALT_ = (\:_sys_HostVarLoHashPart Hash2Distrib
                              8)), (A = <min>), (B = <min>)
@@ -722,6 +725,7 @@ DESCRIPTION
   cache_size ........ 10,000
   probes ................. 1
   rows_accessed .......... 1e+09
+  use_snapshot_scan ...... FALSE
   key_columns ............ _SALT_, A, B
   begin_key .............. (_SALT_ = (\:_sys_HostVarLoHashPart Hash2Distrib
                              8)), (A = <min>), (B = <min>)
@@ -865,6 +869,7 @@ DESCRIPTION
   cache_size ........ 10,000
   probes ................. 1
   rows_accessed .......... 1e+09
+  use_snapshot_scan ...... FALSE
   key_columns ............ _SALT_, A, B
   begin_key .............. (_SALT_ = (\:_sys_HostVarLoHashPart Hash2Distrib
                              8)), (A = <min>), (B = <min>)
@@ -1008,6 +1013,7 @@ DESCRIPTION
   cache_size ........ 10,000
   probes ................. 1
   rows_accessed .......... 1e+09
+  use_snapshot_scan ...... FALSE
   key_columns ............ _SALT_, A, B
   begin_key .............. (_SALT_ = (\:_sys_HostVarLoHashPart Hash2Distrib
                              8)), (A = <min>), (B = '<min>')
@@ -1151,6 +1157,7 @@ DESCRIPTION
   cache_size ........ 10,000
   probes ................. 1
   rows_accessed .......... 1e+09
+  use_snapshot_scan ...... FALSE
   key_columns ............ _SALT_, A, B
   begin_key .............. (_SALT_ = (\:_sys_HostVarLoHashPart Hash2Distrib
                              8)), (A = <min>), (B = '<min>')

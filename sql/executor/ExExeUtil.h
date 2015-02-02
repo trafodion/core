@@ -60,6 +60,7 @@ class ExProcessStats;
 #include "ExpLOBstats.h"
 #include "hiveHook.h"
 #include "SequenceFileReader.h"
+#include <vector>
 
 #define TO_FMT3u(u) MINOF(((u)+500)/1000, 999)
 #define MAX_ACCUMULATED_STATS_DESC 2
@@ -3515,7 +3516,27 @@ class ExExeUtilHBaseBulkUnLoadTcb : public ExExeUtilTcb
        Lng32 &numElems,      // inout, desired/actual elements
        Lng32 &pstateLength); // out, length of one element
 
+  short getTrafodionScanTables();
+
+  char * getSnapshotScanId()
+  {
+    char * str = new (getHeap()) char[30];
+
+    time_t t;
+    time(&t);
+    struct tm * curgmtime = gmtime(&t);
+    strftime(str, 30, "%Y%m%d%H%M%S", curgmtime);
+    char * str2 = new (getHeap()) char[60];
+    srand(getpid());
+    sprintf (str2,"%s_%d", str, rand()% 1000);
+    return str2;
+  }
  private:
+  struct snapshotStruct
+  {
+    std::string fullTableName;
+    std::string snapshotName;
+  };
   void createHdfsFileError(Int32 sfwRetCode);
   enum Step
     {
@@ -3531,7 +3552,10 @@ class ExExeUtilHBaseBulkUnLoadTcb : public ExExeUtilTcb
       RETURN_STATUS_MSG_,
       DONE_,
       HANDLE_ERROR_,
-      UNLOAD_ERROR_
+      UNLOAD_ERROR_,
+      CREATE_SNAPSHOTS_,
+      VERIFY_SNAPSHOTS_,
+      DELETE_SNAPSHOTS_
     };
 
 
@@ -3543,7 +3567,9 @@ class ExExeUtilHBaseBulkUnLoadTcb : public ExExeUtilTcb
   Int64 rowsAffected_;
   char statusMsgBuf_[BUFFER_SIZE];
 
+  char tmpLocation_ [1000];
   SequenceFileWriter* sequenceFileWriter_;
+  std::vector<struct snapshotStruct> snapshotsVec_;
 };
 
 class ExExeUtilHbaseUnLoadPrivateState : public ex_tcb_private_state
