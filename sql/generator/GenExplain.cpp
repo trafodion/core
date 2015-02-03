@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1994-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1994-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -720,6 +720,26 @@ HbaseAccess::addSpecificExplainInfo(ExplainTupleMaster *explainTuple,
      sprintf(buf, "%g ", getEstRowsAccessed().getValue());
      description += buf;
   }
+  if (((ComTdbHbaseAccess *)tdb)->getUseSnapshotScan())
+  {
+    description += "use_snapshot_scan: ";
+    sprintf(buf, "%s ", "TRUE" );
+    description += buf;
+
+    description += "full_table_name: ";
+    sprintf(buf, "%s ", ((ComTdbHbaseAccess *)tdb)->getTableName());
+    description += buf;
+
+    description += "snapshot_name: ";
+    sprintf(buf, "%s ", ((ComTdbHbaseAccess *)tdb)->getSnapshotName());
+    description += buf;
+
+    description += "snapshot_temp_location: ";
+    sprintf(buf, "%s ", ((ComTdbHbaseAccess *)tdb)->getSnapScanTmpLocation());
+    description += buf;
+
+  }
+
 
 
   /*
