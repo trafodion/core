@@ -137,7 +137,7 @@ cp_trx_jar:
 all:  $(LIBEXPDIR)/libsxatmlib.so $(LIBEXPDIR)/libstmlib.so $(PROGS) $(LIBEXPDIR)/libxarm.so
 	cd tools; $(MAKE)
 
-$(OUTDIR)/tm: $(TMOBJS) $(LIBEXPDIR)/libsxatmlib.so $(LIBEXPDIR)/libshbasetmlib.so $(PROGS) $(LIBEXPDIR)/libxarm.so cp_trx_jar
+$(OUTDIR)/tm: $(TMOBJS) $(LIBEXPDIR)/libsxatmlib.so $(LIBEXPDIR)/libshbasetmlib.so $(PROGS) $(LIBEXPDIR)/libxarm.so
 	@echo "USE_THREADED_IO = " $(USE_THREADED_IO)
 	$(CXX) $(LNK_FLGS) $(LIBJVM) -o $@ $(TMOBJS) $(LIBSTM) -L$(LIBEXPDIR) -llog4cpp -DTM_BUILD_
 
@@ -152,7 +152,7 @@ $(LIBEXPDIR)/libstmlib.so: $(LIBSTMOBJS)
 $(LIBEXPDIR)/libsxatmlib.so: $(LIBSXATMOBJS) 
 	$(CXX) $(LNK_FLGS) -shared -o $@ $(LIBSXATMOBJS) $(LIBSTMX) -L$(LIBEXPDIR) -llog4cpp  
 
-$(LIBEXPDIR)/libshbasetmlib.so: $(LIBSXATMOBJS) cp_trx_jar
+$(LIBEXPDIR)/libshbasetmlib.so: $(LIBSXATMOBJS)
 	cd $(HBASETMLIB); $(MAKE)
 
 
