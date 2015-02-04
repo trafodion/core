@@ -216,6 +216,12 @@ short Hash2PartitioningFunction::codeGen(Generator *generator,
   return 0;
 }
 
+short SkewedDataPartitioningFunction::codeGen(Generator *generator,
+                                            Lng32 partInputDataLength)
+{
+  return partialPartFunc_ -> codeGen(generator, partInputDataLength);
+}
+
 
 /////////////////////////////////////////////////////////
 //

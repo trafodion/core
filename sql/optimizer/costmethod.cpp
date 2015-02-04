@@ -3692,6 +3692,7 @@ CostMethodExchange::produceCostVectors(
              OR myPartFunc->isAHash2PartitioningFunction()
              OR myPartFunc->isAHashDistPartitioningFunction()
 	     OR myPartFunc->isARangePartitioningFunction() 
+	     OR myPartFunc->isASkewedDataPartitioningFunction() 
              ))
   {
     if ( CmpCommon::getDefault(COMP_BOOL_97) == DF_OFF )
@@ -4203,6 +4204,7 @@ CostMethodExchange::produceCostVectorsWithControlDataMessages(
              OR myPartFunc->isAHash2PartitioningFunction()
              OR myPartFunc->isAHashDistPartitioningFunction()
 	     OR myPartFunc->isARangePartitioningFunction() 
+             OR myPartFunc->isASkewedDataPartitioningFunction()
              ))
   {
     if ( CmpCommon::getDefault(COMP_BOOL_97) == DF_OFF )

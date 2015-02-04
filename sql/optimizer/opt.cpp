@@ -1174,6 +1174,21 @@ NAString Context::getRPPString() const
 	}
 
 
+      if (reqdPhys_->getPartitioningRequirement() != NULL)
+      {
+         PartitioningRequirement* partReq =
+             reqdPhys_->getPartitioningRequirement();
+
+         if ( partReq->isRequirementFuzzy() )
+           propString += (partReq ->
+                            castToFuzzyPartitioningRequirement() ->
+                                getSkewProperty()).getText();
+         else
+           if ( partReq->isRequirementSkewed() )
+             propString += (partReq ->
+                              castToRequireSkewed() ->
+                                  getSkewProperty()).getText();
+      }
 
       const PushDownRequirement* pdr = reqdPhys_ -> getPushDownRequirement();
 
@@ -4977,6 +4992,10 @@ void OptDefaults::initialize(RelExpr* rootExpr)
   histOptimisticCardOpt_	    = defs_->getAsLong(HIST_OPTIMISTIC_CARD_OPTIMIZATION);
   histAssumeIndependentReduction_    = (CmpCommon::getDefault(HIST_ASSUME_INDEPENDENT_REDUCTION) == DF_ON);
   histUseSampleForCardEst_              = (CmpCommon::getDefault(HIST_USE_SAMPLE_FOR_CARDINALITY_ESTIMATION ) == DF_ON);
+
+  maxSkewValuesDetected_             = defs_->getAsULong(MAX_SKEW_VALUES_DETECTED);
+  skewSensitivityThreshold_          = defs_->getAsDouble(SKEW_SENSITIVITY_THRESHOLD);
+
   useHighFreqInfo_                   = (CmpCommon::getDefault(HIST_USE_HIGH_FREQUENCY_INFO) == DF_ON);
   histDefaultSampleSize_             = defs_->getAsDouble(HIST_ON_DEMAND_STATS_SIZE);
   histTupleFreqValListThreshold_     = defs_->getAsULong(HIST_TUPLE_FREQVAL_LIST_THRESHOLD);

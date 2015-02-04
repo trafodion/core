@@ -175,6 +175,18 @@ public:
 
   virtual void setPlanVersion(UInt32 value)     { planVersion_ = value; }
 
+  NABoolean useSkewBuster() const
+                      { return (splitBottomFlags_ & SKEWBUSTER) != 0; }
+
+  void setUseSkewBuster(NABoolean v)
+  { (v ? splitBottomFlags_ |= SKEWBUSTER : splitBottomFlags_ &= ~SKEWBUSTER); }
+
+  NABoolean doBroadcastSkew() const
+                      {  return (splitBottomFlags_ & SKEW_BROADCAST) != 0; }
+
+  void setBroadcastSkew(NABoolean v)
+  { (v ? splitBottomFlags_ |= SKEW_BROADCAST :
+         splitBottomFlags_ &= ~SKEW_BROADCAST); }
 
   NABoolean getBroadcastOneRow() const   
                       {  return (splitBottomFlags_ & ONE_ROW_BROADCAST) != 0; }
