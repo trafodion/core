@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1996-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1996-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -177,11 +177,54 @@ static ofstream* initializeArkcmpCoutCerr()
 // argv[1] : <n> as in CHAR(<n>)
 // argv[2]:  input file name, in which each line is a string 
 //           at least <n> bytes long
+
+void foo()
+{
+  class A {
+  
+   public:
+     A(): x_(0) {};
+     ~A() {};
+
+     int get() { 
+         int z = 0;
+         for (int i=0; i<10; i++ )
+           z++;
+         return z;
+     }
+
+   protected:
+     int x_;
+  };
+
+   class B {
+
+   public:
+     B(A* a): a_(a) {};
+     ~B() {};
+
+     A* get() { 
+         return a_; };
+
+   protected:
+     A* a_;
+  };
+
+  A a;
+  B b(&a);
+
+  int y = b.get()->get(); 
+  int z = b.get()->get(); 
+
+  cout << y << z;
+}
       
 
 Int32 main(Int32 argc, char **argv)
 {
 
+foo();
+exit(1);
 
 
   dovers(argc, argv);
