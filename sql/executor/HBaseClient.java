@@ -132,6 +132,7 @@ public class HBaseClient {
     }
 
     void setupLog4j() {
+        System.setProperty("trafodion.hdfs.log", System.getenv("MY_SQROOT") + "/logs/trafodion.hdfs.log");
         String confFile = System.getenv("MY_SQROOT")
             + "/conf/log4j.hdfs.config";
         PropertyConfigurator.configure(confFile);
