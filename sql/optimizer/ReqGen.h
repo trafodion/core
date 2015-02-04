@@ -187,6 +187,19 @@ public:
   SortOrderTypeEnum determineCompatibleSortOrderTypeReq(     
                     SortOrderTypeEnum otherSortOrderTypeReq) const;
 
+  // Add the skew data handling requirement. If a fully specified partition
+  // rquirement is to be added, it must be added earlier than the skew
+  // requirement and any skewness property specified in that partition
+  // requirement is overwritten by this skew requirement.
+  void addSkewRequirement(skewProperty::skewDataHandlingEnum,
+                          SkewedValueList* skList,
+                          NABoolean broadcastOneRow);
+  void removeSkewRequirement() { skewPropertyAdded_ = FALSE; };
+
+  // Check that the added skew requirement can be made compatible with
+  // what exists in the partR, and if so, modify partR so that the skew
+  // requirement is properly represented in partR.
+  void makeSkewReqFeasible(PartitioningRequirement* partR);
 
 private:
 
@@ -263,6 +276,9 @@ private:
   LogicalPartitioningRequirement *logicalPartReq_;
    
   const PushDownRequirement*	 pushDownRequirement_;
+
+  skewProperty                   addedSkewProperty_;
+  NABoolean                      skewPropertyAdded_;
 
   NABoolean                      requireNoESPExchange_;
   NABoolean                      requireOcbEnabledCosting_;
