@@ -168,6 +168,18 @@ Lng32 ExeCliInterface::deallocStuff(SQLMODULE_ID * &module,
       rsInputBuffer_ = NULL;
     }
 
+  if (outputAttrs_)
+    {
+      NADELETEBASIC(outputAttrs_, heap_);
+      outputAttrs_ = NULL;
+    }
+
+  if (outputBuf_)
+    {
+      NADELETEBASIC(outputBuf_, heap_);
+      outputBuf_ = NULL;
+    }
+
   return 0;
 }
 

@@ -326,6 +326,8 @@ short ExExeUtilDisplayExplainTcb::work()
 	    
 	    
 	    str_sprintf(explainQuery_, gluedQuery, explArg1, explArg2);
+
+            NADELETEBASIC(gluedQuery, getMyHeap());
 	    
 	    pstate.step_ = FETCH_PROLOGUE_;
 	  }
@@ -554,6 +556,8 @@ short ExExeUtilDisplayExplainTcb::work()
 	      {
 		cliInterface()->retrieveSQLDiagnostics(getDiagsArea());
 	      }
+
+            NADELETEBASIC(explainQuery_, getMyHeap());
 
 	    if (exeUtilTdb().getStmtName() == NULL)
 	      {
