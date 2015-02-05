@@ -1,7 +1,7 @@
 /***********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1994-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1994-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -9999,7 +9999,8 @@ HbaseAccess::HbaseAccess(CorrName &corrName,
              selectionPredicates, disjuncts,
              generatedCCPreds,
              otype),
-    listOfSearchKeys_(oHeap)
+    listOfSearchKeys_(oHeap),
+    useSnapshotScan_(FALSE)
 {
   accessType_ = SELECT_;
   //setTableDesc(tableDesc);
@@ -10014,7 +10015,8 @@ HbaseAccess::HbaseAccess(CorrName &corrName,
   : FileScan(corrName, NULL, NULL, REL_HBASE_ACCESS, oHeap),
     isRW_(isRW),
     isCW_(isCW),
-    listOfSearchKeys_(oHeap)
+    listOfSearchKeys_(oHeap),
+    useSnapshotScan_(FALSE)
 {
   accessType_ = SELECT_;
 
@@ -10025,7 +10027,8 @@ HbaseAccess::HbaseAccess(CorrName &corrName,
 HbaseAccess::HbaseAccess( OperatorTypeEnum otype,
 			  CollHeap *oHeap)
   : FileScan(CorrName(), NULL, NULL, otype, oHeap),
-    listOfSearchKeys_(oHeap)
+    listOfSearchKeys_(oHeap),
+    useSnapshotScan_(FALSE)
 {
   accessType_ = SELECT_;
 

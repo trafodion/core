@@ -1,7 +1,7 @@
 // **********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 2013-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -683,6 +683,22 @@ public:
    void setMaxHFileSize(UInt32 maxHFileSize) {
      maxHFileSize_ = maxHFileSize;
    }
+
+   void setUseSnapshotScan(NABoolean v)
+     {(v ? flags2_ |= TRAF_USE_SNAPSHOT_SCAN : flags2_ &= ~TRAF_USE_SNAPSHOT_SCAN); };
+   NABoolean getUseSnapshotScan() { return (flags2_ & TRAF_USE_SNAPSHOT_SCAN) != 0; };
+
+   char * getSnapScanTmpLocation() const { return snapScanTmpLocation_; }
+   void   setSnapScanTmpLocation(char *  v) { snapScanTmpLocation_= v; }
+
+   // The number of times we try to get the scanner before giving up
+   UInt32 getSnapshotScanTimeout() const { return snapshotScanTimeout_; }
+   void setSnapshotScanTimeout(UInt32 v) { snapshotScanTimeout_ = v;}
+
+   char * getSnapshotName() const { return snapName_; }
+   void   setSnapshotName(char *  v) { snapName_= v; }
+
+
  protected:
   enum
   {
@@ -697,10 +713,10 @@ public:
     VSBB_INSERT                      = 0x0100,
     ROWSET_OPER                      = 0x0200,
     CHECK_AND_UPDEL                  = 0x0400,
-    READ_UNCOMMITTED_SCAN = 0x0800,
-    UPDEL_COLNAME_IS_STR      = 0x1000,
+    READ_UNCOMMITTED_SCAN            = 0x0800,
+    UPDEL_COLNAME_IS_STR             = 0x1000,
     USE_HBASE_XN                     = 0x2000,
-    ALIGNED_FORMAT                 = 0x4000
+    ALIGNED_FORMAT                   = 0x4000
   };
 
   enum
@@ -714,7 +730,8 @@ public:
     TRAF_LOAD_KEEP_HFILES            = 0x0040,
     TRAF_LOAD_QUASI_SECURE           = 0x0080,
     TRAF_LOAD_TAKE_SNAPSHOT          = 0x0100,
-    TRAF_LOAD_NO_DUPLICATTES         = 0x0200
+    TRAF_LOAD_NO_DUPLICATTES         = 0x0200,
+    TRAF_USE_SNAPSHOT_SCAN           = 0x0400
   };
 
   UInt16 accessType_;
@@ -804,7 +821,13 @@ public:
   NABasicPtr LoadPrepLocation_;
   UInt32 flags2_;
   UInt32 maxHFileSize_;
-  char filler2_[8];
+
+  NABasicPtr snapScanTmpLocation_;
+
+  NABasicPtr snapName_;
+  UInt32     snapshotScanTimeout_;
+
+  char fillers[12];
 
 };
 

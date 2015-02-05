@@ -9,7 +9,7 @@
 *
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1998-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1998-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -141,7 +141,12 @@ class ExpHbaseInterface : public NABasicObject
 			 const TextVec *inColNamesToFilter, 
 			 const TextVec *inCompareOpList,
 			 const TextVec *inColValuesToCompare,
-			 Float32 samplePercent = -1.0f) = 0;
+			 Float32 samplePercent = -1.0f,
+			 NABoolean useSnapshotScan = FALSE,
+			 Lng32 snapTimeout = 0,
+			 char * snapName = NULL,
+			 char * tmpLoc = NULL,
+			 Lng32 espNum=0) = 0;
 
   virtual Lng32 scanClose() = 0;
 
@@ -399,8 +404,13 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 			 const TextVec *inColNamesToFilter, 
 			 const TextVec *inCompareOpList,
 			 const TextVec *inColValuesToCompare,
-                         Float32 samplePercent = -1.0f);
-  
+			 Float32 samplePercent = -1.0f,
+			 NABoolean useSnapshotScan = FALSE,
+			 Lng32 snapTimeout = 0,
+			 char * snapName = NULL,
+			 char * tmpLoc = NULL,
+			 Lng32 espNum = 0);
+
   virtual Lng32 scanClose();
 
   virtual Lng32 getRowOpen(
