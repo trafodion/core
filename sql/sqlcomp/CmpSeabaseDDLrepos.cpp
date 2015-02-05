@@ -35,7 +35,6 @@
 #include "CmpSeabaseDDLincludes.h"
 #include "CmpSeabaseDDLrepos.h"
 
-
 short CmpSeabaseDDL::createRepos(ExeCliInterface * cliInterface)
 {
   Lng32 cliRC = 0;
