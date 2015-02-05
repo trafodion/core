@@ -1,7 +1,7 @@
 //******************************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1998-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1998-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -3656,6 +3656,11 @@ enum DefaultConstants
   NCM_OLTP_ET_THRESHOLD,
   NCM_SKEW_COST_ADJ_FOR_PROBES, 
   PCODE_NE_IN_SHOWPLAN,
+  TRAF_TABLE_SNAPSHOT_SCAN,
+  TRAF_TABLE_SNAPSHOT_SCAN_TMP_BASE_LOCATION,
+  TRAF_TABLE_SNAPSHOT_SCAN_TMP_LOCATION,
+  TRAF_TABLE_SNAPSHOT_SCAN_SNAP_SUFFIX,
+  TRAF_TABLE_SNAPSHOT_SCAN_TIMEOUT,
   // This enum constant must be the LAST one in the list; it's a count,
   // not an Attribute (it's not IN DefaultDefaults; it's the SIZE of it)!
   __NUM_DEFAULT_ATTRIBUTES
