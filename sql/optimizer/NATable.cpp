@@ -5282,6 +5282,7 @@ NATable::NATable(BindWA *bindWA,
   mvAttributeBitmap_.initBitmap(table_desc->body.table_desc.mvAttributesBitmap);
 
   desc_struct *mvs_desc = table_desc->body.table_desc.using_mvs_desc;
+// Memory Leak
   while (mvs_desc)
   {
     using_mv_desc_struct *mv = &mvs_desc->body.using_mv_desc;
@@ -5526,6 +5527,7 @@ NATable::NATable(BindWA *bindWA,
 
   if (hasLobColumn())
     {
+//    Memory Leak
       // read lob related information from lob metadata
       short *lobNumList = new (heap_) short[getColumnCount()];
       short *lobTypList = new (heap_) short[getColumnCount()];
@@ -6803,6 +6805,8 @@ NATable::~NATable()
   // remove the map entries of associated table identifers in
   // NAClusterInfo::tableToClusterMap_.
   CMPASSERT(gpClusterInfo);
+  NAColumn *col;
+  NABoolean delHeading = ActiveSchemaDB()->getNATableDB()->cachingMetaData();
   const LIST(CollIndex) & tableIdList = getTableIdList();
   for(CollIndex i = 0; i < tableIdList.entries(); i++)
   {
@@ -6813,6 +6817,62 @@ NATable::~NATable()
     NADELETE(privInfo_, PrivMgrUserPrivs, heap_);
     privInfo_ = NULL;
   }
+  if (! isHive_) {
+     for (int i = 0 ; i < colcount_ ; i++) {
+         col = (NAColumn *)colArray_[i];
+         if (delHeading) {
+            if (col->getDefaultValue())
+                NADELETEBASIC(col->getDefaultValue(), heap_);
+            if (col->getHeading())
+                NADELETEBASIC(col->getHeading(), heap_);
+         }
+         NADELETE(col, NAColumn, heap_);
+     }
+  }
+
+  if (clusteringIndex_ != NULL)
+  {
+     NADELETE(clusteringIndex_, NAFileSet, heap_);
+     clusteringIndex_ = NULL;
+  }
+ 
+  if (schemaLabelFileName_ != NULL)
+  {
+     NADELETEBASIC(schemaLabelFileName_, heap_);
+     schemaLabelFileName_ = NULL;
+  } 
+
+  if (parentTableName_ != NULL)
+  {
+     NADELETEBASIC(parentTableName_, heap_);
+     parentTableName_ = NULL;
+  } 
+  if (viewText_ != NULL)
+  {
+     NADELETEBASIC(viewText_, heap_);
+     viewText_ = NULL;
+  } 
+  if (viewCheck_ != NULL)
+  {
+     NADELETEBASIC(viewCheck_, heap_);
+     viewCheck_ = NULL;
+  } 
+  if (viewFileName_ != NULL)
+  {
+     NADELETEBASIC(viewFileName_, heap_);
+     viewFileName_ = NULL;
+  } 
+  if (prototype_ != NULL)
+  {
+     NADELETE(prototype_, HostVar, heap_);
+     prototype_ = NULL;
+  }
+  if (sgAttributes_ != NULL)
+  {
+     NADELETE(sgAttributes_, SequenceGeneratorAttributes, heap_);
+     sgAttributes_ = NULL;
+  }
+
   // implicitly destructs all subcomponents allocated out of this' private heap
   // hence no need to write a complicated destructor!
 }
