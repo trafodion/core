@@ -980,10 +980,6 @@ class ExExeUtilVolatileTablesTcb : public ExExeUtilTcb
 
  protected:
   short isCreatorProcessObsolete(char * schemaName, NABoolean includesCat);
-
-  short getAllNodeNames(char * param1);
-
-  Queue * nodeNamesList_;
 };
 
 class ExExeUtilCleanupVolatileTablesTcb : public ExExeUtilVolatileTablesTcb
