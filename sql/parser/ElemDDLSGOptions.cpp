@@ -409,12 +409,22 @@ short ElemDDLSGOptions::validate(short queryType)
           return -1;
         }
       
-      if ((isMinValueSpecified()) && (isNoMinValue()))
-        minValue = 1LL;
-      else
-        minValue = getMinValue();
+      minValue = getMinValue();
       startValue = getStartValue();
       increment = getIncrement();
+
+      if (isMaxValueSpecified() && (NOT isNoMaxValue()))
+        {
+          if ((fsDataType_ != COM_UNKNOWN_FSDT) &&
+              (getMaxValue() > maxValue))
+            {
+              *CmpCommon::diags() << DgSqlCode(-1576)
+                                  << DgString0("MAXVALUE")
+                                  << DgString1(dtStr);
+              
+              return -1;
+            }
+        }
 
       maxValue = getMaxValue();
     }
