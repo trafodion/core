@@ -553,6 +553,7 @@ class ExLobGlobals
     {
       return heap_;
     }
+    void traceMessage(const char *logMessage, int line);
   public :
     lobMap_t *lobMap_;
     hdfsFS fs_;
@@ -568,6 +569,7 @@ class ExLobGlobals
     ExLobLock postfetchBufListLock_;
     NABoolean isCliInitialized_;
     NABoolean isHive_;
+    FILE *threadTraceFile_;
     NAHeap *heap_;
 };
 
