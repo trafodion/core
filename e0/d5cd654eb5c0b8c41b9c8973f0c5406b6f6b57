@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Joanie Cooper <joanie.cooper@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Anoop Sharma <anoop.sharma@hp.com>
+Workflow+1: Anoop Sharma <anoop.sharma@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Fri, 06 Feb 2015 04:02:01 +0000
+Reviewed-on: https://review.trafodion.org/1086
+Project: trafodion/core
+Branch: refs/heads/stable/1.0
