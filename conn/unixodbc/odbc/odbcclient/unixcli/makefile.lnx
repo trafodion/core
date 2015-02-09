@@ -2,8 +2,6 @@
 include $(MY_SQROOT)/macros.gmk #top level
 sinclude depend.mk
 
-ODBCVER := $(shell ./bldODBCVer.sh)
-
 VPATH = ./DrvrManager:./trace:./cli:./TCPIPV4:./Interface:./common:./platform:./security_dll/source
 
 C_FLAGS = -m64 -Dunixcli -DVERSION3 -DMXLINUX -DDISABLE_TRACE -DSIZEOF_LONG=8 -DSIZEOF_LONG_INT=8 -Wall -fPIC -w -DASYNCIO -DTRACE_COMPRESSION -I$(ICU)/linux64/include -I/usr/include/openssl
@@ -47,40 +45,46 @@ DRVROBJ = $(addprefix $(OBJDIR), $(TROBJS)) $(addprefix $(OBJDIR), $(INTOBJS)) $
 #$(addprefix $(OBJDIR), $(SECURITYOBJS))
 DRVRMGROBJ = $(addprefix $(OBJDIR), $(DMOBJS))
 DRVREXPOBJ = $(addprefix $(OBJDIR), $(EXPOBJS))
+DRVRTROBJ  = $(addprefix $(OBJDIR), $(TROBJS))
+DRVRCLIOBJ = $(addprefix $(OBJDIR), $(CLIOBJS))
+DRVRINTOBJ = $(addprefix $(OBJDIR), $(INTOBJS))
+DRVRCOMOBJ = $(addprefix $(OBJDIR), $(COMOBJS))
+DRVRIP4OBJ = $(addprefix $(OBJDIR), $(IP4OBJS))
 
-linux64_debug: dmanager cli interface common ipv4 exp trace
+linux64_debug: $(ODBC_SO_FILE)_l64.so $(ODBC_SO_FILE)_l64_drvr.so
+linux64_release: $(ODBC_SO_FILE)_l64.so $(ODBC_SO_FILE)_l64_drvr.so
+
+$(ODBC_SO_FILE)_l64.so: $(DRVRMGROBJ) $(DRVRCLIOBJ) $(DRVRINTOBJ) $(DRVRCOMOBJ) $(DRVRIP4OBJ) $(DRVREXPOBJ) $(DRVRTROBJ)
 	$(LINK) -fPIC -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64.so -o $(ODBC_SO_FILE)_l64.so $(DRVROBJ) $(DRVRMGROBJ) $(INCLUDE) $(LIBS)
 	$(LINK) -fPIC -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64_drvr.so -o $(ODBC_SO_FILE)_l64_drvr.so $(DRVROBJ) $(DRVREXPOBJ) $(INCLUDE) $(LIBS)
 	ln -s -f $(ODBC_SO_FILE)_l64_drvr.so $(ODBC_SO_FILE)_drvr_l64.so
 	cp -p $(ODBC_SO_FILE)_drvr_l64.so $(LIBEXPDIR)/.
 
-linux64_release: dmanager cli interface common ipv4 exp trace
-	$(LINK) -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64.so -o $(ODBC_SO_FILE)_l64.so $(DRVROBJ) $(DRVRMGROBJ) $(INCLUDE) $(LIBS)
-	$(LINK) -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64_drvr.so -o $(ODBC_SO_FILE)_l64_drvr.so $(DRVROBJ) $(DRVREXPOBJ) $(INCLUDE) $(LIBS)
-	ln -s -f $(ODBC_SO_FILE)_l64_drvr.so $(ODBC_SO_FILE)_drvr_l64.so
-	cp -p $(ODBC_SO_FILE)_drvr_l64.so $(LIBEXPDIR)/.
+dmanager: $(DRVRMGROBJ)
 
-dmanager: $(DMOBJS)
+trace: $(DRVRTROBJ)
 
-trace: $(TROBJS)
+cli: $(DRVRCLIOBJ) 
 
-cli: $(CLIOBJS) 
+interface: $(DRVRINTOBJ)
 
-interface: $(INTOBJS)
+common: $(DRVRCOMOBJ)
 
-common: $(COMOBJS)
+ipv4: $(DRVRIP4OBJ)
 
-ipv4: $(IP4OBJS)
-
-exp: $(EXPOBJS)
+exp: $(DRVREXPOBJ)
 
 clean:
 	rm -rf obj
 	rm -rf libtrafodbc_*
 #	rm -rf trace/version*
 .cpp.o:
-	mkdir -p $(OBJDIR)
+	@if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
 	$(CC) $(CFLAGS) $(INCLUDE) $(SSLINC) $(PLATFORMINCLUDE) -c $< -o $(addprefix $(OBJDIR), $@)
+
+$(OBJDIR)%.o: %.cpp
+	@if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
+	$(CC) $(CFLAGS) $(INCLUDE) $(SSLINC) $(PLATFORMINCLUDE) -c $< -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDE) $(SSLINC) -c $< -o $(addprefix $(OBJDIR), $@)

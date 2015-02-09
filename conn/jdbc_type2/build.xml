@@ -95,11 +95,13 @@
     </target>
 
     <target name="native" depends="jni" >
+<!--
          <copy file="${native.src}/Vproc.cpp-tmpl" tofile="${native.src}/Vproc.cpp" overwrite="yes"/>
          <copy file="${native.src}/Vproc.h-tmpl" tofile="${native.src}/Vproc.h" overwrite="yes"/>
 
          <replace file="${native.src}/Vproc.cpp" token="@@@" value="${vproc.str}" />
          <replace file="${native.src}/Vproc.h" token="@@@" value="${vproc.str}" />
+-->
 <!--
          <exec dir="." executable="/usr/bin/make">
             <arg line="clean"/>
