@@ -1,8 +1,24 @@
+# @@@ START COPYRIGHT @@@
+#
+# (C) Copyright 2015 Hewlett-Packard Development Company, L.P.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+# @@@ END COPYRIGHT @@@
+
 # INCLUDES
 include $(MY_SQROOT)/macros.gmk #top level
 sinclude depend.mk
-
-ODBCVER := $(shell ./bldODBCVer.sh)
 
 VPATH = ./DrvrManager:./trace:./cli:./TCPIPV4:./Interface:./common:./platform:./security_dll/source
 
@@ -47,40 +63,46 @@ DRVROBJ = $(addprefix $(OBJDIR), $(TROBJS)) $(addprefix $(OBJDIR), $(INTOBJS)) $
 #$(addprefix $(OBJDIR), $(SECURITYOBJS))
 DRVRMGROBJ = $(addprefix $(OBJDIR), $(DMOBJS))
 DRVREXPOBJ = $(addprefix $(OBJDIR), $(EXPOBJS))
+DRVRTROBJ  = $(addprefix $(OBJDIR), $(TROBJS))
+DRVRCLIOBJ = $(addprefix $(OBJDIR), $(CLIOBJS))
+DRVRINTOBJ = $(addprefix $(OBJDIR), $(INTOBJS))
+DRVRCOMOBJ = $(addprefix $(OBJDIR), $(COMOBJS))
+DRVRIP4OBJ = $(addprefix $(OBJDIR), $(IP4OBJS))
 
-linux64_debug: dmanager cli interface common ipv4 exp trace
+linux64_debug: $(ODBC_SO_FILE)_l64.so $(ODBC_SO_FILE)_l64_drvr.so
+linux64_release: $(ODBC_SO_FILE)_l64.so $(ODBC_SO_FILE)_l64_drvr.so
+
+$(ODBC_SO_FILE)_l64.so $(ODBC_SO_FILE)_l64_drvr.so: $(DRVRMGROBJ) $(DRVRCLIOBJ) $(DRVRINTOBJ) $(DRVRCOMOBJ) $(DRVRIP4OBJ) $(DRVREXPOBJ) $(DRVRTROBJ)
 	$(LINK) -fPIC -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64.so -o $(ODBC_SO_FILE)_l64.so $(DRVROBJ) $(DRVRMGROBJ) $(INCLUDE) $(LIBS)
 	$(LINK) -fPIC -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64_drvr.so -o $(ODBC_SO_FILE)_l64_drvr.so $(DRVROBJ) $(DRVREXPOBJ) $(INCLUDE) $(LIBS)
 	ln -s -f $(ODBC_SO_FILE)_l64_drvr.so $(ODBC_SO_FILE)_drvr_l64.so
 	cp -p $(ODBC_SO_FILE)_drvr_l64.so $(LIBEXPDIR)/.
 
-linux64_release: dmanager cli interface common ipv4 exp trace
-	$(LINK) -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64.so -o $(ODBC_SO_FILE)_l64.so $(DRVROBJ) $(DRVRMGROBJ) $(INCLUDE) $(LIBS)
-	$(LINK) -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64_drvr.so -o $(ODBC_SO_FILE)_l64_drvr.so $(DRVROBJ) $(DRVREXPOBJ) $(INCLUDE) $(LIBS)
-	ln -s -f $(ODBC_SO_FILE)_l64_drvr.so $(ODBC_SO_FILE)_drvr_l64.so
-	cp -p $(ODBC_SO_FILE)_drvr_l64.so $(LIBEXPDIR)/.
+dmanager: $(DRVRMGROBJ)
 
-dmanager: $(DMOBJS)
+trace: $(DRVRTROBJ)
 
-trace: $(TROBJS)
+cli: $(DRVRCLIOBJ) 
 
-cli: $(CLIOBJS) 
+interface: $(DRVRINTOBJ)
 
-interface: $(INTOBJS)
+common: $(DRVRCOMOBJ)
 
-common: $(COMOBJS)
+ipv4: $(DRVRIP4OBJ)
 
-ipv4: $(IP4OBJS)
-
-exp: $(EXPOBJS)
+exp: $(DRVREXPOBJ)
 
 clean:
 	rm -rf obj
 	rm -rf libtrafodbc_*
 #	rm -rf trace/version*
 .cpp.o:
-	mkdir -p $(OBJDIR)
+	@if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
 	$(CC) $(CFLAGS) $(INCLUDE) $(SSLINC) $(PLATFORMINCLUDE) -c $< -o $(addprefix $(OBJDIR), $@)
+
+$(OBJDIR)%.o: %.cpp
+	@if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
+	$(CC) $(CFLAGS) $(INCLUDE) $(SSLINC) $(PLATFORMINCLUDE) -c $< -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDE) $(SSLINC) -c $< -o $(addprefix $(OBJDIR), $@)
