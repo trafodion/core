@@ -1337,8 +1337,6 @@ void StmtStats::deleteMe()
 {
    if (! checkIfRTSSemaphoreLocked())
       abort();
-   if (! calledFromRemoveQuery())
-      abort();
 // in case of Linux, create tempStats to do fixup
 // since vptr table will vary from one instance to another
 // of the same program (mxssmp)
