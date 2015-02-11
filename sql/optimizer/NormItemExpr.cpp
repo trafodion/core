@@ -2173,11 +2173,40 @@ void BiRelat::transformNode(NormWA & normWARef,
     }
   else
     {
+      const RelExpr * saveOrigPtr = introduceSemiJoinHere;
+
       // -----------------------------------------------------------------
       // Transform the left and right children.
       // -----------------------------------------------------------------
       ItemExpr::transformNode(normWARef, locationOfPointerToMe,
                               introduceSemiJoinHere, externalInputs);
+
+      // fix for bug LP1420539
+      if (introduceSemiJoinHere != saveOrigPtr)
+        {
+          // We encountered a subquery transformation (subquery or
+          // scalar UDF). This may have generated new multi-valued
+          // predicates that were not found above. Repeat the
+          // transformation.
+
+          ItemExpr * transformedMultiValue2 = transformMultiValuePredicate(FALSE, tfmIf);
+
+          if (transformedMultiValue2)
+            {
+              // replace the definition of this valueId
+              getValueId().replaceItemExpr(transformedMultiValue2);
+              locationOfPointerToMe = transformedMultiValue2;
+              locationOfPointerToMe->synthTypeAndValueId(TRUE);
+
+              // -----------------------------------------------------------------
+              // Transform the transformed tree.
+              // -----------------------------------------------------------------
+              locationOfPointerToMe->transformNode
+                (normWARef, locationOfPointerToMe,
+                 introduceSemiJoinHere, externalInputs);
+            }
+
+        } // a child had a subquery or scalar UDF
 
       // -----------------------------------------------------------------
       // Allocate a VEG that contains my left and right subtrees

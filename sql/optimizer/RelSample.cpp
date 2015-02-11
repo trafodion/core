@@ -616,9 +616,15 @@ void RelSample::transformNode(NormWA &normWARef,
     getGroupAttr()->getCharacteristicInputs())) 
   {
     // -----------------------------------------------------------------
-    // Transform my new child.
+    // Transform my new child and transform the balance expression
+    // once more
     // -----------------------------------------------------------------
     child(0)->transformNode(normWARef, child(0));
+    if (balanceExpr().transformNode(
+             normWARef,
+             child(0),
+             getGroupAttr()->getCharacteristicInputs()))
+      CMPASSERT(FALSE); // should not have subqueries again
   }
   
   if(requiredOrder().
