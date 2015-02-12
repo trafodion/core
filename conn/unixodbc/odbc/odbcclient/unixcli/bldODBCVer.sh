@@ -1,7 +1,7 @@
 #!/bin/bash
 # @@@ START COPYRIGHT @@@
 #
-# (C) Copyright 2013-2014 Hewlett-Packard Development Company, L.P.
+# (C) Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -21,17 +21,20 @@ DATE=`date +%y%m%d`
 BLDID=`../../../../../sqf/build-scripts/build.id`
 
 #create_version_file function to update version string
-# $1 should be filename
-# $2 should be library version
-# $3 should be timestamp
-# $4 product name (ie TRAFODBC or TRAFODBC_DRVR)
-
+# $1 should be lib name version or version_drvr
 create_version_file() {
-echo "// $3 Version File generated on $2, bldId $BLDID" > $1
-echo "extern char* versionString=\"$3 (Build Id [$BLDID])\";" >> $1
-echo "extern \"C\" void $3_Build_Id_"$BLDID" ()" >> $1
-echo "{ }" >> $1
+if [ "$1" == "version" ]; then
+	 filename="version.cpp"
+	 ptname="TRAFODBC"
+elif [ "$1" == "version_drvr" ]; then
+	 filename="version_drvr.cpp"
+	 ptname="TRAFODBC_DRVR"
+fi
+echo "//$ptname Version File generated on $DATE, bldId $BLDID" > $filename
+echo "extern char* versionString=\"$ptname (Build Id [$BLDID])\";" >> $filename
+echo "extern \"C\" void" $ptname"_Build_Id_"$BLDID" ()" >> $filename
+echo "{ }" >> $filename
 }
 
-create_version_file "trace/version.cpp" "$DATE" "TRAFODBC"
-create_version_file "trace/version_drvr.cpp" "$DATE" "TRAFODBC_DRVR"
+create_version_file "$1"
+
