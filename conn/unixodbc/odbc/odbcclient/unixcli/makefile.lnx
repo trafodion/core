@@ -1,8 +1,24 @@
+# @@@ START COPYRIGHT @@@
+#
+# (C) Copyright 2007-2015 Hewlett-Packard Development Company, L.P.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+# @@@ END COPYRIGHT @@@
+#
+# Makefile for linux ODBC driver
 # INCLUDES
 include $(MY_SQROOT)/macros.gmk #top level
-sinclude depend.mk
-
-ODBCVER := $(shell ./bldODBCVer.sh)
 
 VPATH = ./DrvrManager:./trace:./cli:./TCPIPV4:./Interface:./common:./platform:./security_dll/source
 
@@ -30,7 +46,7 @@ endif
 
 OBJ = .o
 LINK = $(CC)
-ODBC_SO_FILE = libtrafodbc
+ODBC_SO_FILE := libtrafodbc
 
 INCLUDE = -I./cli/ -I./Interface  -I../../dependencies/windows/ -I../../dependencies/security/include -I./sql/ -I../../../../../sql/cli -I../../../../../sql/common -I./inc -I../../Krypton/ -I./common/ -I./TCPIPV4/ -I./trace/ -I./platform -I./security_dll/common -I./security_dll/header -I $(MY_SQROOT)/export/include
 
@@ -39,49 +55,42 @@ DMOBJS = dmadmin.o dmcpool.o dmfunctions.o dminstall.o dmmapping.o drvrmanager.o
 TROBJS = gettrace.o init.o traceext.o 
 INTOBJS = odbcas_drvr.o odbcs_drvr.o transport.o
 CLIOBJS =  cconnect.o cdesc.o cdiag.o cenv.o chandle.o cstmt.o ctosqlconv.o diagfunctions.o drvrglobal.o drvrnet.o netcommon.o netconnect.o netstmt.o sqlconnect.o sqldesc.o sqlenv.o neofunc.o sqlhandle.o sqlstmt.o sqltocconv.o odbcmsg.o translte.o asyncIO.o charsetconv.o
-COMOBJS = transportbase.o TCPIPUnixDrvr.o marshaling.o marshalingdrvr_drvr.o swapdrvr_drvr.o windows.o compression.o swap.o nskieee.o ExpConvMxcs.o nix.o verslnxdrvr.o
+COMOBJS = transportbase.o TCPIPUnixDrvr.o marshaling.o marshalingdrvr_drvr.o swapdrvr_drvr.o windows.o compression.o swap.o nskieee.o ExpConvMxcs.o nix.o
 IP4OBJS = TCPIPV4.o Cipher.o Key.o MessageDigest.o secpwd.o Security.o securityException.o StaticLocking.o utils.o 
-EXPOBJS = sqlexportfunc_drvr.o version_drvr.o cdatasource_drvr.o 
+EXPOBJS = sqlexportfunc_drvr.o version_drvr.o cdatasource_drvr.o
+VERSOBJ=	verslnxdrvr.o 
 
-DRVROBJ = $(addprefix $(OBJDIR), $(TROBJS)) $(addprefix $(OBJDIR), $(INTOBJS)) $(addprefix $(OBJDIR), $(CLIOBJS)) $(addprefix $(OBJDIR), $(COMOBJS)) $(addprefix $(OBJDIR), $(IP4OBJS)) 
+DRVROBJ := $(addprefix $(OBJDIR), $(TROBJS)) $(addprefix $(OBJDIR), $(INTOBJS)) $(addprefix $(OBJDIR), $(CLIOBJS)) $(addprefix $(OBJDIR), $(COMOBJS)) $(addprefix $(OBJDIR), $(IP4OBJS)) $(addprefix $(OBJDIR), $(VERSOBJ))
 #$(addprefix $(OBJDIR), $(SECURITYOBJS))
 DRVRMGROBJ = $(addprefix $(OBJDIR), $(DMOBJS))
 DRVREXPOBJ = $(addprefix $(OBJDIR), $(EXPOBJS))
 
-linux64_debug: dmanager cli interface common ipv4 exp trace
-	$(LINK) -fPIC -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64.so -o $(ODBC_SO_FILE)_l64.so $(DRVROBJ) $(DRVRMGROBJ) $(INCLUDE) $(LIBS)
+.PHONY:	linux64_debug linux64_release
+linux64_release linux64_debug: $(ODBC_SO_FILE)_l64.so $(ODBC_SO_FILE)_drvr_l64.so
+
+version.cpp:
+	./bldODBCVer.sh version
+version_drvr.cpp:
+	./bldODBCVer.sh version_drvr
+
+$(ODBC_SO_FILE)_l64.so: $(DRVROBJ) $(DRVRMGROBJ) $(DRVREXPOBJ)
+	$(LINK) -fPIC -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64.so -o $(ODBC_SO_FILE)_l64.so $(DRVROBJ) $(DRVRMGROBJ) $(INCLUDE) $(LIBS) 
+	ln -s -f $(ODBC_SO_FILE)_l64.so $(ODBC_SO_FILE).so
+	cp -p $(ODBC_SO_FILE).so $(LIBEXPDIR)/.
+$(ODBC_SO_FILE)_drvr_l64.so: $(DRVROBJ) $(DRVREXPOBJ)
 	$(LINK) -fPIC -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64_drvr.so -o $(ODBC_SO_FILE)_l64_drvr.so $(DRVROBJ) $(DRVREXPOBJ) $(INCLUDE) $(LIBS)
 	ln -s -f $(ODBC_SO_FILE)_l64_drvr.so $(ODBC_SO_FILE)_drvr_l64.so
 	cp -p $(ODBC_SO_FILE)_drvr_l64.so $(LIBEXPDIR)/.
 
-linux64_release: dmanager cli interface common ipv4 exp trace
-	$(LINK) -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64.so -o $(ODBC_SO_FILE)_l64.so $(DRVROBJ) $(DRVRMGROBJ) $(INCLUDE) $(LIBS)
-	$(LINK) -m64 -shared -rdynamic -Wl,-soname,$(ODBC_SO_FILE)_l64_drvr.so -o $(ODBC_SO_FILE)_l64_drvr.so $(DRVROBJ) $(DRVREXPOBJ) $(INCLUDE) $(LIBS)
-	ln -s -f $(ODBC_SO_FILE)_l64_drvr.so $(ODBC_SO_FILE)_drvr_l64.so
-	cp -p $(ODBC_SO_FILE)_drvr_l64.so $(LIBEXPDIR)/.
-
-dmanager: $(DMOBJS)
-
-trace: $(TROBJS)
-
-cli: $(CLIOBJS) 
-
-interface: $(INTOBJS)
-
-common: $(COMOBJS)
-
-ipv4: $(IP4OBJS)
-
-exp: $(EXPOBJS)
-
+.PHONY: clean
 clean:
 	rm -rf obj
-	rm -rf libtrafodbc_*
-#	rm -rf trace/version*
-.cpp.o:
-	mkdir -p $(OBJDIR)
-	$(CC) $(CFLAGS) $(INCLUDE) $(SSLINC) $(PLATFORMINCLUDE) -c $< -o $(addprefix $(OBJDIR), $@)
+	rm -rf libtrafodbc*
+	rm -rf version*.cpp
 
-.c.o:
-	$(CC) $(CFLAGS) $(INCLUDE) $(SSLINC) -c $< -o $(addprefix $(OBJDIR), $@)
+include depend.mk
 
+$(OBJDIR):
+	mkdir -p $@
+$(OBJDIR)%.o: %.cpp | $(OBJDIR)
+	$(CC) $(CFLAGS) $(INCLUDE) $(SSLINC) $(PLATFORMINCLUDE) -c $< -o $@
