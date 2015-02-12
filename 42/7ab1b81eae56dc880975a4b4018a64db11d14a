@@ -1,0 +1,10 @@
+Code-Review+1: Steve Varnau <steve.varnau@hp.com>
+Verified+2: Trafodion Jenkins
+Code-Review+2: Hans Zeller <hans.zeller@hp.com>
+Code-Review+2: Dave Birdsall <dave.birdsall@hp.com>
+Workflow+1: Narendra Goyal <narendra.goyal@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 12 Feb 2015 18:56:38 +0000
+Reviewed-on: https://review.trafodion.org/1059
+Project: trafodion/core
+Branch: refs/heads/master
