@@ -2,7 +2,7 @@
 
 # @@@ START COPYRIGHT @@@
 #
-# (C) Copyright 2007-2014 Hewlett-Packard Development Company, L.P.
+# (C) Copyright 2007-2015 Hewlett-Packard Development Company, L.P.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 include macros.gmk
 
 # Make Targets
-.PHONY: all log4cpp dbsecurity foundation $(MPI_TARGET) ndcs ci jdbc_jar jdbc_type2_jar sqroot $(SEAMONSTER_TARGET) verhdr
+.PHONY: all log4cpp dbsecurity foundation $(MPI_TARGET) ndcs linux_odbc ci jdbc_jar jdbc_type2_jar sqroot $(SEAMONSTER_TARGET) verhdr
 .PHONY: package package-all pkg-product pkg-sql-regress
 
 ################
@@ -32,7 +32,7 @@ include macros.gmk
 # Server-side only
 
 # Default target (all components)
-all: $(MPI_TARGET) log4cpp dbsecurity foundation jdbc_jar $(SEAMONSTER_TARGET) ndcs ci jdbc_type2_jar
+all: $(MPI_TARGET) log4cpp dbsecurity foundation jdbc_jar $(SEAMONSTER_TARGET) ndcs linux_odbc ci jdbc_type2_jar
 
 package: pkg-product pkg-client
 
@@ -72,7 +72,9 @@ jdbc_jar: verhdr
 
 ndcs: jdbc_jar foundation
 	cd conn/odbc/src/odbc && $(MAKE) ndcs        2>&1 | sed -e "s/$$/	##(NDCS)/";exit $${PIPESTATUS[0]}
-	cd conn/odbc/src/odbc && $(MAKE) bldlnx_drvr 2>&1 | sed -e "s/$$/	##(NDCS)/";exit $${PIPESTATUS[0]}
+
+linux_odbc: verhdr
+	cd conn/unixodbc/odbc/odbcclient/unixcli && $(MAKE) 2>&1 | sed -e "s/$$/	##(ODBC)/";exit $${PIPESTATUS[0]}
 
 ci: trafci
 trafci: jdbc_jar
@@ -89,6 +91,7 @@ clean: sqroot
 	cd dbsecurity &&		$(MAKE) clean
 	cd sqf &&			$(MAKE) clean
 	cd conn/odbc/src/odbc &&	$(MAKE) clean
+	cd conn/unixodbc/odbc/odbcclient/unixcli &&	$(MAKE) clean
 	cd conn/trafci        &&	$(ANT) clean
 	cd conn/jdbc_type4    &&	$(ANT) clean
 	cd conn &&			$(MAKE) clean
@@ -100,6 +103,7 @@ cleanall: sqroot
 	cd dbsecurity &&		$(MAKE) cleanall
 	cd sqf &&			$(MAKE) cleanall
 	cd conn/odbc/src/odbc &&	$(MAKE) cleanall
+	cd conn/unixodbc/odbc/odbcclient/unixcli &&	$(MAKE) clean
 	cd conn/trafci        &&	$(ANT) clean
 	cd conn/jdbc_type4    &&	$(ANT) clean
 	cd conn &&			$(MAKE) clean
@@ -110,7 +114,7 @@ package-all: package pkg-sql-regress
 pkg-product: all
 	cd sqf && $(MAKE) package 2>&1 | sed -e "s/$$/	##(Package)/";exit $${PIPESTATUS[0]}
 
-pkg-client: ci ndcs
+pkg-client: ci ndcs linux_odbc
 	cd conn &&  make all 2>&1 | sed -e "s/$$/	##(Package clients)/" ; exit $${PIPESTATUS[0]}
 
 # Package SQL regression tests (all target produces some regress/tool files so do that first)
