@@ -36,6 +36,8 @@
 
 extern SRVR_GLOBAL_Def *srvrGlobal;
 
+extern void SyncPublicationThread();
+
 void CNSKListenerSrvr::closeTCPIPSession(int fnum)
 {
 	shutdown(fnum, SHUT_RDWR);
@@ -566,6 +568,10 @@ void CNSKListenerSrvr::terminateThreads(int status)
       int cc = XCANCEL(m_ReceiveFnum);
       tcpip_listener_thr.exit(NULL);
    }
+
+   // Calling sync of repository thread here instead of exitServerProcess() since
+   // this also takes care of the case when the process is stopped via a system message.
+   SyncPublicationThread();
 
 }
 
