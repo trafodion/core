@@ -2300,7 +2300,7 @@ CoprocessorService, Coprocessor {
     this.t_Region = (TransactionalRegion) tmp_env.getRegion();
     this.fs = this.m_Region.getFilesystem();
 
-    org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration(); 
+    org.apache.hadoop.conf.Configuration conf = tmp_env.getConfiguration(); 
     
     synchronized (stoppable) {
       try {
@@ -3029,23 +3029,28 @@ CoprocessorService, Coprocessor {
                                 byte[] qualifier, byte[] value, Delete delete)
     throws IOException {
 
-    if (LOG.isTraceEnabled()) LOG.trace("Enter TrxRegionEndpoint coprocessor: checkAndDelete, txid: "
-                + transactionId);
+    if (LOG.isTraceEnabled()) LOG.trace("Enter TrxRegionEndpoint coprocessor: checkAndDelete, txid: " + transactionId + ", on HRegion " + this);
+
     TrxTransactionState state = this.beginTransIfNotExist(transactionId);
     boolean result = false;
     byte[] rsValue = null;
+    byte[] startKey = this.regionInfo.getStartKey();
+    byte[] endKey = this.regionInfo.getEndKey();
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: checkAndDelete - txId " + transactionId + ", row " + Bytes.toStringBinary(row) + ", row in hex " + Hex.encodeHexString(row) + ", hostname " + lv_hostName + ", port " + lv_port + ", startKey " + Bytes.toStringBinary(this.regionInfo.getStartKey()) + ", endKey " + Bytes.toStringBinary(this.regionInfo.getEndKey()));
+    //if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: checkAndDelete - txId " + transactionId + ", row " + Bytes.toStringBinary(row) + ", row in hex " + Hex.encodeHexString(row) + ", hostname " + lv_hostName + ", port " + lv_port + ", startKey [" + Bytes.toStringBinary(startKey) + "], startKey in hex[" + Hex.encodeHexString(startKey) + "], endKey [" + Bytes.toStringBinary(endKey) + "], endKey in hex[" + Hex.encodeHexString(endKey) + "]");
 
     if(!this.m_Region.rowIsInRange(this.regionInfo, row)) {
+      LOG.error("Requested row out of range for " +
+       "checkAndDelete for txid " + transactionId + ", on HRegion " + 
+       this + ", startKey=[" + Bytes.toStringBinary(startKey) +
+       "], startKey in hex[" + Hex.encodeHexString(startKey) +
+       "], endKey [" + Bytes.toStringBinary(endKey) + 
+       "], endKey in hex[" + Hex.encodeHexString(endKey) + "]" + 
+       "], row=[" + Bytes.toStringBinary(row) + "]");
       throw new WrongRegionException("Requested row out of range for " +
-       "checkAndDelete for txid " + transactionId +
-       ", on HRegion " + this + ", startKey='" +
-       Bytes.toStringBinary(this.regionInfo.getStartKey()) + 
-       "', getEndKey()='" +
-       Bytes.toStringBinary(this.regionInfo.getEndKey()) + "', row='" +
-       Bytes.toStringBinary(row) + "'");
-    }
+       "checkAndDelete for txid " + transactionId + ", on HRegion " + 
+       this);
+    } 
 
     try {
 
@@ -3101,20 +3106,27 @@ CoprocessorService, Coprocessor {
                             byte[] qualifier, byte[] value, Put put)
     throws IOException {
 
+    if (LOG.isTraceEnabled()) LOG.trace("Enter TrxRegionEndpoint coprocessor: checkAndPut, txid: " + transactionId + ", on HRegion " + this);
+
     TrxTransactionState state = this.beginTransIfNotExist(transactionId);
     boolean result = false;
     byte[] rsValue = null;
+    byte[] startKey = this.regionInfo.getStartKey();
+    byte[] endKey = this.regionInfo.getEndKey();
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: checkAndPut - txId " + transactionId + ", row " + Bytes.toStringBinary(row) + ", row in hex " + Hex.encodeHexString(row) + ", hostname " + lv_hostName + ", port " + lv_port + ", startKey " + Bytes.toStringBinary(this.regionInfo.getStartKey()) + ", endKey " + Bytes.toStringBinary(this.regionInfo.getEndKey()));
+    //if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: checkAndPut - txId " + transactionId + ", row " + Bytes.toStringBinary(row) + ", row in hex " + Hex.encodeHexString(row) + ", hostname " + lv_hostName + ", port " + lv_port + ", startKey [" + Bytes.toStringBinary(startKey) + "], startKey in hex[" + Hex.encodeHexString(startKey) + "], endKey [" + Bytes.toStringBinary(endKey) + "], endKey in hex[" + Hex.encodeHexString(endKey) + "]");
 
     if(!this.m_Region.rowIsInRange(this.regionInfo, row)) {
+      LOG.error("Requested row out of range for " +
+       "checkAndPut for txid " + transactionId + ", on HRegion " + 
+       this + ", startKey=[" + Bytes.toStringBinary(startKey) +
+       "], startKey in hex[" + Hex.encodeHexString(startKey) +
+       "], endKey [" + Bytes.toStringBinary(endKey) + 
+       "], endKey in hex[" + Hex.encodeHexString(endKey) + "]" + 
+       "], row=[" + Bytes.toStringBinary(row) + "]");
       throw new WrongRegionException("Requested row out of range for " +
        "checkAndPut for txid " + transactionId + ", on HRegion " + 
-       this + ", startKey='" + 
-       Bytes.toStringBinary(this.regionInfo.getStartKey()) + 
-       "', getEndKey()='" +     
-       Bytes.toStringBinary(this.regionInfo.getEndKey()) + "', row='" +
-       Bytes.toStringBinary(row) + "'");
+       this);
     } 
 
     try {
