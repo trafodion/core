@@ -38,6 +38,7 @@ obey TEST020(test_10_030916_9668);
 obey TEST020(test_LP_1360493);
 log;
 obey TEST020(clean_up);
+wait ;
 exit;
 
 ?section clean_up
