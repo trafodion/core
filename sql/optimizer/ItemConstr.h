@@ -400,6 +400,7 @@ public:
        keyColumns_(aric.keyColumns_, h)
   {}
 
+  virtual ~AbstractRIConstraint();
   virtual Int32 getRefConstraints(BindWA *bindWA,
 				const ColSignature &updateCols,
 				RefConstraintList &resultList) = 0;
@@ -507,6 +508,7 @@ public:
          isPrimaryKey_(unic.isPrimaryKey_)
   {}
 
+  virtual ~UniqueConstraint();
   virtual void resetAfterStatement();
   virtual Int32 getRefConstraints(BindWA *bindWA,
 				const ColSignature &updateCols,
@@ -586,7 +588,7 @@ public:
          matchPartial_(refc.matchPartial_),
 	 isEnforced_(refc.isEnforced_)
   {}
-
+  virtual ~RefConstraint();
   virtual void resetAfterStatement() 
   {uniqueConstraintReferencedByMe_.resetAfterStatement();};
 

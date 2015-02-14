@@ -1109,6 +1109,7 @@ private:
   // Object containing info on all privileges the current user has for this table.
   PrivMgrUserPrivs* privInfo_;
 
+  NAColumnArray newColumns_;
 }; // class NATable
 
 #pragma warn(1506)  // warning elimination 
