@@ -286,6 +286,20 @@ package: pkglist-files pkglist-symlinks tmp/sqenv.sh
 	gzip -c $(PKG_TAR_UN) > $(PKG_TAR)
 	rm -f $(PKG_TAR_UN) pkglist-files pkglist-symlinks tmp/sqenv.sh
 
+rpmpackage: pkglist-dirs pkglist-files pkglist-symlinks tmp/sqenv.sh
+	chmod o-rwx $(PKG_BIN_DIRS)
+	chmod -R o-rwx $(PKG_BIN_OBJS)
+	rm -rf ./rpmroot
+	mkdir ./rpmroot
+	cd ./rpmroot; mkdir -p $$(< ../pkglist-dirs)
+	cd ./rpmroot; cat ../pkglist-files | while read f ; do \
+	  ln -L ../$$f ./$$f || exit 1; done
+	cd ./rpmroot; cat ../pkglist-symlinks | while read f ; do \
+	  cp -P ../$$f ./$$f || exit 1; done
+	cd ./rpmroot; ln ../tmp/sqenv.sh sqenv.sh
+	cd ./rpmroot; rm -rf $$(< ../build-scripts/package.exclude) $$(< ../build-scripts/package.exclude.$(SQ_MBTYPE))
+	rm -f pkglist-dirs pkglist-files pkglist-symlinks tmp/sqenv.sh
+
 tmp/sqenv.sh:
 	@if [ ! -d tmp ]; then mkdir tmp; fi
 	echo "export SQ_BUILD_TYPE=$(SQ_BUILD_TYPE)" > tmp/sqenv.sh
@@ -295,7 +309,10 @@ tmp/sqenv.sh:
 
 # regular directories and files, following symlinks, minus simple links
 pkglist-files: pkglist-symlinks
-	find -L $(PKG_BIN_OBJS) -type d -o -type f | grep -v -xf pkglist-symlinks > $@
+	find -L $(PKG_BIN_OBJS) -type f | grep -v -xf pkglist-symlinks > $@
+
+pkglist-dirs: pkglist-symlinks
+	find -L $(PKG_BIN_OBJS) -type d | grep -v -xf pkglist-symlinks > $@
 
 # simple symlinks that point to filename (does not start with . or /)
 pkglist-symlinks:

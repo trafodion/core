@@ -16,7 +16,7 @@ sql/nqst
 sql/scripts/*.log
 sql/scripts/ADPINFO.base*
 sql/scripts/archive_stdout
-sql/scripts/bats/*
+sql/scripts/bats
 sql/scripts/bdrstart
 sql/scripts/bdrstop
 sql/scripts/dbsize
