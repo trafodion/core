@@ -727,7 +727,8 @@ short StatsGlobals::removeQuery(pid_t pid, StmtStats *stmtStats,
      }
      else
      {
-       if (!stmtStats->isDeleteError()) 
+       if (((!stmtStats->aqrInProgress()) || calledFromRemoveProcess) &&
+           (!stmtStats->isDeleteError()) )
        {
          stmtStats->setDeleteError(TRUE);
          stmtStats->setCalledFromRemoveQuery(TRUE);
@@ -737,6 +738,7 @@ short StatsGlobals::removeQuery(pid_t pid, StmtStats *stmtStats,
            stmtStatsList_->remove(stmtStats->getQueryId(), stmtStats->getQueryIdLen(),
                       stmtStats);
          stmtStats->deleteMe();
+         memset (stmtStats, 0, sizeof(StmtStats));
          heap->deallocateMemory(stmtStats);
          retcode = 0;
        }
