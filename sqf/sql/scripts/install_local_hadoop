@@ -1369,7 +1369,7 @@ else
   </property>
   <property>
     <name>hbase.client.scanner.timeout.period</name>
-	<value>60000</value>
+	<value>7200000</value>
   </property>
   <property>
      <name>hbase.bulkload.staging.dir</name>
