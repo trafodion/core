@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Oliver Bucaojit <oliver.bucaojit@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Workflow+1: Sean Broeder <sean.broeder@hp.com>
+Code-Review+1: Prashanth Vasudev <vasudev.prashanth@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 24 Feb 2015 20:57:03 +0000
+Reviewed-on: https://review.trafodion.org/1171
+Project: trafodion/core
+Branch: refs/heads/master
