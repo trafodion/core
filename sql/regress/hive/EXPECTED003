@@ -239,6 +239,28 @@ P_PROMO_SK   P_PROMO_ID                 P_START_DATE_SK  P_END_DATE_SK  P_ITEM_S
              2880404
 
 --- 1 row(s) selected.
+>>prepare s1 from select [first 1] * from ins_store_sales;
+
+--- SQL command prepared.
+>>execute s1;
+
+SS_SOLD_DATE_SK  SS_SOLD_TIME_SK  SS_ITEM_SK   SS_CUSTOMER_SK  SS_CDEMO_SK  SS_HDEMO_SK  SS_ADDR_SK   SS_STORE_SK  SS_PROMO_SK  SS_TICKET_NUMBER  SS_QUANTITY  SS_WHOLESALE_COST  SS_LIST_PRICE    SS_SALES_PRICE   SS_EXT_DISCOUNT_AMT  SS_EXT_SALES_PRICE  SS_EXT_WHOLESALE_COST  SS_EXT_LIST_PRICE  SS_EXT_TAX       SS_COUPON_AMT    SS_NET_PAID      SS_NET_PAID_INC_TAX  SS_NET_PROFIT
+---------------  ---------------  -----------  --------------  -----------  -----------  -----------  -----------  -----------  ----------------  -----------  -----------------  ---------------  ---------------  -------------------  ------------------  ---------------------  -----------------  ---------------  ---------------  ---------------  -------------------  ---------------
+
+        2451813            65495         3617           67006       591617         3428        24839           10          161                 1           79     1.1041000E+001   1.8070999E+001   2.0799999E+000       9.9054000E+001      2.2102000E+002         9.0103900E+002     1.4780898E+003   6.0799999E+000   9.9054000E+001   1.2106600E+002       1.2707398E+002  -7.7907299E+002
+
+--- 1 row(s) selected.
+>>prepare s1 from values('lp 1425661 - Hang with hive scan and [FIRST N]');
+
+--- SQL command prepared.
+>>execute s1;
+
+(EXPR)                                        
+----------------------------------------------
+
+lp 1425661 - Hang with hive scan and [FIRST N]
+
+--- 1 row(s) selected.
 >>
 >>prepare s from insert into ins_customer_demographics select * from customer_demographics;
 
