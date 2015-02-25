@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1998-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1998-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -1142,6 +1142,23 @@ class ComTdbVirtTableSequenceInfo : public ComTdbVirtTableBase
   Int64                  seqUID;
   Int64                  nextValue;
   Int64                  redefTime;
+};
+
+class ComTdbVirtTableLibraryInfo : public ComTdbVirtTableBase
+{
+ public:
+  ComTdbVirtTableLibraryInfo()
+    : ComTdbVirtTableBase()
+    {
+      init();
+    }
+
+  virtual Int32 size() { return sizeof(ComTdbVirtTableLibraryInfo);}
+
+  const char *library_name;
+  Int64       library_UID;
+  Int32       library_version;
+  const char *library_filename;
 };
 
 #endif /* COMTDB_H */

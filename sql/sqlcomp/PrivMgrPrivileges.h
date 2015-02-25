@@ -24,7 +24,6 @@
 #include <string>
 #include <bitset>
 #include <vector>
-#include "PrivMgrMDDefs.h"
 #include "PrivMgrDefs.h"
 #include "PrivMgrMD.h"
 #include "PrivMgrMDTable.h"
@@ -139,6 +138,12 @@ public:
       ComObjectType objectType,
       std::vector<UIDAndPrivs> & UIDandPrivs);
        
+   PrivStatus givePrivForObjects(
+         const int32_t currentOwnerID,
+         const int32_t newOwnerID,
+         const std::string &newOwnerName,
+         const std::vector<int64_t> &objectUIDs);
+         
    PrivStatus grantObjectPriv(
       const ComObjectType objectType,
       const int32_t granteeID,
@@ -282,6 +287,12 @@ private:
     const bool withroles,
     std::vector<PrivMgrMDRow *> &rowList,
     std::vector <ComSecurityKey *>* secKeySet); 
+    
+  PrivStatus givePriv(
+     const int32_t currentOwnerID,
+     const int32_t newOwnerID,
+     const std::string &newOwnerName,
+     const int64_t objectUID);    
 
   void scanObjectBranch( 
     const PrivType pType, // in
