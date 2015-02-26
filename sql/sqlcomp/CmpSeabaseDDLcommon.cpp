@@ -931,9 +931,9 @@ short CmpSeabaseDDL::readAndInitDefaultsFromSeabaseDefaultsTable
   NAList<Text> col1ValueList;
   NAList<Text> col2ValueList;
   NAList<Text> listUnused;
-  Text col1TextStr(col1NameStr);
-  Text col2TextStr(col2NameStr);
-  Text colUnused;
+  NAString col1TextStr(col1NameStr);
+  NAString col2TextStr(col2NameStr);
+  NAString colUnused;
 
   ExpHbaseInterface * ehi = allocEHI(server, zkPort, FALSE);
   if (! ehi)
@@ -1030,9 +1030,9 @@ short CmpSeabaseDDL::validateVersions(NADefaults *defs,
   getColName(SEABASE_DEFAULT_COL_FAMILY, "2", col2NameStr);
   getColName(SEABASE_DEFAULT_COL_FAMILY, "3", col3NameStr);
 
-  Text col1TextStr(col1NameStr);
-  Text col2TextStr(col2NameStr);
-  Text col3TextStr(col3NameStr);
+  NAString col1TextStr(col1NameStr);
+  NAString col2TextStr(col2NameStr);
+  NAString col3TextStr(col3NameStr);
 
   NAString hbaseVersionsStr(getSystemCatalog());
   hbaseVersionsStr += ".";

@@ -252,22 +252,22 @@ public:
   
   HTC_RetCode init();
   
-  HTC_RetCode startScan(Int64 transID, const Text& startRowID, const Text& stopRowID, const TextVec& cols, Int64 timestamp, bool cacheBlocks, Lng32 numCacheRows,
+  HTC_RetCode startScan(Int64 transID, const Text& startRowID, const Text& stopRowID, const LIST(NAString) & cols, Int64 timestamp, bool cacheBlocks, Lng32 numCacheRows,
                         NABoolean preFetch,
-			const TextVec *inColNamesToFilter, 
-			const TextVec *inCompareOpList,
-			const TextVec *inColValuesToCompare,
+			const LIST(NAString) *inColNamesToFilter, 
+			const LIST(NAString) *inCompareOpList,
+			const LIST(NAString) *inColValuesToCompare,
 			Float32 samplePercent = -1.0f,
 			NABoolean useSnapshotScan = FALSE,
 			Lng32 snapTimeout = 0,
 			char * snapName = NULL,
 			char * tmpLoc = NULL,
 			Lng32 espNum = 0);
-  HTC_RetCode startGet(Int64 transID, const Text& rowID, const TextVec& cols, 
+  HTC_RetCode startGet(Int64 transID, const NAString& rowID, const LIST(NAString) & cols, 
 		Int64 timestamp);
-  HTC_RetCode startGets(Int64 transID, const TextVec& rowIDs, const TextVec& cols, 
+  HTC_RetCode startGets(Int64 transID, const LIST(NAString)& rowIDs, const LIST(NAString) & cols, 
 		Int64 timestamp);
-  HTC_RetCode deleteRow(Int64 transID, HbaseStr &rowID, const TextVec& columns, Int64 timestamp);
+  HTC_RetCode deleteRow(Int64 transID, HbaseStr &rowID, const LIST(NAString)& columns, Int64 timestamp);
   HTC_RetCode deleteRows(Int64 transID, short rowIDLen, HbaseStr &rowIDs, Int64 timestamp);
   HTC_RetCode checkAndDeleteRow(Int64 transID, HbaseStr &rowID, const Text &columnToCheck, const Text &colValToCheck, Int64 timestamp);
   HTC_RetCode insertRow(Int64 transID, HbaseStr &rowID, HbaseStr &row,
@@ -728,7 +728,7 @@ private:
 
 };
 
-jobjectArray convertToByteArrayObjectArray(const TextVec &vec);
+jobjectArray convertToByteArrayObjectArray(const LIST(NAString) &vec);
 jobjectArray convertToByteArrayObjectArray(const char **array,
                    int numElements, int elementLen);
 jobjectArray convertToStringObjectArray(const TextVec &vec);
