@@ -1,0 +1,12 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Anuradha <anuradha.hegde@hp.com>
+Code-Review+2: Joanie Cooper <joanie.cooper@hp.com>
+Workflow+1: Joanie Cooper <joanie.cooper@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+1: Tharak Capirala <capirala.tharaknath@hp.com>
+Code-Review+1: Selvaganesan Govindarajan <selva.ganesan@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 26 Feb 2015 03:37:49 +0000
+Reviewed-on: https://review.trafodion.org/1189
+Project: trafodion/core
+Branch: refs/heads/stable/1.0
