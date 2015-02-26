@@ -3699,7 +3699,7 @@ void CmpSeabaseDDL::alterSeabaseTableDropColumn(
   //  column.append(":");
   //  column.append(colName);
 
-  Text column(nacol->getHbaseColFam());
+  NAString column(nacol->getHbaseColFam());
   column.append(":");
   //  column.append(nacol->getHbaseColQual());
 

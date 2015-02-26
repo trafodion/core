@@ -1,7 +1,7 @@
 // **********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 2013-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 2013-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -143,11 +143,10 @@ ExWorkProcRetcode ExHbaseAccessDeleteTcb::work()
 
 	case PROCESS_DELETE:
 	  {
-	    TextVec columns;
+	    LIST(NAString) columns;
 	    if (currColName_)
 	      {
-		Text colName(currColName_);
-		columns.push_back(colName);
+		columns.insert(currColName_);
 	      }
 	    retcode = ehi_->deleteRow(table_,
 				      rowId_, 
@@ -363,11 +362,10 @@ ExWorkProcRetcode ExHbaseAccessDeleteSubsetTcb::work()
 
 	case DELETE_ROW:
 	  {
-	    TextVec columns;
+	    LIST(NAString) columns;
 	    if (colName_.val)
 	      {
-		Text colName(colName_.val);
-		columns.push_back(colName);
+		columns.insert(colName_.val);
 	      }
 
 	    retcode = ehi_->deleteRow(table_,
@@ -1709,7 +1707,7 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
 
 	case GET_NEXT_ROWID:
 	  {
-	    if (tcb_->currRowidIdx_ ==  tcb_->rowIds_.size())
+	    if (tcb_->currRowidIdx_ ==  tcb_->rowIds_.entries())
 	      {
 		step_ = GET_CLOSE;
 		break;
@@ -1975,11 +1973,8 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
 
 	case UPDATE_ROW:
 	  {
-            HbaseStr rowID;
-            rowID.val = (char *) tcb_->rowIds_[tcb_->currRowidIdx_].data();
-            rowID.len = tcb_->rowIds_[tcb_->currRowidIdx_].size();
             retcode =  tcb_->ehi_->insertRow(tcb_->table_,
-                                             rowID,
+                                             tcb_->rowIds_[tcb_->currRowidIdx_],
 	                                     tcb_->row_,
 					     (tcb_->hbaseAccessTdb().useHbaseXn() ? TRUE : FALSE),
 					     -1); //colTS_
@@ -2011,11 +2006,8 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
 		break;
 	      }
 
-            HbaseStr rowID;
-            rowID.val = (char *) tcb_->rowIds_[tcb_->currRowidIdx_].data();
-            rowID.len = tcb_->rowIds_[tcb_->currRowidIdx_].size();
 	    retcode =  tcb_->ehi_->checkAndUpdateRow(tcb_->table_,
-                                                     rowID,
+                                                     tcb_->rowIds_[tcb_->currRowidIdx_],
 						     tcb_->row_,
 						     columnToCheck,
 						     colValToCheck,
@@ -2074,8 +2066,8 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
             }
             else
             {
-               rowID.val = (char *)tcb_->rowIds_[tcb_->currRowidIdx_].data();
-               rowID.len = tcb_->rowIds_[tcb_->currRowidIdx_].size();
+               rowID.val = (char *)tcb_->rowIds_[tcb_->currRowidIdx_].val;
+               rowID.len = tcb_->rowIds_[tcb_->currRowidIdx_].len;
             }
 	    retcode =  tcb_->ehi_->checkAndInsertRow(tcb_->table_,
                                                      rowID,
@@ -2126,12 +2118,9 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
 
 	case DELETE_ROW:
 	  {
-	    TextVec columns;
-            HbaseStr rowID;
-            rowID.val = (char *) tcb_->rowIds_[tcb_->currRowidIdx_].data();
-            rowID.len = tcb_->rowIds_[tcb_->currRowidIdx_].size();
+	    LIST(NAString) columns;
             retcode =  tcb_->ehi_->deleteRow(tcb_->table_,
-                                             rowID,
+                                             tcb_->rowIds_[tcb_->currRowidIdx_],
 	                                     columns,
                                              tcb_->hbaseAccessTdb().useHbaseXn(),
  
@@ -2174,11 +2163,8 @@ ExWorkProcRetcode ExHbaseUMDtrafUniqueTaskTcb::work(short &rc)
 		break;
 	      }
 
-            HbaseStr rowID;
-            rowID.val = (char *)(tcb_->rowIds_[tcb_->currRowidIdx_].data());
-            rowID.len = tcb_->rowIds_[tcb_->currRowidIdx_].size();
 	    retcode =  tcb_->ehi_->checkAndDeleteRow(tcb_->table_,
-                                                     rowID,
+                                                     tcb_->rowIds_[tcb_->currRowidIdx_],
 						     columnToCheck, 
 						     colValToCheck,
                                                      tcb_->hbaseAccessTdb().useHbaseXn(),
@@ -2408,7 +2394,7 @@ ExWorkProcRetcode ExHbaseUMDnativeUniqueTaskTcb::work(short &rc)
 
 	case GET_NEXT_ROWID:
 	  {
-	    if (tcb_->currRowidIdx_ ==  tcb_->rowIds_.size())
+	    if (tcb_->currRowidIdx_ ==  tcb_->rowIds_.entries())
 	      {
 		step_ = GET_CLOSE;
 		break;
@@ -2418,18 +2404,18 @@ ExWorkProcRetcode ExHbaseUMDnativeUniqueTaskTcb::work(short &rc)
 	    // this row cannot be deleted.
 	    // But if there is a scan expr, then we need to also retrieve the columns used
 	    // in the pred. Add those.
-	    StrVec columns;
+	    LIST(NAString) columns;
 	    if (tcb_->hbaseAccessTdb().getAccessType() == ComTdbHbaseAccess::DELETE_)
 	      {
 		columns = tcb_->deletedColumns_;
 		if (tcb_->scanExpr())
 		  {
 		    // retrieve all columns if none is specified.
-		    if (tcb_->columns_.size() == 0)
+		    if (tcb_->columns_.entries() == 0)
 		      columns.clear();
 		    else
 		      // append retrieved columns to deleted columns.
-		      columns.insert(columns.end(), tcb_->columns_.begin(), tcb_->columns_.end());
+		      columns.insert(tcb_->columns_);
 		  }
 	      }
 
@@ -2570,11 +2556,8 @@ ExWorkProcRetcode ExHbaseUMDnativeUniqueTaskTcb::work(short &rc)
 
 	case DELETE_ROW:
 	  {
-            HbaseStr rowID;
-            rowID.val = (char *)(tcb_->rowIds_[tcb_->currRowidIdx_].data());
-            rowID.len = tcb_->rowIds_[tcb_->currRowidIdx_].size();
             retcode =  tcb_->ehi_->deleteRow(tcb_->table_,
-                                             rowID,
+                                             tcb_->rowIds_[tcb_->currRowidIdx_],
                                              tcb_->deletedColumns_,
                                              tcb_->hbaseAccessTdb().useHbaseXn(),
  
@@ -2604,11 +2587,8 @@ ExWorkProcRetcode ExHbaseUMDnativeUniqueTaskTcb::work(short &rc)
 	  {
 	    if (tcb_->numColsInDirectBuffer() > 0)
 	      {
-                HbaseStr rowID;
-                rowID.val = (char *)tcb_->rowIds_[tcb_->currRowidIdx_].data();
-                rowID.len = tcb_->rowIds_[tcb_->currRowidIdx_].size();
                 retcode =  tcb_->ehi_->insertRow(tcb_->table_,
-                                                 rowID,
+                                                 tcb_->rowIds_[tcb_->currRowidIdx_],
                                                  tcb_->row_,
 
                                                  tcb_->hbaseAccessTdb().useHbaseXn(),
@@ -2899,7 +2879,7 @@ ExWorkProcRetcode ExHbaseUMDtrafSubsetTaskTcb::work(short &rc)
 
 	case DELETE_ROW:
 	  {
-	    TextVec columns;
+	    LIST(NAString) columns;
             retcode = tcb_->ehi_->getRowID(rowID);
 	    if (tcb_->setupError(retcode, "ExpHbaseInterface::insertRow"))
 	    {
@@ -3102,18 +3082,18 @@ ExWorkProcRetcode ExHbaseUMDnativeSubsetTaskTcb::work(short &rc)
 	    // this row cannot be deleted.
 	    // But if there is a scan expr, then we need to also retrieve the columns used
 	    // in the pred. Add those.
-	    StrVec columns;
+	    LIST(NAString) columns;
 	    if (tcb_->hbaseAccessTdb().getAccessType() == ComTdbHbaseAccess::DELETE_)
 	      {
 		columns = tcb_->deletedColumns_;
 		if (tcb_->scanExpr())
 		  {
 		    // retrieve all columns if none is specified.
-		    if (tcb_->columns_.size() == 0)
+		    if (tcb_->columns_.entries() == 0)
 		      columns.clear();
 		    else
 		      // append retrieved columns to deleted columns.
-		      columns.insert(columns.end(), tcb_->columns_.begin(), tcb_->columns_.end());
+		      columns.insert(tcb_->columns_);
 		  }
 	      }
 
@@ -3809,10 +3789,7 @@ ExWorkProcRetcode ExHbaseAccessSQRowsetTcb::work()
 		break;
 	      }
 
-	    HbaseStr rowId;
-            rowId.val = (char *)rowIds_[0].data();
-            rowId.len = rowIds_[0].length();
-	    copyRowIDToDirectBuffer(rowId);
+	    copyRowIDToDirectBuffer(rowIds_[0]);
 
 	    if ((hbaseAccessTdb().getAccessType() == ComTdbHbaseAccess::DELETE_) ||
 		(hbaseAccessTdb().getAccessType() == ComTdbHbaseAccess::SELECT_))

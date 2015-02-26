@@ -31,6 +31,7 @@
 #include "Platform.h"
 #include "ExpHbaseInterface.h"
 #include "str.h"
+#include "NAStringDef.h"
 #include "ex_ex.h"
 
 extern Int64 getTransactionIDFromContext();
@@ -74,14 +75,14 @@ ExpHbaseInterface* ExpHbaseInterface::newInstance(CollHeap* heap,
                                           debugPort, debugTimeout); // This is the transactional interface
 }
 
-Lng32 ExpHbaseInterface_JNI::deleteColumns(
+Int32 ExpHbaseInterface_JNI::deleteColumns(
 	     HbaseStr &tblName,
-	     const Text& column)
+	     const NAString& column)
 {
- Lng32 retcode = 0;
+  Int32 retcode = 0;
 
-  std::vector<Text> columns;
-  columns.push_back(column);
+  LIST(NAString) columns;
+  columns.insert(column);
   htc_ = client_->getHTableClient((NAHeap *)heap_, tblName.val, useTRex_, hbs_);
   if (htc_ == NULL)
   {
@@ -181,7 +182,7 @@ Lng32 ExpHbaseInterface::checkAndDeleteRow(
       return HBASE_ROW_NOTFOUND_ERROR;
     }
 
-  TextVec columns;
+  LIST(NAString) columns;
   // row exists, delete it
   retcode = deleteRow(tblName,
 		      rowID,
@@ -196,12 +197,12 @@ Lng32 ExpHbaseInterface::checkAndDeleteRow(
 Lng32  ExpHbaseInterface::fetchAllRows(
 				       HbaseStr &tblName,
 				       Lng32 numInCols,
-				       Text &col1NameStr,
-				       Text &col2NameStr,
-				       Text &col3NameStr,
-				       NAList<Text> &col1ValueList, // output
-				       NAList<Text> &col2ValueList, // output
-				       NAList<Text> &col3ValueList) // output
+				       NAString &col1NameStr,
+				       NAString &col2NameStr,
+				       NAString &col3NameStr,
+				       LIST(NAString) &col1ValueList, // output
+				       LIST(NAString) &col2ValueList, // output
+				       LIST(NAString) &col3ValueList) // output
 {
   Lng32 retcode;
 
@@ -213,27 +214,27 @@ Lng32  ExpHbaseInterface::fetchAllRows(
   char *colName;
   short colNameLen;
   Int64 timestamp;
-  TextVec columns;
+  LIST(NAString) columns;
 
   switch (numInCols)
   {
      case 1:
-        columns.push_back(col1NameStr);
-        col1ValueList.resize(0);
+        columns.insert(col1NameStr);
+        col1ValueList.clear();
         break;
      case 2:
-        columns.push_back(col1NameStr);
-        columns.push_back(col2NameStr);
-        col1ValueList.resize(0);
-        col2ValueList.resize(0);
+        columns.insert(col1NameStr);
+        columns.insert(col2NameStr);
+        col1ValueList.clear();
+        col2ValueList.clear();
         break;
      case 3:
-        columns.push_back(col1NameStr);
-        columns.push_back(col2NameStr);
-        columns.push_back(col3NameStr);
-        col1ValueList.resize(0);
-        col2ValueList.resize(0);
-        col3ValueList.resize(0);
+        columns.insert(col1NameStr);
+        columns.insert(col2NameStr);
+        columns.insert(col3NameStr);
+        col1ValueList.clear();
+        col2ValueList.clear();
+        col3ValueList.clear();
         break;
   }
 
@@ -255,13 +256,13 @@ Lng32  ExpHbaseInterface::fetchAllRows(
            retcode = getColName(colNo, &colName, colNameLen, timestamp);
            if (retcode != HBASE_ACCESS_SUCCESS)
               break;
-           Text columnName((char *)colName, colNameLen);
+           NAString columnName((char *)colName, colNameLen);
            BYTE *colVal = NULL;
            colValLen = 0;
            retcode = getColVal((NAHeap *)heap_, colNo, &colVal, colValLen);
            if (retcode != HBASE_ACCESS_SUCCESS) 
               break; 
-           Text colValue((char *)colVal, colValLen);
+           NAString colValue((char *)colVal, colValLen);
            NADELETEBASIC(colVal, heap_);
 	   if (columnName == col1NameStr)
 	      col1ValueList.insert(colValue);
@@ -568,15 +569,15 @@ Lng32 ExpHbaseInterface_JNI::scanOpen(
 				      HbaseStr &tblName,
 				      const Text& startRow, 
 				      const Text& stopRow, 
-				      const std::vector<Text> & columns,
+				      const LIST(NAString) & columns,
 				      const int64_t timestamp,
 				      const NABoolean noXn,
 				      const NABoolean cacheBlocks,
 				      const Lng32 numCacheRows,
                                       const NABoolean preFetch,
-				      const TextVec *inColNamesToFilter, 
-				      const TextVec *inCompareOpList,
-				      const TextVec *inColValuesToCompare,
+				      const LIST(NAString) *inColNamesToFilter,
+				      const LIST(NAString) *inCompareOpList,
+				      const LIST(NAString) *inColValuesToCompare,
 				      Float32 samplePercent,
 				      NABoolean useSnapshotScan,
 				      Lng32 snapTimeout,
@@ -629,8 +630,8 @@ Lng32 ExpHbaseInterface_JNI::scanClose()
 //----------------------------------------------------------------------------
 Lng32 ExpHbaseInterface_JNI::getRowOpen(
 	HbaseStr &tblName,
-	const Text &row, 
-	const std::vector<Text> & columns,
+	const HbaseStr &row, 
+	const LIST(NAString) & columns,
 	const int64_t timestamp)
 {
   htc_ = client_->getHTableClient((NAHeap *)heap_, tblName.val, useTRex_, hbs_);
@@ -651,8 +652,8 @@ Lng32 ExpHbaseInterface_JNI::getRowOpen(
 //----------------------------------------------------------------------------
 Lng32 ExpHbaseInterface_JNI::getRowsOpen(
 	HbaseStr &tblName,
-	const std::vector<Text> & rows, 
-	const std::vector<Text> & columns,
+	const LIST(HbaseStr) & rows, 
+	const LIST(NAString) & columns,
 	const int64_t timestamp)
 {
   htc_ = client_->getHTableClient((NAHeap *)heap_, tblName.val, useTRex_, hbs_);
@@ -673,7 +674,7 @@ Lng32 ExpHbaseInterface_JNI::getRowsOpen(
 Lng32 ExpHbaseInterface_JNI::deleteRow(
 	  HbaseStr &tblName,
 	  HbaseStr& row, 
-	  const std::vector<Text> & columns,
+	  const LIST(NAString) & columns,
 	  NABoolean noXn,
 	  const int64_t timestamp)
 
@@ -1001,7 +1002,7 @@ Lng32 ExpHbaseInterface_JNI::rowExists(
 	     HbaseStr &row)
 {
   Lng32 rc = 0;
-  StrVec columns;
+  LIST(NAString) columns;
   
   HTableClient_JNI* htc = client_->getHTableClient((NAHeap *)heap_, tblName.val, useTRex_, hbs_);
   if (htc == NULL)
@@ -1011,7 +1012,7 @@ Lng32 ExpHbaseInterface_JNI::rowExists(
   }
   
   Int64 transID = getTransactionIDFromContext();
-  retCode_ = htc->startGet(transID, row.val, columns, -1); 
+  retCode_ = htc->startGet(transID, row, columns, -1); 
   if (retCode_ != HBC_OK)
     return -HBASE_OPEN_ERROR;
 
