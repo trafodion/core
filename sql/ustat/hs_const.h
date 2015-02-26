@@ -160,6 +160,7 @@ enum USTAT_ERROR_CODES {UERR_SYNTAX_ERROR                    = 15001,
                         UERR_NO_VIEWONLY                     = 9239,
                         UERR_NO_ONEVERYKEY                   = 9240,
                         UERR_NO_PRIVILEGE                    = 9241,
+                        UERR_CANT_CREATE_HIVE_STATS_SCHEMA   = 9242,
                         UERR_NO_ERROR                        = 9250,
                         UERR_LAST_ERROR                      = 9250
                        };

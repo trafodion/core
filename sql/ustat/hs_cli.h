@@ -71,6 +71,7 @@ Lng32 HSFuncExecQuery( const char *dml
                     , Int64 *srcTabRowCount = NULL
                     , const HSTableDef *tabDef = NULL
                     , NABoolean doRetry = FALSE
+                    , short errorToIgnore = 0
                     );
 
 Lng32 HSFuncExecDDL( const char *dml

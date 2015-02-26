@@ -127,6 +127,7 @@ Lng32 HSFuncExecQuery( const char *dml
                     , Int64 *srcTabRowCount
                     , const HSTableDef *tabDef
                     , NABoolean doRetry
+                    , short errorToIgnore
                     )
 {
   HSLogMan *LM = HSLogMan::Instance();
@@ -221,9 +222,12 @@ Lng32 HSFuncExecQuery( const char *dml
     // If retcode is > 0 or sqlcode is HS_WARNING, then set to 0 (no error/ignore).
     if (retcode >= 0) retcode = 0;
     // If sqlcode is HS_WARNING, then this means failures should be returned as
-    // warnings.  So, don't call HSHandleError, but rather return 0.
-    if (sqlcode == HS_WARNING && retcode < 0) retcode = 0;
-    else HSHandleError(retcode);
+    // warnings.  So, don't call HSHandleError, but rather return 0. Also return
+    // 0 if we get an expected and inconsequential error.
+    if ((sqlcode == HS_WARNING && retcode < 0) || retcode == errorToIgnore)
+      retcode = 0;
+    else
+      HSHandleError(retcode);
   }
   else // doRetry
   {
@@ -252,9 +256,10 @@ Lng32 HSFuncExecQuery( const char *dml
       // If retcode is > 0 or sqlcode is HS_WARNING,
       // then set to 0 (no error/ignore).
       if (retcode >= 0) retcode = 0;
-      // If sqlcode is HS_WARNING, then
-      // this means failures should be returned as warnings.
-      if (sqlcode == HS_WARNING && retcode < 0) retcode = 0;
+      // If sqlcode is HS_WARNING, then failures should be ignored. Also check
+      // for specific error code to be ignored.
+      if ((sqlcode == HS_WARNING && retcode < 0) || retcode == errorToIgnore)
+        retcode = 0;
 
       if (!retcode)
         break; // passed ExecDirect
