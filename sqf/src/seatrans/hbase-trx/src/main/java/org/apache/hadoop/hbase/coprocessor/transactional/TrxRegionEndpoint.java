@@ -62,6 +62,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.FileSystem;
@@ -84,6 +85,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.filter.FilterBase;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.KeyValueUtil;
@@ -106,6 +108,7 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HBaseInterfaceAudience;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HRegionInfo;
+import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.Tag;
 import org.apache.hadoop.hbase.client.Mutation;
@@ -181,6 +184,9 @@ import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProt
 import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest;
 import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse;
 import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TrxRegionService;
+import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest;
+import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse;
+import org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType.*;
 import org.apache.hadoop.hbase.zookeeper.ZooKeeperWatcher;
 import org.apache.hadoop.hbase.zookeeper.ZKUtil;
 import org.apache.zookeeper.KeeperException;
@@ -3990,6 +3996,81 @@ CoprocessorService, Coprocessor {
     if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitIfPossible -- ENTRY txId: " 
               + transactionId + " Commit Unsuccessful");
     return false;
+  }
+  
+  @Override
+  public void ddlRequest(RpcController controller,
+                         DDLRequestRequest request,
+                         RpcCallback<DDLRequestResponse> done) {
+
+    //DDLRequestResponse response = DDLRequestResponse.getDefaultInstance();
+
+    org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema tableSchema = request.getTableSchema();
+    org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType  ddlType = request.getDdlType();
+    long transactionId = request.getTransactionId();
+    HTableDescriptor htdesc = null;
+     
+    Throwable t = null;
+      
+
+    org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.Builder ddlRequestResponseBuilder = DDLRequestResponse.newBuilder();
+    
+    
+    try {
+          htdesc = HTableDescriptor.convert(tableSchema);
+        } catch (Throwable e) {
+            if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: DDLRequest - txId " + transactionId + ", Caught exception " + e.getMessage() + " " + stackTraceToString(e));
+            t = e;
+    }
+
+    if (ddlType == org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType.CREATE)
+    {
+      
+
+      try {
+            Configuration config = HBaseConfiguration.create();
+            HBaseAdmin admin = new HBaseAdmin(config);
+            admin.createTable(htdesc);
+            admin.close();
+                    
+           } catch (Throwable e) {
+             if (LOG.isInfoEnabled()) LOG.info("TrxRegionEndpoint coprocessor: DDLRequest - txId " + transactionId + ", Caught exception HAdmin Create call - "
+                          + e.getMessage() + " " + stackTraceToString(e));
+             t = e; 
+      }
+    }
+    else if (ddlType == org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType.DROP)
+    {
+      
+
+      try {
+            Configuration config = HBaseConfiguration.create();
+            HBaseAdmin admin = new HBaseAdmin(config);
+            admin.disableTable(htdesc.getTableName());
+            admin.deleteTable(htdesc.getTableName());  
+            admin.close();
+                    
+           } catch (Throwable e) {
+             if (LOG.isInfoEnabled()) LOG.info("TrxRegionEndpoint coprocessor: DDLRequest - txId " + transactionId + ", Caught exception HAdmin Delete call - "
+                          + e.getMessage() + " " + stackTraceToString(e));
+             t = e; 
+      }
+    }
+    
+
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: DDLRequest - txId " + transactionId + ", Operation Complete ");
+
+    ddlRequestResponseBuilder.setHasException(false);
+
+    if (t != null)
+    {
+      ddlRequestResponseBuilder.setHasException(true);
+      ddlRequestResponseBuilder.setException(t.toString());
+    }
+
+    DDLRequestResponse response = ddlRequestResponseBuilder.build();
+
+    done.run(response);
   }
   
   /**

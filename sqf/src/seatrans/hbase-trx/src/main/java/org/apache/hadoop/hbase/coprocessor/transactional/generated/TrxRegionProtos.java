@@ -8,6 +8,97 @@ public final class TrxRegionProtos {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
+  /**
+   * Protobuf enum {@code DDLType}
+   */
+  public enum DDLType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>CREATE = 0;</code>
+     */
+    CREATE(0, 0),
+    /**
+     * <code>DROP = 1;</code>
+     */
+    DROP(1, 1),
+    /**
+     * <code>TRUNCATE = 2;</code>
+     */
+    TRUNCATE(2, 2),
+    ;
+
+    /**
+     * <code>CREATE = 0;</code>
+     */
+    public static final int CREATE_VALUE = 0;
+    /**
+     * <code>DROP = 1;</code>
+     */
+    public static final int DROP_VALUE = 1;
+    /**
+     * <code>TRUNCATE = 2;</code>
+     */
+    public static final int TRUNCATE_VALUE = 2;
+
+
+    public final int getNumber() { return value; }
+
+    public static DDLType valueOf(int value) {
+      switch (value) {
+        case 0: return CREATE;
+        case 1: return DROP;
+        case 2: return TRUNCATE;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<DDLType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static com.google.protobuf.Internal.EnumLiteMap<DDLType>
+        internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<DDLType>() {
+            public DDLType findValueByNumber(int number) {
+              return DDLType.valueOf(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(index);
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.getDescriptor().getEnumTypes().get(0);
+    }
+
+    private static final DDLType[] VALUES = values();
+
+    public static DDLType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int index;
+    private final int value;
+
+    private DDLType(int index, int value) {
+      this.index = index;
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:DDLType)
+  }
+
   public interface AbortTransactionRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -23907,6 +23998,1268 @@ public final class TrxRegionProtos {
     // @@protoc_insertion_point(class_scope:TransactionalAggregateResponse)
   }
 
+  public interface DDLRequestRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required .TableSchema tableSchema = 1;
+    /**
+     * <code>required .TableSchema tableSchema = 1;</code>
+     */
+    boolean hasTableSchema();
+    /**
+     * <code>required .TableSchema tableSchema = 1;</code>
+     */
+    org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema getTableSchema();
+    /**
+     * <code>required .TableSchema tableSchema = 1;</code>
+     */
+    org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchemaOrBuilder getTableSchemaOrBuilder();
+
+    // required .DDLType ddlType = 2;
+    /**
+     * <code>required .DDLType ddlType = 2;</code>
+     */
+    boolean hasDdlType();
+    /**
+     * <code>required .DDLType ddlType = 2;</code>
+     */
+    org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType getDdlType();
+
+    // required int64 transactionId = 3;
+    /**
+     * <code>required int64 transactionId = 3;</code>
+     */
+    boolean hasTransactionId();
+    /**
+     * <code>required int64 transactionId = 3;</code>
+     */
+    long getTransactionId();
+  }
+  /**
+   * Protobuf type {@code DDLRequestRequest}
+   */
+  public static final class DDLRequestRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements DDLRequestRequestOrBuilder {
+    // Use DDLRequestRequest.newBuilder() to construct.
+    private DDLRequestRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private DDLRequestRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final DDLRequestRequest defaultInstance;
+    public static DDLRequestRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public DDLRequestRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private DDLRequestRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = tableSchema_.toBuilder();
+              }
+              tableSchema_ = input.readMessage(org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(tableSchema_);
+                tableSchema_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+            case 16: {
+              int rawValue = input.readEnum();
+              org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType value = org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(2, rawValue);
+              } else {
+                bitField0_ |= 0x00000002;
+                ddlType_ = value;
+              }
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              transactionId_ = input.readInt64();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest.class, org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<DDLRequestRequest> PARSER =
+        new com.google.protobuf.AbstractParser<DDLRequestRequest>() {
+      public DDLRequestRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new DDLRequestRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<DDLRequestRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required .TableSchema tableSchema = 1;
+    public static final int TABLESCHEMA_FIELD_NUMBER = 1;
+    private org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema tableSchema_;
+    /**
+     * <code>required .TableSchema tableSchema = 1;</code>
+     */
+    public boolean hasTableSchema() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required .TableSchema tableSchema = 1;</code>
+     */
+    public org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema getTableSchema() {
+      return tableSchema_;
+    }
+    /**
+     * <code>required .TableSchema tableSchema = 1;</code>
+     */
+    public org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchemaOrBuilder getTableSchemaOrBuilder() {
+      return tableSchema_;
+    }
+
+    // required .DDLType ddlType = 2;
+    public static final int DDLTYPE_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType ddlType_;
+    /**
+     * <code>required .DDLType ddlType = 2;</code>
+     */
+    public boolean hasDdlType() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required .DDLType ddlType = 2;</code>
+     */
+    public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType getDdlType() {
+      return ddlType_;
+    }
+
+    // required int64 transactionId = 3;
+    public static final int TRANSACTIONID_FIELD_NUMBER = 3;
+    private long transactionId_;
+    /**
+     * <code>required int64 transactionId = 3;</code>
+     */
+    public boolean hasTransactionId() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required int64 transactionId = 3;</code>
+     */
+    public long getTransactionId() {
+      return transactionId_;
+    }
+
+    private void initFields() {
+      tableSchema_ = org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.getDefaultInstance();
+      ddlType_ = org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType.CREATE;
+      transactionId_ = 0L;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasTableSchema()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasDdlType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasTransactionId()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!getTableSchema().isInitialized()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, tableSchema_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeEnum(2, ddlType_.getNumber());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt64(3, transactionId_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, tableSchema_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(2, ddlType_.getNumber());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, transactionId_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code DDLRequestRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest.class, org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getTableSchemaFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (tableSchemaBuilder_ == null) {
+          tableSchema_ = org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.getDefaultInstance();
+        } else {
+          tableSchemaBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        ddlType_ = org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType.CREATE;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        transactionId_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestRequest_descriptor;
+      }
+
+      public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest getDefaultInstanceForType() {
+        return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest build() {
+        org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest buildPartial() {
+        org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest result = new org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (tableSchemaBuilder_ == null) {
+          result.tableSchema_ = tableSchema_;
+        } else {
+          result.tableSchema_ = tableSchemaBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.ddlType_ = ddlType_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.transactionId_ = transactionId_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest) {
+          return mergeFrom((org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest other) {
+        if (other == org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest.getDefaultInstance()) return this;
+        if (other.hasTableSchema()) {
+          mergeTableSchema(other.getTableSchema());
+        }
+        if (other.hasDdlType()) {
+          setDdlType(other.getDdlType());
+        }
+        if (other.hasTransactionId()) {
+          setTransactionId(other.getTransactionId());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasTableSchema()) {
+          
+          return false;
+        }
+        if (!hasDdlType()) {
+          
+          return false;
+        }
+        if (!hasTransactionId()) {
+          
+          return false;
+        }
+        if (!getTableSchema().isInitialized()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required .TableSchema tableSchema = 1;
+      private org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema tableSchema_ = org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema, org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.Builder, org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchemaOrBuilder> tableSchemaBuilder_;
+      /**
+       * <code>required .TableSchema tableSchema = 1;</code>
+       */
+      public boolean hasTableSchema() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required .TableSchema tableSchema = 1;</code>
+       */
+      public org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema getTableSchema() {
+        if (tableSchemaBuilder_ == null) {
+          return tableSchema_;
+        } else {
+          return tableSchemaBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>required .TableSchema tableSchema = 1;</code>
+       */
+      public Builder setTableSchema(org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema value) {
+        if (tableSchemaBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          tableSchema_ = value;
+          onChanged();
+        } else {
+          tableSchemaBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>required .TableSchema tableSchema = 1;</code>
+       */
+      public Builder setTableSchema(
+          org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.Builder builderForValue) {
+        if (tableSchemaBuilder_ == null) {
+          tableSchema_ = builderForValue.build();
+          onChanged();
+        } else {
+          tableSchemaBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>required .TableSchema tableSchema = 1;</code>
+       */
+      public Builder mergeTableSchema(org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema value) {
+        if (tableSchemaBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              tableSchema_ != org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.getDefaultInstance()) {
+            tableSchema_ =
+              org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.newBuilder(tableSchema_).mergeFrom(value).buildPartial();
+          } else {
+            tableSchema_ = value;
+          }
+          onChanged();
+        } else {
+          tableSchemaBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>required .TableSchema tableSchema = 1;</code>
+       */
+      public Builder clearTableSchema() {
+        if (tableSchemaBuilder_ == null) {
+          tableSchema_ = org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.getDefaultInstance();
+          onChanged();
+        } else {
+          tableSchemaBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>required .TableSchema tableSchema = 1;</code>
+       */
+      public org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.Builder getTableSchemaBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getTableSchemaFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>required .TableSchema tableSchema = 1;</code>
+       */
+      public org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchemaOrBuilder getTableSchemaOrBuilder() {
+        if (tableSchemaBuilder_ != null) {
+          return tableSchemaBuilder_.getMessageOrBuilder();
+        } else {
+          return tableSchema_;
+        }
+      }
+      /**
+       * <code>required .TableSchema tableSchema = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema, org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.Builder, org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchemaOrBuilder> 
+          getTableSchemaFieldBuilder() {
+        if (tableSchemaBuilder_ == null) {
+          tableSchemaBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema, org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchema.Builder, org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.TableSchemaOrBuilder>(
+                  tableSchema_,
+                  getParentForChildren(),
+                  isClean());
+          tableSchema_ = null;
+        }
+        return tableSchemaBuilder_;
+      }
+
+      // required .DDLType ddlType = 2;
+      private org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType ddlType_ = org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType.CREATE;
+      /**
+       * <code>required .DDLType ddlType = 2;</code>
+       */
+      public boolean hasDdlType() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required .DDLType ddlType = 2;</code>
+       */
+      public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType getDdlType() {
+        return ddlType_;
+      }
+      /**
+       * <code>required .DDLType ddlType = 2;</code>
+       */
+      public Builder setDdlType(org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000002;
+        ddlType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required .DDLType ddlType = 2;</code>
+       */
+      public Builder clearDdlType() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        ddlType_ = org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLType.CREATE;
+        onChanged();
+        return this;
+      }
+
+      // required int64 transactionId = 3;
+      private long transactionId_ ;
+      /**
+       * <code>required int64 transactionId = 3;</code>
+       */
+      public boolean hasTransactionId() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required int64 transactionId = 3;</code>
+       */
+      public long getTransactionId() {
+        return transactionId_;
+      }
+      /**
+       * <code>required int64 transactionId = 3;</code>
+       */
+      public Builder setTransactionId(long value) {
+        bitField0_ |= 0x00000004;
+        transactionId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int64 transactionId = 3;</code>
+       */
+      public Builder clearTransactionId() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        transactionId_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:DDLRequestRequest)
+    }
+
+    static {
+      defaultInstance = new DDLRequestRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:DDLRequestRequest)
+  }
+
+  public interface DDLRequestResponseOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string exception = 1;
+    /**
+     * <code>optional string exception = 1;</code>
+     */
+    boolean hasException();
+    /**
+     * <code>optional string exception = 1;</code>
+     */
+    java.lang.String getException();
+    /**
+     * <code>optional string exception = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getExceptionBytes();
+
+    // optional bool hasException = 2;
+    /**
+     * <code>optional bool hasException = 2;</code>
+     */
+    boolean hasHasException();
+    /**
+     * <code>optional bool hasException = 2;</code>
+     */
+    boolean getHasException();
+  }
+  /**
+   * Protobuf type {@code DDLRequestResponse}
+   */
+  public static final class DDLRequestResponse extends
+      com.google.protobuf.GeneratedMessage
+      implements DDLRequestResponseOrBuilder {
+    // Use DDLRequestResponse.newBuilder() to construct.
+    private DDLRequestResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private DDLRequestResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final DDLRequestResponse defaultInstance;
+    public static DDLRequestResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public DDLRequestResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private DDLRequestResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              exception_ = input.readBytes();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              hasException_ = input.readBool();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.class, org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<DDLRequestResponse> PARSER =
+        new com.google.protobuf.AbstractParser<DDLRequestResponse>() {
+      public DDLRequestResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new DDLRequestResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<DDLRequestResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string exception = 1;
+    public static final int EXCEPTION_FIELD_NUMBER = 1;
+    private java.lang.Object exception_;
+    /**
+     * <code>optional string exception = 1;</code>
+     */
+    public boolean hasException() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string exception = 1;</code>
+     */
+    public java.lang.String getException() {
+      java.lang.Object ref = exception_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          exception_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string exception = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getExceptionBytes() {
+      java.lang.Object ref = exception_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        exception_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional bool hasException = 2;
+    public static final int HASEXCEPTION_FIELD_NUMBER = 2;
+    private boolean hasException_;
+    /**
+     * <code>optional bool hasException = 2;</code>
+     */
+    public boolean hasHasException() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional bool hasException = 2;</code>
+     */
+    public boolean getHasException() {
+      return hasException_;
+    }
+
+    private void initFields() {
+      exception_ = "";
+      hasException_ = false;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getExceptionBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBool(2, hasException_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getExceptionBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, hasException_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code DDLRequestResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.class, org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        exception_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        hasException_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.internal_static_DDLRequestResponse_descriptor;
+      }
+
+      public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse getDefaultInstanceForType() {
+        return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse build() {
+        org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse buildPartial() {
+        org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse result = new org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.exception_ = exception_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.hasException_ = hasException_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse) {
+          return mergeFrom((org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse other) {
+        if (other == org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.getDefaultInstance()) return this;
+        if (other.hasException()) {
+          bitField0_ |= 0x00000001;
+          exception_ = other.exception_;
+          onChanged();
+        }
+        if (other.hasHasException()) {
+          setHasException(other.getHasException());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string exception = 1;
+      private java.lang.Object exception_ = "";
+      /**
+       * <code>optional string exception = 1;</code>
+       */
+      public boolean hasException() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string exception = 1;</code>
+       */
+      public java.lang.String getException() {
+        java.lang.Object ref = exception_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          exception_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string exception = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getExceptionBytes() {
+        java.lang.Object ref = exception_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          exception_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string exception = 1;</code>
+       */
+      public Builder setException(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        exception_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string exception = 1;</code>
+       */
+      public Builder clearException() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        exception_ = getDefaultInstance().getException();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string exception = 1;</code>
+       */
+      public Builder setExceptionBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        exception_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional bool hasException = 2;
+      private boolean hasException_ ;
+      /**
+       * <code>optional bool hasException = 2;</code>
+       */
+      public boolean hasHasException() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bool hasException = 2;</code>
+       */
+      public boolean getHasException() {
+        return hasException_;
+      }
+      /**
+       * <code>optional bool hasException = 2;</code>
+       */
+      public Builder setHasException(boolean value) {
+        bitField0_ |= 0x00000002;
+        hasException_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool hasException = 2;</code>
+       */
+      public Builder clearHasException() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        hasException_ = false;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:DDLRequestResponse)
+    }
+
+    static {
+      defaultInstance = new DDLRequestResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:DDLRequestResponse)
+  }
+
   /**
    * Protobuf service {@code TrxRegionService}
    */
@@ -24099,6 +25452,14 @@ public final class TrxRegionProtos {
           org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse> done);
 
+      /**
+       * <code>rpc ddlRequest(.DDLRequestRequest) returns (.DDLRequestResponse);</code>
+       */
+      public abstract void ddlRequest(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse> done);
+
     }
 
     public static com.google.protobuf.Service newReflectiveService(
@@ -24288,6 +25649,14 @@ public final class TrxRegionProtos {
           impl.getMedian(controller, request, done);
         }
 
+        @java.lang.Override
+        public  void ddlRequest(
+            com.google.protobuf.RpcController controller,
+            org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest request,
+            com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse> done) {
+          impl.ddlRequest(controller, request, done);
+        }
+
       };
     }
 
@@ -24356,6 +25725,8 @@ public final class TrxRegionProtos {
               return impl.getStd(controller, (org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest)request);
             case 22:
               return impl.getMedian(controller, (org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest)request);
+            case 23:
+              return impl.ddlRequest(controller, (org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest)request);
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -24416,6 +25787,8 @@ public final class TrxRegionProtos {
               return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest.getDefaultInstance();
             case 22:
               return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest.getDefaultInstance();
+            case 23:
+              return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -24476,6 +25849,8 @@ public final class TrxRegionProtos {
               return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse.getDefaultInstance();
             case 22:
               return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse.getDefaultInstance();
+            case 23:
+              return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -24668,6 +26043,14 @@ public final class TrxRegionProtos {
         org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest request,
         com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse> done);
 
+    /**
+     * <code>rpc ddlRequest(.DDLRequestRequest) returns (.DDLRequestResponse);</code>
+     */
+    public abstract void ddlRequest(
+        com.google.protobuf.RpcController controller,
+        org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest request,
+        com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse> done);
+
     public static final
         com.google.protobuf.Descriptors.ServiceDescriptor
         getDescriptor() {
@@ -24805,6 +26188,11 @@ public final class TrxRegionProtos {
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse>specializeCallback(
               done));
           return;
+        case 23:
+          this.ddlRequest(controller, (org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest)request,
+            com.google.protobuf.RpcUtil.<org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse>specializeCallback(
+              done));
+          return;
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -24865,6 +26253,8 @@ public final class TrxRegionProtos {
           return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest.getDefaultInstance();
         case 22:
           return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest.getDefaultInstance();
+        case 23:
+          return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -24925,6 +26315,8 @@ public final class TrxRegionProtos {
           return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse.getDefaultInstance();
         case 22:
           return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse.getDefaultInstance();
+        case 23:
+          return org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -25290,6 +26682,21 @@ public final class TrxRegionProtos {
             org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse.class,
             org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse.getDefaultInstance()));
       }
+
+      public  void ddlRequest(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse> done) {
+        channel.callMethod(
+          getDescriptor().getMethods().get(23),
+          controller,
+          request,
+          org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.getDefaultInstance(),
+          com.google.protobuf.RpcUtil.generalizeCallback(
+            done,
+            org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.class,
+            org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.getDefaultInstance()));
+      }
     }
 
     public static BlockingInterface newBlockingStub(
@@ -25411,6 +26818,11 @@ public final class TrxRegionProtos {
       public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse getMedian(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateRequest request)
+          throws com.google.protobuf.ServiceException;
+
+      public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse ddlRequest(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest request)
           throws com.google.protobuf.ServiceException;
     }
 
@@ -25696,6 +27108,18 @@ public final class TrxRegionProtos {
           org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.TransactionalAggregateResponse.getDefaultInstance());
       }
 
+
+      public org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse ddlRequest(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestRequest request)
+          throws com.google.protobuf.ServiceException {
+        return (org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse) channel.callBlockingMethod(
+          getDescriptor().getMethods().get(23),
+          controller,
+          request,
+          org.apache.hadoop.hbase.coprocessor.transactional.generated.TrxRegionProtos.DDLRequestResponse.getDefaultInstance());
+      }
+
     }
 
     // @@protoc_insertion_point(class_scope:TrxRegionService)
@@ -25871,6 +27295,16 @@ public final class TrxRegionProtos {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_TransactionalAggregateResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_DDLRequestRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_DDLRequestRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_DDLRequestResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_DDLRequestResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -25962,50 +27396,56 @@ public final class TrxRegionProtos {
       "_name\030\003 \002(\t\022\023\n\004scan\030\004 \002(\0132\005.Scan\022\"\n\032inte",
       "rpreter_specific_bytes\030\005 \001(\014\"I\n\036Transact" +
       "ionalAggregateResponse\022\022\n\nfirst_part\030\003 \003" +
-      "(\014\022\023\n\013second_part\030\004 \001(\0142\315\014\n\020TrxRegionSer" +
-      "vice\022G\n\020abortTransaction\022\030.AbortTransact" +
-      "ionRequest\032\031.AbortTransactionResponse\022G\n" +
-      "\020beginTransaction\022\030.BeginTransactionRequ" +
-      "est\032\031.BeginTransactionResponse\022A\n\016checkA" +
-      "ndDelete\022\026.CheckAndDeleteRequest\032\027.Check" +
-      "AndDeleteResponse\0228\n\013checkAndPut\022\023.Check" +
-      "AndPutRequest\032\024.CheckAndPutResponse\022;\n\014c",
-      "loseScanner\022\024.CloseScannerRequest\032\025.Clos" +
-      "eScannerResponse\022)\n\006commit\022\016.CommitReque" +
-      "st\032\017.CommitResponse\022G\n\020commitIfPossible\022" +
-      "\030.CommitIfPossibleRequest\032\031.CommitIfPoss" +
-      "ibleResponse\022>\n\rcommitRequest\022\025.CommitRe" +
-      "questRequest\032\026.CommitRequestResponse\022C\n\006" +
-      "delete\022\033.DeleteTransactionalRequest\032\034.De" +
-      "leteTransactionalResponse\022[\n\016deleteMulti" +
-      "ple\022#.DeleteMultipleTransactionalRequest" +
-      "\032$.DeleteMultipleTransactionalResponse\022:",
-      "\n\003get\022\030.GetTransactionalRequest\032\031.GetTra" +
-      "nsactionalResponse\0228\n\013performScan\022\023.Perf" +
-      "ormScanRequest\032\024.PerformScanResponse\0228\n\013" +
-      "openScanner\022\023.OpenScannerRequest\032\024.OpenS" +
-      "cannerResponse\022:\n\003put\022\030.PutTransactional" +
-      "Request\032\031.PutTransactionalResponse\022R\n\013pu" +
-      "tMultiple\022 .PutMultipleTransactionalRequ" +
-      "est\032!.PutMultipleTransactionalResponse\022D" +
-      "\n\017recoveryRequest\022\027.RecoveryRequestReque" +
-      "st\032\030.RecoveryRequestResponse\022I\n\006GetMax\022\036",
-      ".TransactionalAggregateRequest\032\037.Transac" +
-      "tionalAggregateResponse\022I\n\006GetMin\022\036.Tran" +
-      "sactionalAggregateRequest\032\037.Transactiona" +
-      "lAggregateResponse\022I\n\006GetSum\022\036.Transacti" +
-      "onalAggregateRequest\032\037.TransactionalAggr" +
-      "egateResponse\022L\n\tGetRowNum\022\036.Transaction" +
-      "alAggregateRequest\032\037.TransactionalAggreg" +
-      "ateResponse\022I\n\006GetAvg\022\036.TransactionalAgg" +
-      "regateRequest\032\037.TransactionalAggregateRe" +
-      "sponse\022I\n\006GetStd\022\036.TransactionalAggregat",
-      "eRequest\032\037.TransactionalAggregateRespons" +
-      "e\022L\n\tGetMedian\022\036.TransactionalAggregateR" +
-      "equest\032\037.TransactionalAggregateResponseB" +
-      "S\n;org.apache.hadoop.hbase.coprocessor.t" +
-      "ransactional.generatedB\017TrxRegionProtosH" +
-      "\001\210\001\001"
+      "(\014\022\023\n\013second_part\030\004 \001(\014\"h\n\021DDLRequestReq" +
+      "uest\022!\n\013tableSchema\030\001 \002(\0132\014.TableSchema\022" +
+      "\031\n\007ddlType\030\002 \002(\0162\010.DDLType\022\025\n\rtransactio" +
+      "nId\030\003 \002(\003\"=\n\022DDLRequestResponse\022\021\n\texcep" +
+      "tion\030\001 \001(\t\022\024\n\014hasException\030\002 \001(\010*-\n\007DDLT" +
+      "ype\022\n\n\006CREATE\020\000\022\010\n\004DROP\020\001\022\014\n\010TRUNCATE\020\0022" +
+      "\204\r\n\020TrxRegionService\022G\n\020abortTransaction" +
+      "\022\030.AbortTransactionRequest\032\031.AbortTransa",
+      "ctionResponse\022G\n\020beginTransaction\022\030.Begi" +
+      "nTransactionRequest\032\031.BeginTransactionRe" +
+      "sponse\022A\n\016checkAndDelete\022\026.CheckAndDelet" +
+      "eRequest\032\027.CheckAndDeleteResponse\0228\n\013che" +
+      "ckAndPut\022\023.CheckAndPutRequest\032\024.CheckAnd" +
+      "PutResponse\022;\n\014closeScanner\022\024.CloseScann" +
+      "erRequest\032\025.CloseScannerResponse\022)\n\006comm" +
+      "it\022\016.CommitRequest\032\017.CommitResponse\022G\n\020c" +
+      "ommitIfPossible\022\030.CommitIfPossibleReques" +
+      "t\032\031.CommitIfPossibleResponse\022>\n\rcommitRe",
+      "quest\022\025.CommitRequestRequest\032\026.CommitReq" +
+      "uestResponse\022C\n\006delete\022\033.DeleteTransacti" +
+      "onalRequest\032\034.DeleteTransactionalRespons" +
+      "e\022[\n\016deleteMultiple\022#.DeleteMultipleTran" +
+      "sactionalRequest\032$.DeleteMultipleTransac" +
+      "tionalResponse\022:\n\003get\022\030.GetTransactional" +
+      "Request\032\031.GetTransactionalResponse\0228\n\013pe" +
+      "rformScan\022\023.PerformScanRequest\032\024.Perform" +
+      "ScanResponse\0228\n\013openScanner\022\023.OpenScanne" +
+      "rRequest\032\024.OpenScannerResponse\022:\n\003put\022\030.",
+      "PutTransactionalRequest\032\031.PutTransaction" +
+      "alResponse\022R\n\013putMultiple\022 .PutMultipleT" +
+      "ransactionalRequest\032!.PutMultipleTransac" +
+      "tionalResponse\022D\n\017recoveryRequest\022\027.Reco" +
+      "veryRequestRequest\032\030.RecoveryRequestResp" +
+      "onse\022I\n\006GetMax\022\036.TransactionalAggregateR" +
+      "equest\032\037.TransactionalAggregateResponse\022" +
+      "I\n\006GetMin\022\036.TransactionalAggregateReques" +
+      "t\032\037.TransactionalAggregateResponse\022I\n\006Ge" +
+      "tSum\022\036.TransactionalAggregateRequest\032\037.T",
+      "ransactionalAggregateResponse\022L\n\tGetRowN" +
+      "um\022\036.TransactionalAggregateRequest\032\037.Tra" +
+      "nsactionalAggregateResponse\022I\n\006GetAvg\022\036." +
+      "TransactionalAggregateRequest\032\037.Transact" +
+      "ionalAggregateResponse\022I\n\006GetStd\022\036.Trans" +
+      "actionalAggregateRequest\032\037.Transactional" +
+      "AggregateResponse\022L\n\tGetMedian\022\036.Transac" +
+      "tionalAggregateRequest\032\037.TransactionalAg" +
+      "gregateResponse\0225\n\nddlRequest\022\022.DDLReque" +
+      "stRequest\032\023.DDLRequestResponseBS\n;org.ap",
+      "ache.hadoop.hbase.coprocessor.transactio" +
+      "nal.generatedB\017TrxRegionProtosH\001\210\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -26216,6 +27656,18 @@ public final class TrxRegionProtos {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TransactionalAggregateResponse_descriptor,
               new java.lang.String[] { "FirstPart", "SecondPart", });
+          internal_static_DDLRequestRequest_descriptor =
+            getDescriptor().getMessageTypes().get(34);
+          internal_static_DDLRequestRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_DDLRequestRequest_descriptor,
+              new java.lang.String[] { "TableSchema", "DdlType", "TransactionId", });
+          internal_static_DDLRequestResponse_descriptor =
+            getDescriptor().getMessageTypes().get(35);
+          internal_static_DDLRequestResponse_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_DDLRequestResponse_descriptor,
+              new java.lang.String[] { "Exception", "HasException", });
           return null;
         }
       };

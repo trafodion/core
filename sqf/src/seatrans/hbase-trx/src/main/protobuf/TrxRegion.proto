@@ -253,6 +253,23 @@ message TransactionalAggregateResponse {
 
 }
 
+enum DDLType {
+    CREATE = 0;
+    DROP = 1;
+    TRUNCATE = 2;
+}
+
+message DDLRequestRequest{
+  required TableSchema tableSchema = 1;
+  required DDLType ddlType = 2;
+  required int64 transactionId = 3;
+}
+
+message DDLRequestResponse {
+  optional string exception = 1;
+  optional bool hasException = 2;
+}
+
 service TrxRegionService {
   rpc abortTransaction(AbortTransactionRequest)
     returns(AbortTransactionResponse);
@@ -300,5 +317,7 @@ service TrxRegionService {
     returns (TransactionalAggregateResponse);
   rpc GetMedian (TransactionalAggregateRequest) 
     returns (TransactionalAggregateResponse);
+  rpc ddlRequest (DDLRequestRequest) 
+    returns (DDLRequestResponse);
 }
 
