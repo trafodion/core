@@ -1,0 +1,11 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Cliff Gray <cliff.gray@hp.com>
+Workflow+1: Cliff Gray <cliff.gray@hp.com>
+Code-Review+2: Roberta Marton <roberta.marton@hp.com>
+Workflow+1: Roberta Marton <roberta.marton@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 03 Mar 2015 08:17:45 +0000
+Reviewed-on: https://review.trafodion.org/1200
+Project: trafodion/core
+Branch: refs/heads/master
