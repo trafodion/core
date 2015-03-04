@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1996-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1996-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@
 #include "OptimizerSimulator.h"
 
 #include "hs_log.h"
+#include "PCodeExprCache.h"
 
 extern THREAD_P CmpMemoryMonitor *cmpMemMonitor;
 
@@ -395,6 +396,24 @@ void ControlDB::setControlDefault(ControlQueryDefault *def)
   case METADATA_CACHE_SIZE:
     metadata_cache_size = getDefaultAsLong(METADATA_CACHE_SIZE)*1024*1024;
     ActiveSchemaDB()->getNATableDB()->resizeCache(metadata_cache_size);
+    break;
+  case PCODE_EXPR_CACHE_SIZE:
+    {
+      //
+      // Increase OR decrease the size of the PCode Expression Cache
+      // for the current Context.
+      //
+      Int32 newsiz  = getDefaultAsLong( PCODE_EXPR_CACHE_SIZE );
+      Int32 currSiz = CURROPTPCODECACHE->getMaxSize() ;
+
+      // Note: If new size is negative or the same size, just leave cache alone
+      if ( ( newsiz >= 0 ) && ( newsiz != currSiz ) )
+      {
+         CURROPTPCODECACHE->resizeCache( newsiz );
+         if ( newsiz < currSiz )
+            CURROPTPCODECACHE->clearStats(); // Do this after resizeCache(...)
+      }
+    }
     break;
   case QUERY_CACHE:
     {
