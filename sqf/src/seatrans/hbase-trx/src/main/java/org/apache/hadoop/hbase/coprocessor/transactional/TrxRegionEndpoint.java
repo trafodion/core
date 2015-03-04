@@ -295,9 +295,10 @@ CoprocessorService, Coprocessor {
   int lv_port;
   private static String zNodePath = "/hbase/Trafodion/recovery/";
 
-  private static final int DEFAULT_LEASE_TIME = 7200 * 1000;
+  private static final int MINIMUM_LEASE_TIME = 7200 * 1000;
   private static final int LEASE_CHECK_FREQUENCY = 1000;
   private static final String SLEEP_CONF = "hbase.transaction.clean.sleep";
+  private static final String LEASE_CONF = "hbase.transaction.lease.timeout";
   private static final int DEFAULT_SLEEP = 60 * 1000;
   protected static int transactionLeaseTimeout = 0;
   private static int scannerLeaseTimeoutPeriod = 0;
@@ -431,7 +432,7 @@ CoprocessorService, Coprocessor {
       try {
         beginTransaction(transactionId);
       } catch (Throwable e) {
-         if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: beginTransaction - txId " + transactionId + ", Caught exception after internal beginTransaction call "
+         if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: beginTransaction - txId " + transactionId + ", Caught exception after internal beginTransaction call - "
                            + e.getMessage() + " " + stackTraceToString(e));
          t = e;
       }        
@@ -488,7 +489,7 @@ CoprocessorService, Coprocessor {
       try {
         commit(transactionId, request.getIgnoreUnknownTransactionException());
       } catch (Throwable e) {
-        if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commit - txId " + transactionId + ", Caught exception after internal commit call "
+        if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commit - txId " + transactionId + ", Caught exception after internal commit call - "
                      + e.getMessage() + " " + stackTraceToString(e));
         t = e;
       }
@@ -545,7 +546,7 @@ CoprocessorService, Coprocessor {
          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitIfPossible - txId "  + transactionId + ", regionName, " + regionInfo.getRegionNameAsString() + "calling internal commitIfPossible");
          reply = commitIfPossible(transactionId);
        } catch (Throwable e) {
-          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitIfPossible - txId " + transactionId + ", Caught exception after internal commitIfPossible call "
+          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitIfPossible - txId " + transactionId + ", Caught exception after internal commitIfPossible call - "
                    + e.getMessage() + " " + stackTraceToString(e));
           t = e;
        }
@@ -608,7 +609,7 @@ CoprocessorService, Coprocessor {
         if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitRequest - txId " + transactionId + ", Caught UnknownTransactionException after internal commitRequest call - " + u.toString());
         ute = u;
       } catch (IOException e) {
-        if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitRequest - txId " + transactionId + ", Caught IOException after internal commitRequest call " + e.toString());
+        if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitRequest - txId " + transactionId + ", Caught IOException after internal commitRequest call - " + e.toString());
         ioe = e;
       }
     }
@@ -711,7 +712,7 @@ CoprocessorService, Coprocessor {
                request.getValue().toByteArray(),
                delete);
            } catch (Throwable e) {
-             if (LOG.isInfoEnabled()) LOG.info("TrxRegionEndpoint coprocessor: checkAndDelete - txId " + transactionId + ", Caught exception after internal checkAndDelete call " + e.getMessage() + " " + stackTraceToString(e));
+             if (LOG.isInfoEnabled()) LOG.info("TrxRegionEndpoint coprocessor: checkAndDelete - txId " + transactionId + ", Caught exception after internal checkAndDelete call - " + e.getMessage() + " " + stackTraceToString(e));
              t = e;
            }
          }
@@ -999,7 +1000,7 @@ CoprocessorService, Coprocessor {
              try {
                delete(transactionId, delete);
              } catch (Throwable e) {
-               if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:deleteMultiple - txId " + transactionId + ", Caught exception after internal delete"
+               if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:deleteMultiple - txId " + transactionId + ", Caught exception after internal delete - "
                          + e.getMessage() + " " + stackTraceToString(e));
              t = e;
              }
@@ -1075,7 +1076,7 @@ CoprocessorService, Coprocessor {
     try {
       delete(transactionId, delete);
     } catch (Throwable e) {
-      if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:delete - txId " + transactionId + ", Caught exception after internal delete"
+      if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:delete - txId " + transactionId + ", Caught exception after internal delete - "
              + e.getMessage() + " " + stackTraceToString(e));
       t = e;
     }
@@ -1600,7 +1601,7 @@ CoprocessorService, Coprocessor {
         try {   
           put(transactionId, put);
         } catch (Throwable e) {
-          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:put - txId " + transactionId + ", Caught exception after internal put"
+          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:put - txId " + transactionId + ", Caught exception after internal put - "
                          + e.getMessage() + " " + stackTraceToString(e));
           t = e;
         }
@@ -1687,7 +1688,7 @@ CoprocessorService, Coprocessor {
              try {
                put(transactionId, put);
              } catch (Throwable e) {
-               if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:putMultiple - txId " + transactionId + ", Caught exception after internal put"
+               if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:putMultiple - txId " + transactionId + ", Caught exception after internal put - "
                             + e.getMessage() + " " + stackTraceToString(e));
                t = e;
              }
@@ -2301,23 +2302,24 @@ CoprocessorService, Coprocessor {
     this.t_Region = (TransactionalRegion) tmp_env.getRegion();
     this.fs = this.m_Region.getFilesystem();
 
-    org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration(); 
+    org.apache.hadoop.conf.Configuration conf = tmp_env.getConfiguration(); 
     
     synchronized (stoppable) {
       try {
-        this.transactionLeaseTimeout = HBaseConfiguration.getInt(conf,
-          HConstants.HBASE_CLIENT_SCANNER_TIMEOUT_PERIOD,
-          HConstants.HBASE_REGIONSERVER_LEASE_PERIOD_KEY,
-          DEFAULT_LEASE_TIME);
+        this.transactionLeaseTimeout = conf.getInt(LEASE_CONF, MINIMUM_LEASE_TIME);
+        if (this.transactionLeaseTimeout < MINIMUM_LEASE_TIME) {
+          if (LOG.isWarnEnabled()) LOG.warn("Transaction lease time: " + this.transactionLeaseTimeout + ", was less than the minimum lease time.  Now setting the timeout to the minimum default value: " + MINIMUM_LEASE_TIME);
+          this.transactionLeaseTimeout = MINIMUM_LEASE_TIME;
+        }
 
         this.scannerLeaseTimeoutPeriod = HBaseConfiguration.getInt(conf,
           HConstants.HBASE_CLIENT_SCANNER_TIMEOUT_PERIOD,
           HConstants.HBASE_REGIONSERVER_LEASE_PERIOD_KEY,
           HConstants.DEFAULT_HBASE_CLIENT_SCANNER_TIMEOUT_PERIOD);
 
-        scannerThreadWakeFrequency = conf.getInt(HConstants.THREAD_WAKE_FREQUENCY, 10 * 1000);
+        this.scannerThreadWakeFrequency = conf.getInt(HConstants.THREAD_WAKE_FREQUENCY, 10 * 1000);
 
-         this.cleanTimer = conf.getInt(SLEEP_CONF, DEFAULT_SLEEP);
+        this.cleanTimer = conf.getInt(SLEEP_CONF, DEFAULT_SLEEP);
 
 	if (this.transactionLeases == null)  
 	    this.transactionLeases = new Leases(LEASE_CHECK_FREQUENCY);
@@ -2325,7 +2327,14 @@ CoprocessorService, Coprocessor {
 	//if (this.scannerLeases == null)  
 	 //   this.scannerLeases = new Leases(scannerThreadWakeFrequency);
 
-        if (LOG.isTraceEnabled()) LOG.trace("Transaction lease time: " + transactionLeaseTimeout + " Scanner lease time: " + scannerThreadWakeFrequency);
+        if (LOG.isTraceEnabled()) LOG.trace("Transaction lease time: " 
+            + this.transactionLeaseTimeout  
+            + " Scanner lease time: " 
+            + this.scannerThreadWakeFrequency 
+            + ", Scanner lease timeout period: " 
+            + this.scannerLeaseTimeoutPeriod 
+            + ", Clean timer: " 
+            + this.cleanTimer);
 
         this.cleanOldTransactionsThread = new CleanOldTransactionsChore(this, cleanTimer, stoppable);
 
@@ -2546,12 +2555,13 @@ CoprocessorService, Coprocessor {
       if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: retireTransaction clearTransactionsToCheck for: " + key);
     }
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: retireTransaction calling remove entry for: " + key + " , from transactionById map ");
-      transactionsById.remove(key);
-
     synchronized (cleanScannersForTransactions) {
       cleanScannersForTransactions.add(transId);
+      if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: retireTransaction clearScannersForTransactions for: " + transId);
     }
+
+    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: retireTransaction calling remove entry for: " + key + " , from transactionById map ");
+      transactionsById.remove(key);
 
     if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor:retireTransaction " + key + ", looking for retire transaction id " + transId + ", transactionsById " + transactionsById.size() + ", commitedTransactionsBySequenceNumber " + commitedTransactionsBySequenceNumber.size() + ", commitPendingTransactions " + commitPendingTransactions.size());
 
@@ -3041,24 +3051,27 @@ CoprocessorService, Coprocessor {
     throws IOException {
 
     if (LOG.isTraceEnabled()) LOG.trace("Enter TrxRegionEndpoint coprocessor: checkAndDelete, txid: "
-                + transactionId);
+                + transactionId + ", on HRegion" + this);
+
     TrxTransactionState state = this.beginTransIfNotExist(transactionId);
     boolean result = false;
     byte[] rsValue = null;
+    byte[] startKey = null;
+    byte[] endKey = null;
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: checkAndDelete - txId " + transactionId + ", row " + Bytes.toStringBinary(row) + ", row in hex " + Hex.encodeHexString(row) + ", hostname " + lv_hostName + ", port " + lv_port + ", startKey " + Bytes.toStringBinary(this.regionInfo.getStartKey()) + ", endKey " + Bytes.toStringBinary(this.regionInfo.getEndKey()));
+    if (!this.m_Region.rowIsInRange(this.regionInfo, row)) {
+      startKey = this.regionInfo.getStartKey();	
+      endKey = this.regionInfo.getEndKey();	
+      LOG.error("Requested row out of range for " +
+       "checkAndDelete for txid " + transactionId + ", on HRegion " +
+       this + ", startKey=[" + Bytes.toStringBinary(startKey) +
+       "], startKey in hex[" + Hex.encodeHexString(startKey) +
+       "], endKey [" + Bytes.toStringBinary(endKey) +
+       "], endKey in hex[" + Hex.encodeHexString(endKey) + "]" +
+       "], row=[" + Bytes.toStringBinary(row) + "]");
+     }
 
-    if(!this.m_Region.rowIsInRange(this.regionInfo, row)) {
-      throw new WrongRegionException("Requested row out of range for " +
-       "checkAndDelete for txid " + transactionId +
-       ", on HRegion " + this + ", startKey='" +
-       Bytes.toStringBinary(this.regionInfo.getStartKey()) + 
-       "', getEndKey()='" +
-       Bytes.toStringBinary(this.regionInfo.getEndKey()) + "', row='" +
-       Bytes.toStringBinary(row) + "'");
-    }
-
-    try {
+     try {
 
       Get get = new Get(row);
       get.addColumn(family, qualifier);
@@ -3115,18 +3128,20 @@ CoprocessorService, Coprocessor {
     TrxTransactionState state = this.beginTransIfNotExist(transactionId);
     boolean result = false;
     byte[] rsValue = null;
+    byte[] startKey = null;
+    byte[] endKey = null;
 
-    if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: checkAndPut - txId " + transactionId + ", row " + Bytes.toStringBinary(row) + ", row in hex " + Hex.encodeHexString(row) + ", hostname " + lv_hostName + ", port " + lv_port + ", startKey " + Bytes.toStringBinary(this.regionInfo.getStartKey()) + ", endKey " + Bytes.toStringBinary(this.regionInfo.getEndKey()));
-
-    if(!this.m_Region.rowIsInRange(this.regionInfo, row)) {
-      throw new WrongRegionException("Requested row out of range for " +
-       "checkAndPut for txid " + transactionId + ", on HRegion " + 
-       this + ", startKey='" + 
-       Bytes.toStringBinary(this.regionInfo.getStartKey()) + 
-       "', getEndKey()='" +     
-       Bytes.toStringBinary(this.regionInfo.getEndKey()) + "', row='" +
-       Bytes.toStringBinary(row) + "'");
-    } 
+    if (!this.m_Region.rowIsInRange(this.regionInfo, row)) {
+      startKey = this.regionInfo.getStartKey();	
+      endKey = this.regionInfo.getEndKey();	
+      LOG.error("Requested row out of range for " +
+       "checkAndPut for txid " + transactionId + ", on HRegion " +
+       this + ", startKey=[" + Bytes.toStringBinary(startKey) +
+       "], startKey in hex[" + Hex.encodeHexString(startKey) +
+       "], endKey [" + Bytes.toStringBinary(endKey) +
+       "], endKey in hex[" + Hex.encodeHexString(endKey) + "]" +
+       "], row=[" + Bytes.toStringBinary(row) + "]");
+     }
 
     try {
       Get get = new Get(row);
@@ -3489,9 +3504,26 @@ CoprocessorService, Coprocessor {
               + transactionId + " transactionsById size: "
               + transactionsById.size());
 
+    Iterator<Long> transIter = null;
+    Long scannerTxId = 0L;
+
     String key = getTransactionalUniqueId(transactionId);
     synchronized (transactionsById) {
       TrxTransactionState state = transactionsById.get(key);
+        synchronized (cleanScannersForTransactions) {
+          long listSize = cleanScannersForTransactions.size();
+          if (listSize > 0) {
+            for (transIter = cleanScannersForTransactions.iterator(); transIter.hasNext();) {
+              scannerTxId = transIter.next();
+              if (scannerTxId == transactionId) {
+                if (LOG.isWarnEnabled()) LOG.warn("Enter TrxRegionEndpoint coprocessor: beginTransIfNotExist, txid: "
+                    + transactionId + ", is in the list of transactions that have already retired");
+                throw new IOException("Transaction id " + transactionId + " is in the list of transactions that have already been retired");
+              }
+            } 
+          } 
+        } 
+      
       if (state == null) {
         if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: Begin transaction in beginTransIfNotExist beginning the transaction internally as state was null");
         this.beginTransaction(transactionId);
@@ -3978,7 +4010,7 @@ CoprocessorService, Coprocessor {
          if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitIfPossible -- ENTRY txId: " + transactionId + " COMMIT_OK");
          return true;
        } catch (Throwable e) {
-         if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitIfPossible - txId " + transactionId + ", Caught exception after internal commit call "
+         if (LOG.isTraceEnabled()) LOG.trace("TrxRegionEndpoint coprocessor: commitIfPossible - txId " + transactionId + ", Caught exception after internal commit call -  "
                     + e.getMessage() + " " + stackTraceToString(e));
         throw new IOException(e.toString());
        }
