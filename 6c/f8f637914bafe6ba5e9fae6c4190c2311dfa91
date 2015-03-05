@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Anuradha <anuradha.hegde@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Workflow+1: Tharak Capirala <capirala.tharaknath@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 05 Mar 2015 02:51:04 +0000
+Reviewed-on: https://review.trafodion.org/1208
+Project: trafodion/core
+Branch: refs/heads/master
