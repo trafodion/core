@@ -31,7 +31,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
@@ -375,15 +374,6 @@ public class SequenceFileWriter {
       throws MasterNotRunningException, ZooKeeperConnectionException, ServiceException, IOException
   {
     logger.debug("SequenceFileWriter.init(" + zkServers + ", " + zkPort + ") called.");
-    if (conf != null)
-      return true;
-    
-    conf = HBaseConfiguration.create();
-    if (zkServers.length() > 0)
-      conf.set("hbase.zookeeper.quorum", zkServers);
-    if (zkPort.length() > 0)
-      conf.set("hbase.zookeeper.property.clientPort", zkPort);
-    HBaseAdmin.checkHBaseAvailable(conf);
     return true;
   }
   
