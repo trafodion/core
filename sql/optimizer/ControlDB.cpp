@@ -352,6 +352,18 @@ void ControlDB::setControlDefault(ControlQueryDefault *def)
      // NaTables are cached.
      ActiveSchemaDB()->getNATableDB()->setCachingON();
     break;
+  case TRAF_TABLE_SNAPSHOT_SCAN:
+    if (CmpCommon::getDefault(TRAF_TABLE_SNAPSHOT_SCAN) == DF_LATEST)
+    {
+      //when the user sets TRAF_TABLE_SNAPSHOT_SCAN to LATEST we flush the metadata
+      //and then we set the caching back to on so it can get cached again. if newer
+      //snapshots are created after setting the cqd they won't be seen unless
+      //the user issue a command/cqd to invalidate or flush the cache. One way
+      //for doing that can be to issue "cqd TRAF_TABLE_SNAPSHOT_SCAN 'latest';" again
+       ActiveSchemaDB()->getNATableDB()->setCachingOFF();
+       ActiveSchemaDB()->getNATableDB()->setCachingON();
+    }
+    break;
    //need to flush histogram cache, if we change HIST_MC_STATS_NEEDED
    case HIST_MC_STATS_NEEDED:
     if(CURRCONTEXT_HISTCACHE)

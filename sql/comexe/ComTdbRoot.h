@@ -572,6 +572,9 @@ protected:
   // predicate to be applied before a row is returned.
   ExExprPtr predExpr_;                                              // 352-359
 
+  NABasicPtr snapshotscanTempLocation_;                             // 360-367
+  QueuePtr listOfSnapshotScanTables_;                               // 368-375
+
 public:
   
   // this list and their values must be the same as the
@@ -679,7 +682,9 @@ public:
 	   NABasicPtr rwrsInfo,
            Int32 numObjectUIDs,
            Int64 *objectUIDs,
-           CompilationStatsData *compilationStatsData);
+           CompilationStatsData *compilationStatsData,
+           char * snapTmpLocation,
+           Queue * listOfSnapshotscanTables);
 
   ~ComTdbRoot();
 
@@ -838,7 +843,9 @@ public:
    NABoolean isEmbeddedCompiler() const
     {return ((rtFlags2_ & EMBEDDED_COMPILER) != 0);};
  
-  
+  char * getSnapshotScanTempLocation () { return snapshotscanTempLocation_; }
+  Queue * getListOfSnapshotScanTables() { return listOfSnapshotScanTables_; }
+
   char * fetchedCursorName() {return fetchedCursorName_;};
   short  fetchedCursorHvar() {return fetchedCursorHvar_;};
 
