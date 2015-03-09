@@ -1313,7 +1313,8 @@ static NABoolean checkForReservedObjectName(QualifiedName &inName)
 
 NATable *BindWA::getNATable(CorrName& corrName,
                             NABoolean catmanCollectTableUsages, // default TRUE
-                            desc_struct *inTableDescStruct)     // default NULL
+                            desc_struct *inTableDescStruct,     // default NULL
+                            NABoolean considerCachingSnapshot)          //default FALSE
 {
   BindWA *bindWA = this;   // for coding convenience
 
@@ -1443,6 +1444,22 @@ NATable *BindWA::getNATable(CorrName& corrName,
         }
       }
 
+      if (considerCachingSnapshot &&
+          !(corrName.getQualifiedNameObj().getObjectName()== HBASE_HIST_NAME) &&
+          !(corrName.getQualifiedNameObj().getObjectName()== HBASE_HISTINT_NAME) &&
+          !corrName.isSeabaseMD() &&
+          corrName.isSeabase() )
+       {
+         NATable * tbl = bindWA->getSchemaDB()->getNATableDB()->getCachedNATable(corrName);
+
+         if (tbl != NULL &&
+             tbl->getSnapshotName() == NULL)
+         {
+             ActiveSchemaDB()->getNATableDB()->removeNATable(corrName,
+                                                             NATableDB::REMOVE_FROM_ALL_USERS, 
+                                                             COM_BASE_TABLE_OBJECT);
+         }
+       }
       //get NATable (from cache or from metadata)
       table = bindWA->getSchemaDB()->getNATableDB()->
                                      get(corrName, bindWA, inTableDescStruct);
@@ -7189,9 +7206,16 @@ RelExpr *Scan::bindNode(BindWA *bindWA)
   bindChildren(bindWA);
   if (bindWA->errStatus()) return this;
 
+  NABoolean considerCachingSnapshot = FALSE;
+  DefaultToken  tok = CmpCommon::getDefault(TRAF_TABLE_SNAPSHOT_SCAN);
+  if (tok == DF_LATEST)
+  {
+    considerCachingSnapshot = TRUE;
+  }
+
   // Get the NATable for this object.
   //
-  NATable *naTable = bindWA->getNATable(getTableName());
+  NATable *naTable = bindWA->getNATable(getTableName(), TRUE, NULL, considerCachingSnapshot);
   if (bindWA->errStatus()) 
     return this;
 

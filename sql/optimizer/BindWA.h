@@ -1317,7 +1317,8 @@ public:
   // --------------------------------------------------------------------
   NATable *getNATable(CorrName &corrName,
 		      NABoolean catmanCollectTableUsages = TRUE,
-		      desc_struct *inTableDesc = NULL);
+		      desc_struct *inTableDesc = NULL,
+		      NABoolean considerCachingSnapshot= FALSE);
 
   TableDesc *createTableDesc(const NATable *naTable,
                              CorrName &corrName,

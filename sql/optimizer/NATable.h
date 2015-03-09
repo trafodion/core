@@ -705,6 +705,8 @@ public:
 
   inline CostScalar getOriginalRowCount() const { return originalCardinality_ ; }
   void setOriginalRowCount(CostScalar rowcount) {originalCardinality_ = rowcount; }
+
+  const char * getSnapshotName() const { return snapshotName_; }
   // ---------------------------------------------------------------------
   // Standard operators
   // ---------------------------------------------------------------------
@@ -1072,6 +1074,8 @@ private:
 
   char * parentTableName_;
 
+  char *snapshotName_;
+
   ComSecurityKeySet secKeySet_ ;
 
   desc_struct *partnsDesc_;
@@ -1177,7 +1181,7 @@ public:
 
   // set an upper limit to the heap used by NATableDB
   void setHeapUpperLimit(size_t newUpperLimit) { if (heap_) heap_->setUpperLimit(newUpperLimit); }
-
+  NATable * getCachedNATable(CorrName & corNm);
   NATable * get(const ExtendedQualName* key, BindWA * bindWA = NULL, NABoolean findInCacheOnly = FALSE);
   NATable * get(CorrName& corrName, BindWA * bindWA,
                 desc_struct *inTableDescStruct);

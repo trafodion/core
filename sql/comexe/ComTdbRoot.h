@@ -572,6 +572,10 @@ protected:
   // predicate to be applied before a row is returned.
   ExExprPtr predExpr_;                                              // 352-359
 
+  NABasicPtr snapshotscanTempLocation_;                             // 360-367
+  QueuePtr listOfSnapshotScanTables_;                               // 368-375
+  NABasicPtr hbaseServer_;                                          // 376-383
+  NABasicPtr zkPort_;                                               // 384-391
 public:
   
   // this list and their values must be the same as the
@@ -679,7 +683,11 @@ public:
 	   NABasicPtr rwrsInfo,
            Int32 numObjectUIDs,
            Int64 *objectUIDs,
-           CompilationStatsData *compilationStatsData);
+           CompilationStatsData *compilationStatsData,
+           char * snapTmpLocation,
+           Queue * listOfSnapshotscanTables,
+           char * hbaseServer,
+           char * zkPort);
 
   ~ComTdbRoot();
 
@@ -838,7 +846,11 @@ public:
    NABoolean isEmbeddedCompiler() const
     {return ((rtFlags2_ & EMBEDDED_COMPILER) != 0);};
  
-  
+  char * getSnapshotScanTempLocation () { return snapshotscanTempLocation_; }
+  char * getHbaseServer() { return hbaseServer_;}
+  char * getZkPort() {return zkPort_;}
+  Queue * getListOfSnapshotScanTables() { return listOfSnapshotScanTables_; }
+
   char * fetchedCursorName() {return fetchedCursorName_;};
   short  fetchedCursorHvar() {return fetchedCursorHvar_;};
 
