@@ -650,7 +650,8 @@ short IndexColumn::codeGen(Generator * /*generator*/)
 
 short ItemExpr::codeGen(Generator * generator)
 {
-  if (getOperatorType() == ITM_NATYPE)
+  if (getOperatorType() == ITM_NATYPE ||
+      getOperatorType() == ITM_NAMED_TYPE_TO_ITEM)
     {
       Attributes ** attr;
       

@@ -197,6 +197,7 @@ public:
   virtual const IpcProcessId & getInstanceProcessId(
        ExFragId fragId,
        Lng32 instanceNum) const = 0;
+  virtual Lng32 getMyInstanceNumber() const = 0;
   virtual void getMyNodeLocalInstanceNumber(
        Lng32 &myNodeLocalInstanceNumber,
        Lng32 &numOfLocalInstances) const = 0;
