@@ -1,6 +1,6 @@
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 2006-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@
 // Version
 DEFINE_EXTERN_COMP_DOVERS(dtmci)
     
-const char ga_timestamp[] = "v 1.3.1, Aug 8, 2012";
+const char ga_timestamp[] = "v 3.1.0, Nov 26, 2014";
 
 #define MAX_NODES 256
 
@@ -1473,6 +1473,14 @@ int main(int argc, char *argv[])
             }
             cout << "BEGINTRANSACTION returned error " << lv_begin_error
                 << ", tag " << lv_tag << endl;
+
+            int32 lv_node, lv_seqnum;
+            bool lv_local = DTM_LOCALTRANSACTION(&lv_node, &lv_seqnum);
+            if (lv_local) 
+               cout << "Beginning local transaction (" << lv_node << "," << lv_seqnum << ")." << endl;
+            else
+               cout << "Beginning global transaction (" << lv_node << "," << lv_seqnum << ")." << endl;
+
             //set gettimeofday beginning struct here
             gettimeofday(&lv_begintime, NULL);
             lv_timeset = true;
