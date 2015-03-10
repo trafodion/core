@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1995-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1995-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -2427,7 +2427,7 @@ Int32 ex_root_tcb::deallocAndDelete(ExExeStmtGlobals *glob,
   glob->castToExMasterStmtGlobals()->resetCancelState();
 
   // Warning:  deleteMe() will delete this tcb!!!!
-  glob->deleteMe(); 
+  glob->deleteMe(fatalError_); 
   return 0;
 }
 
@@ -2591,8 +2591,12 @@ Int32 ex_root_tcb::fatal_error( ExExeStmtGlobals * glob,
 
 void ex_root_tcb::completeOutstandingCancelMsgs()
 {
-  ExExeStmtGlobals *glob = getGlobals()->castToExExeStmtGlobals();
-  while (glob->anyCancelMsgesOut())
+  ExMasterStmtGlobals *glob = getGlobals()->castToExExeStmtGlobals()->
+                               castToExMasterStmtGlobals();
+  
+  while (!fatalError_ && 
+         (glob->getRtFragTable()->getState() != ExRtFragTable::ERROR) && 
+         glob->anyCancelMsgesOut())
   {
     if (root_tdb().getQueryUsesSM() && glob->getIpcEnvironment()->smEnabled())
       EXSM_TRACE(EXSM_TRACE_MAIN_THR | EXSM_TRACE_CANCEL,
@@ -2600,10 +2604,7 @@ void ex_root_tcb::completeOutstandingCancelMsgs()
                  this, (int) glob->numCancelMsgesOut());
 
     // work may have finished before a cancel request 
-    // was answered by some ESP or exe-in-dp2.  However, 
-    // this little loop will ensure that replies to
-    // these cancel messages will happen while the transid 
-    // is valid -- else ArkFs may raise an FEINVTRANSID.
+    // was answered by some ESP. 
     glob->getIpcEnvironment()->getAllConnections()->waitOnAll();
   }
 }
