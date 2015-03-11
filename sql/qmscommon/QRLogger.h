@@ -163,7 +163,10 @@ public:
     QRL_QMS,
     QRL_QMP,
     QRL_QMM,
-    QRL_ESP
+    QRL_ESP,
+    QRL_LOB,
+    QRL_SSMP,
+    QRL_SSCP
   };
 
   /**

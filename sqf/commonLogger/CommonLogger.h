@@ -111,6 +111,7 @@ public:
     */
   static bool isCategoryInDebug(const char* cat);
 
+
 protected:
   static char* buildMsgBuffer(const char* cat,
                               logLevel    level,
