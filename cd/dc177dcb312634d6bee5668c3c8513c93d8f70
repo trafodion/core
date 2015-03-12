@@ -1,0 +1,11 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Chris Sheedy <chris.sheedy@hp.com>
+Code-Review+2: Tharak Capirala <capirala.tharaknath@hp.com>
+Workflow+1: Tharak Capirala <capirala.tharaknath@hp.com>
+Code-Review+2: Arvind Narain <arvind.narain@hp.com>
+Code-Review+1: Matt Brown <mattbrown@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 12 Mar 2015 00:06:11 +0000
+Reviewed-on: https://review.trafodion.org/1254
+Project: trafodion/core
+Branch: refs/heads/master
