@@ -19,6 +19,7 @@
 package org.trafodion.sql.HBaseAccess;
 
 import com.google.protobuf.ServiceException;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -39,10 +40,10 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.util.FSUtils;
+import org.apache.hadoop.hbase.util.HFileArchiveUtil;
 import org.apache.hadoop.hbase.util.PoolMap;
 import org.apache.hadoop.hbase.util.PoolMap.PoolType;
-
-
 import org.apache.hadoop.hbase.security.access.AccessController;
 import org.apache.hadoop.hbase.security.access.UserPermission;
 import org.apache.hadoop.hbase.security.access.Permission;
@@ -61,28 +62,31 @@ import org.apache.hadoop.hbase.regionserver.BloomType;
 import org.apache.hadoop.hbase.regionserver.KeyPrefixRegionSplitPolicy;
 import org.apache.hadoop.hbase.client.Durability;
 import org.trafodion.sql.HBaseAccess.HTableClient;
-
 import org.apache.hadoop.hbase.ServerLoad;
 import org.apache.hadoop.hbase.RegionLoad;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.ClusterStatus;
 import org.apache.hadoop.hbase.ServerName;
+
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.hbase.io.hfile.CacheConfig;
 import org.apache.hadoop.hbase.io.hfile.HFile;
 import org.apache.hadoop.hbase.io.hfile.HFileScanner;
 import org.apache.hadoop.hbase.regionserver.StoreFileInfo;
 import org.apache.hadoop.hbase.HConstants;
 
+import com.google.protobuf.ServiceException;
+
 public class HBaseClient {
 
     static Logger logger = Logger.getLogger(HBaseClient.class.getName());
-    Configuration config;
+    public static Configuration config = HBaseConfiguration.create();
     String lastError;
     private PoolMap<String, HTableClient> hTableClientsFree;
     private PoolMap<String, HTableClient> hTableClientsInUse;
@@ -113,8 +117,6 @@ public class HBaseClient {
     public static final int HBASE_SPLIT_POLICY = 22;
 
     
-    
-    
     public HBaseClient() {
       if (hTableClientsFree == null)
          hTableClientsFree = new PoolMap<String, HTableClient>
@@ -131,7 +133,7 @@ public class HBaseClient {
         lastError = err;
     }
 
-    void setupLog4j() {
+    static {
     	//Some clients of this class e.g., DcsServer/JdbcT2 
     	//want to use use their own log4j.properties file instead
     	//of the /conf/lo4j.hdf.config so they can see their
@@ -149,14 +151,8 @@ public class HBaseClient {
     public boolean init(String zkServers, String zkPort) 
 	throws MasterNotRunningException, ZooKeeperConnectionException, ServiceException, IOException
     {
-         setupLog4j();
          if (logger.isDebugEnabled()) logger.debug("HBaseClient.init(" + zkServers + ", " + zkPort
                          + ") called.");
-         config = HBaseConfiguration.create();
-	 if (zkServers.length() > 0)
-            config.set("hbase.zookeeper.quorum", zkServers);
-	 if (zkPort.length() > 0)
-            config.set("hbase.zookeeper.property.clientPort", zkPort);
          HBaseAdmin.checkHBaseAvailable(config);
          return true;
     }
@@ -501,7 +497,7 @@ public class HBaseClient {
        HTableClient htable = hTableClientsFree.get(tblName);
        if (htable == null) {
           htable = new HTableClient();
-          if (htable.init(tblName, config, useTRex) == false) {
+          if (htable.init(tblName, useTRex) == false) {
              if (logger.isDebugEnabled()) logger.debug("  ==> Error in init(), returning empty.");
              return null;
           }
@@ -874,8 +870,100 @@ public class HBaseClient {
       if (logger.isDebugEnabled()) logger.debug("HBaseClient.releaseHBulkLoadClient().");
       hblc.release();
    }
+  
+  //returns the latest snapshot name for a table. returns null if table has no snapshots
+  //associated with it
+  public String getLatestSnapshot(String tabName) throws IOException
+  {
+    HBaseAdmin admin = new HBaseAdmin(config);
+    List<SnapshotDescription> snapDescs = admin.listSnapshots();
+    long maxTimeStamp = 0;
+    String latestsnpName = null;
+    for (SnapshotDescription snp :snapDescs )
+    {
+      if (snp.getTable().compareTo(tabName) == 0 && 
+          snp.getCreationTime() > maxTimeStamp)
+      {
+        latestsnpName= snp.getName();
+        maxTimeStamp = snp.getCreationTime();
+      }
+      
+    }
+    admin.close();
+    admin = null;
+    return latestsnpName;
+  }
+  public boolean cleanSnpScanTmpLocation(String pathStr) throws Exception
+  {
+    if (logger.isDebugEnabled()) logger.debug("HbaseClient.cleanSnpScanTmpLocation() - start - Path: " + pathStr);
+    try 
+    {
+      Path delPath = new Path(pathStr );
+      delPath = delPath.makeQualified(delPath.toUri(), null);
+      FileSystem fs = FileSystem.get(delPath.toUri(),config);
+      fs.delete(delPath, true);
+    }
+    catch (IOException e)
+    {
+      if (logger.isDebugEnabled()) logger.debug("HbaseClient.cleanSnpScanTmpLocation() --exception:" + e);
+      throw e;
+    }
+    
+    return true;
+  }
+  private boolean updatePermissionForEntries(FileStatus[] entries, String hbaseUser, FileSystem fs) throws IOException 
+  {
+    if (entries == null) {
+      return true;
+    }
+    
+    for (FileStatus child : entries) {
+      Path path = child.getPath();
+      List<AclEntry> lacl = AclEntry.parseAclSpec("user:" + hbaseUser + ":rwx", true) ;
+      try 
+      {
+        fs.modifyAclEntries(path, lacl);
+      }
+      catch (IOException e)
+      {
+        //if failure just log exception and continue
+        if (logger.isTraceEnabled()) logger.trace("[Snapshot Scan] SnapshotScanHelper.updatePermissionForEntries() exception. " + e);
+      }
+      if (child.isDir()) 
+      {
+        FileStatus[] files = FSUtils.listStatus(fs,path);
+        updatePermissionForEntries(files,hbaseUser, fs);
+      } 
+    }
+    return true;
+  }
+  
+  public boolean setArchivePermissions( String tabName) throws IOException,ServiceException
+  {
+    if (logger.isTraceEnabled()) logger.trace("[Snapshot Scan] SnapshotScanHelper.setArchivePermissions() called. ");
+    Path rootDir = FSUtils.getRootDir(config);
+    FileSystem myfs = FileSystem.get(rootDir.toUri(),config);
+    FileStatus fstatus = myfs.getFileStatus(rootDir);
+    String hbaseUser = fstatus.getOwner(); 
+    assert (hbaseUser != null && hbaseUser.length() != 0);
+    Path tabArcPath = HFileArchiveUtil.getTableArchivePath(config,  TableName.valueOf(tabName));
+    if (tabArcPath == null)
+      return true;
+    List<AclEntry> lacl = AclEntry.parseAclSpec("user:" + hbaseUser + ":rwx", true) ;
+    try
+    {
+      myfs.modifyAclEntries(tabArcPath, lacl);
+    }
+    catch (IOException e)
+    {
+      //if failure just log exception and continue
+      if (logger.isTraceEnabled()) logger.trace("[Snapshot Scan] SnapshotScanHelper.setArchivePermissions() exception. " + e);
+    }
+    FileStatus[] files = FSUtils.listStatus(myfs,tabArcPath);
+    updatePermissionForEntries(files,  hbaseUser, myfs); 
+    return true;
+  }
 }
-
     
 
 

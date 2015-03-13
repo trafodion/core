@@ -207,6 +207,7 @@ struct DefaultDefault
 #define XDDpct__(name,value)            XDD(name,value,&validatePct)
 #define SDDpct__(name,value)            SDD(name,value,&validatePct)
 #define  DDpct1_50(name,value)           DD(name,value,&validatePct1_t50)
+#define  DD0_10485760(name,value)	 DD(name,value,&validate0_10485760)
 #define  DD0_255(name,value)		 DD(name,value,&validate0_255)
 #define  DD0_200000(name,value)	         DD(name,value,&validate0_200000)
 #define XDD0_200000(name,value)	        XDD(name,value,&validate0_200000)
@@ -290,6 +291,7 @@ const ValidateIntNeg1         validateIntNeg1;// allows -1 to +infinity ints
 const ValidateIntNeg1         validateIntNeg2;// allows -1 to +infinity ints
 const ValidatePercent		validatePct;	// allows zero to 100 (integral %age)
 const ValidateNumericRange    validatePct1_t50(VALID_UINT, 1, (float)50);// allows 1 to 50 (integral %age)
+const Validate_0_10485760	validate0_10485760; // allows zero to 10Meg (integer)
 const Validate_0_255		validate0_255;	// allows zero to 255 (integer)
 const Validate_0_200000	validate0_200000;	// allows zero to 200000 (integer)
 const Validate_1_200000	validate1_200000;	// allows 1 to 200000 (integer)
@@ -1953,7 +1955,7 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
   DDkwd__(HQC_LOG, "OFF"),
   DD_____(HQC_LOG_FILE,    ""),
   DDui1_10(HQC_MAX_VALUES_PER_KEY, "5"), 
-  DDkwd__(HYBRID_QUERY_CACHE, "OFF"),
+  DDkwd__(HYBRID_QUERY_CACHE, "ON"),
   DDkwd__(IF_LOCKED,				"WAIT"),
 
     // ignore_duplicate_keys is no more valid. It is still
@@ -2038,13 +2040,12 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   SDDkwd__(LIMIT_MAX_NUMERIC_PRECISION,		"SYSTEM"),
 
   DDint__(LOB_HDFS_PORT,                       "0"),
-  DD_____(LOB_HDFS_SERVER,                 "localhost"), 
+  DD_____(LOB_HDFS_SERVER,                 "default"), 
  
   // default size is 2 G  (2000 M)
   DDint__(LOB_MAX_SIZE,                         "2000"),
 
   DD_____(LOB_STORAGE_FILE_DIR,                 "/lobs"), 
-  //DD_____(LOB_STORAGE_FILE_DIR,                 "/h/linuxusr"), 
 
   // storage types defined in exp/ExpLOBenum.h. 
   // Default is hdfs_file (value = 1)
@@ -2772,6 +2773,12 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   // with Cascades plan stealing! Don't do it unless you have to!
   DDui1__(PARTITION_ACCESS_NODES_PER_ESP,	"1"),
 
+  DD_____(PCODE_DEBUG_LOGDIR,        ""  ), // Pathname of log directory for PCode work
+  DDint__(PCODE_EXPR_CACHE_CMP_ONLY, "0" ), // PCode Expr Cache compare-only mode
+  DDint__(PCODE_EXPR_CACHE_DEBUG,    "0" ), // PCode Expr Cache debug (set to 1 to enable dbg logging)
+  DDint__(PCODE_EXPR_CACHE_ENABLED,  "1" ), // PCode Expr Cache Enabled (set to 0 to disable the cache)
+  DD0_10485760(PCODE_EXPR_CACHE_SIZE,"2000000"), // PCode Expr Cache Max Size
+
   // Maximum number of PCODE Branch Instructions in an Expr
   // for which we will attempt PCODE optimizations.
   DDint__(PCODE_MAX_OPT_BRANCH_CNT,          "19000"),
@@ -2780,9 +2787,15 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   // for which we will attempt PCODE optimizations.
   DDint__(PCODE_MAX_OPT_INST_CNT,            "50000"),
 
-  DDint__(PCODE_NE_DBG_LEVEL, "-1" ),  // Native Expression Debug Level
+  DDint__(PCODE_NE_DBG_LEVEL, "-1"), // Native Expression Debug Level
+  DDint__(PCODE_NE_ENABLED,   "1" ), // Native Expressions Enabled
   DDkwd__(PCODE_NE_IN_SHOWPLAN, "ON"), // Native Expression in Showplan output
-  DD_____(PCODE_NE_LOG_PATH, ""   ),  // Pathname of log file for Native Expression work
+
+  // This PCODE_NE_LOG_PATH cqd is now obsolete. Use PCODE_DEBUG_LOGDIR instead.
+  // Would delete the following line except that would also mean deleting the
+  // corresponding line in DefaultConstants.h which would change the values for
+  // the following definitions in the same enum.
+  DD_____(PCODE_NE_LOG_PATH,  ""  ), // Pathname of log file for Native Expression work - OBSOLETE
 
   DDint__(PCODE_OPT_FLAGS,                      "60"),
   DDkwd__(PCODE_OPT_LEVEL,		"MAXIMUM"),
@@ -3106,6 +3119,7 @@ SDDflt0_(QUERY_CACHE_SELECTIVITY_TOLERANCE,       "0"),
  SDDkwd__(SHOWCONTROL_SHOW_ALL,         	"OFF"),
  SDDkwd__(SHOWCONTROL_SHOW_SUPPORT,		"OFF"),
   DDkwd__(SHOWDDL_DISPLAY_FORMAT, 		"EXTERNAL"),
+  DDkwd__(SHOWDDL_DISPLAY_PRIVILEGE_GRANTS,     "SYSTEM"),
  DDint__(SHOWDDL_FOR_REPLICATE, 		"0"),
   DDkwd__(SHOWLABEL_LOCKMODE,                   "OFF"),
   DDkwd__(SHOWWARN_OPT,		"ON"),
@@ -3279,12 +3293,26 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
   DDint__(TRAF_NUM_OF_SALT_PARTNS,                     "-1"),
 
   DDkwd__(TRAF_RELOAD_NATABLE_CACHE,                   "OFF"),
-  DDint__(TRAF_SEQUENCE_CACHE_SIZE,        "-1"),   
-  DDkwd__(TRAF_TABLE_SNAPSHOT_SCAN,                    "OFF"),
+  DDint__(TRAF_SEQUENCE_CACHE_SIZE,        "-1"),
+  //TRAF_TABLE_SNAPSHOT_SCAN CQD can be set to :
+  //NONE-->    Snapshot scan is disabled and regular scan is used , 
+  //SUFFIX --> Snapshot scan enabled for the bulk unload (bulk unload 
+  //           behavior id not changed)
+  //LATEST --> enabled for the scan independently from bulk unload
+  //           the latest snapshot is used if it exists
+  DDkwd__(TRAF_TABLE_SNAPSHOT_SCAN,                    "NONE"),
   DD_____(TRAF_TABLE_SNAPSHOT_SCAN_SNAP_SUFFIX,        "SNAP"),
+  //when the estimated table size is below the threshold (in MBs)
+  //defined by  TRAF_TABLE_SNAPSHOT_SCAN_TABLE_SIZE_THRESHOLD
+  //regular scan instead of snapshot scan
+  //does not apply to bulk unload which maintains the old behavior
+  DDint__(TRAF_TABLE_SNAPSHOT_SCAN_TABLE_SIZE_THRESHOLD, "1000"), 
+  //timeout before we give up when trying to create the snapshot scanner
   DDint__(TRAF_TABLE_SNAPSHOT_SCAN_TIMEOUT,            "6000"),
-  DD_____(TRAF_TABLE_SNAPSHOT_SCAN_TMP_BASE_LOCATION,  "/bulkload/"),
-  DD_____(TRAF_TABLE_SNAPSHOT_SCAN_TMP_LOCATION,       "sub/"),
+  //location for temporary links and files produced by snapshot scan
+  DD_____(TRAF_TABLE_SNAPSHOT_SCAN_TMP_LOCATION,       "/bulkload/"),
+
+
 
   DDkwd__(TRAF_UNLOAD_BYPASS_LIBHDFS,                  "ON"),
   DD_____(TRAF_UNLOAD_DEF_DELIMITER,                   "|" ),
@@ -6160,6 +6188,7 @@ const char *NADefaults::keywords_[DF_lastToken] = {
   "JNI_TRX",
   "KEYINDEXES",
   "LASTROW",
+  "LATEST",
   "LOADNODUP",
   "LOCAL",
   "LOCAL_NODE",
@@ -6202,6 +6231,7 @@ const char *NADefaults::keywords_[DF_lastToken] = {
   "SQLMP",
   "SSD",
   "STOP",
+  "SUFFIX",
   "SYSTEM",
   "TANDEM",
   "THRIFT",
@@ -6691,6 +6721,11 @@ DefaultToken NADefaults::token(Int32 attrEnum,
 	isValid = TRUE;
       break;
 
+    case SHOWDDL_DISPLAY_PRIVILEGE_GRANTS:
+      if (tok == DF_SYSTEM || tok == DF_ON || tok == DF_OFF)
+	isValid = TRUE;
+      break;
+
     case EXPLAIN_DISPLAY_FORMAT:
       if (tok == DF_INTERNAL || tok == DF_EXTERNAL || tok == DF_EXTERNAL_DETAILED)
 	isValid = TRUE;
@@ -6797,7 +6832,10 @@ DefaultToken NADefaults::token(Int32 attrEnum,
     case USE_HIVE_SOURCE:
       isValid = TRUE;
       break;
-
+    case TRAF_TABLE_SNAPSHOT_SCAN:
+      if (tok  == DF_NONE || tok == DF_SUFFIX || tok == DF_LATEST)
+        isValid = TRUE;
+    break;
     // Nothing needs to be added here for ON/OFF/SYSTEM keywords --
     // instead, add to DEFAULT_ALLOWS_SEPARATE_SYSTEM code in the ctor.
 

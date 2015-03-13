@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1994-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1994-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -168,7 +168,7 @@ public:
 
   // Deletes objects this object points to... does NOT destroy
   // this object
-  NA_EIDPROC virtual void deleteMe();
+  NA_EIDPROC virtual void deleteMe(NABoolean fatalError);
   
   NA_EIDPROC virtual ExExeStmtGlobals * castToExExeStmtGlobals();
   virtual ExMasterStmtGlobals * castToExMasterStmtGlobals();
@@ -197,6 +197,7 @@ public:
   virtual const IpcProcessId & getInstanceProcessId(
        ExFragId fragId,
        Lng32 instanceNum) const = 0;
+  virtual Lng32 getMyInstanceNumber() const = 0;
   virtual void getMyNodeLocalInstanceNumber(
        Lng32 &myNodeLocalInstanceNumber,
        Lng32 &numOfLocalInstances) const = 0;
@@ -461,7 +462,7 @@ public:
 
   // Deletes objects this object points to... does NOT destroy
   // this object
-  NA_EIDPROC virtual void deleteMe();
+  NA_EIDPROC virtual void deleteMe(NABoolean fatalError);
   
   virtual ExMasterStmtGlobals * castToExMasterStmtGlobals();
 
@@ -664,7 +665,7 @@ public:
                    char *queryId = NULL,
                    Lng32 queryIdLen = 0);
   
-  virtual void deleteMe();
+  virtual void deleteMe(NABoolean fatalError);
   virtual ExEspStmtGlobals * castToExEspStmtGlobals();
 
   virtual char * getFragmentPtr(ExFragId fragId) const;

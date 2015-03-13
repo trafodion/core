@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1996-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1996-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -57,6 +57,8 @@
 #include "OptimizerSimulator.h"
 
 #include "hs_log.h"
+#include "PCodeExprCache.h"
+#include "cli_stdh.h"
 
 extern THREAD_P CmpMemoryMonitor *cmpMemMonitor;
 
@@ -351,6 +353,19 @@ void ControlDB::setControlDefault(ControlQueryDefault *def)
      // NaTables are cached.
      ActiveSchemaDB()->getNATableDB()->setCachingON();
     break;
+  case TRAF_TABLE_SNAPSHOT_SCAN:
+    if (CmpCommon::getDefault(TRAF_TABLE_SNAPSHOT_SCAN) == DF_LATEST)
+    {
+       //when the user sets TRAF_TABLE_SNAPSHOT_SCAN to LATEST
+       //we flush the metadata and then we set the caching back to on so that metadata
+       //get cached again. If newer snapshots are created after setting the cqd they
+       //won't be seen if they are already cached unless the user issue a command/cqd
+       //to invalidate or flush the cache. One way for doing that can be to issue
+       //"cqd TRAF_TABLE_SNAPSHOT_SCAN 'latest';" again
+       ActiveSchemaDB()->getNATableDB()->setCachingOFF();
+       ActiveSchemaDB()->getNATableDB()->setCachingON();
+    }
+    break;
    //need to flush histogram cache, if we change HIST_MC_STATS_NEEDED
    case HIST_MC_STATS_NEEDED:
     if(CURRCONTEXT_HISTCACHE)
@@ -396,11 +411,35 @@ void ControlDB::setControlDefault(ControlQueryDefault *def)
     metadata_cache_size = getDefaultAsLong(METADATA_CACHE_SIZE)*1024*1024;
     ActiveSchemaDB()->getNATableDB()->resizeCache(metadata_cache_size);
     break;
+  case PCODE_EXPR_CACHE_SIZE:
+    {
+      //
+      // Increase OR decrease the size of the PCode Expression Cache
+      // for the current Context.
+      //
+      Int32 newsiz  = getDefaultAsLong( PCODE_EXPR_CACHE_SIZE );
+      Int32 currSiz = CURROPTPCODECACHE->getMaxSize() ;
+
+      // Note: If new size is negative or the same size, just leave cache alone
+      if ( ( newsiz >= 0 ) && ( newsiz != currSiz ) )
+      {
+         CURROPTPCODECACHE->resizeCache( newsiz );
+         if ( newsiz < currSiz )
+            CURROPTPCODECACHE->clearStats(); // Do this after resizeCache(...)
+      }
+    }
+    break;
   case QUERY_CACHE:
     {
       ULng32 newsiz = getDefaultInK(QUERY_CACHE);
-      if (newsiz <= 0) CURRENTQCACHE->clearStats();
-      CURRENTQCACHE->resizeCache(newsiz);
+      const NAArray<CmpContextInfo *> & cmpCtxInfo = 
+              GetCliGlobals()->currContext()->getCmpContextInfo();
+      for (short i = 0; i < cmpCtxInfo.entries(); i++)
+      {
+        QueryCache * qc = cmpCtxInfo[i]->getCmpContext()->getQueryCache();
+        if (newsiz <= 0) qc->clearStats();
+        qc->resizeCache(newsiz);
+      }
     }
     break;
   case QUERY_CACHE_MPALIAS:

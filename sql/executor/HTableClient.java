@@ -162,10 +162,12 @@ public class HTableClient {
 	   }
 	   boolean snapshotExists() throws IOException
 	   {
+	     if (logger.isTraceEnabled()) logger.trace("[Snapshot Scan] SnapshotScanHelper.snapshotExists() called. ");
 	     return !admin.listSnapshots(snpDesc.getName()).isEmpty();
 	   }
 	   void deleteSnapshot() throws IOException
 	   {
+	     if (logger.isTraceEnabled()) logger.trace("[Snapshot Scan] SnapshotScanHelper.deleteSnapshot() called. ");
 	     if (snapshotExists())
 	     {
 	       admin.deleteSnapshot(snpDesc.getName());
@@ -178,6 +180,7 @@ public class HTableClient {
 	   }
 	   void deleteRestorePath() throws IOException
 	   {
+	     if (logger.isTraceEnabled()) logger.trace("[Snapshot Scan] SnapshotScanHelper.deleteRestorePath() called. ");
 	     if (fs.exists(snapRestorePath))
 	     {
 	       fs.delete(snapRestorePath, true);
@@ -191,6 +194,7 @@ public class HTableClient {
 	   
 	   void createTableSnapshotScanner(int timeout, int slp, long nbre, Scan scan) throws InterruptedException
 	   {
+	     if (logger.isTraceEnabled()) logger.trace("[Snapshot Scan] SnapshotScanHelper.createTableSnapshotScanner() called. ");
 	     int xx=0;
 	     while (xx < timeout)
 	     {
@@ -287,7 +291,7 @@ public class HTableClient {
 	    return true;
 	  }
  
-	public boolean init(String tblName, Configuration config, 
+	public boolean init(String tblName,
               boolean useTRex) throws IOException 
         {
 	    if (logger.isDebugEnabled()) logger.debug("Enter HTableClient::init, tableName: " + tblName);
@@ -319,9 +323,7 @@ public class HTableClient {
 		}
 	    }
 
-	    config.set("hbase.hregion.impl", "org.apache.hadoop.hbase.regionserver.transactional.TransactionalRegion");
-	    table = new RMInterface(config, tblName);
-	    //	    table = new HTable(config, tblName);
+	    table = new RMInterface(tblName);
 	    if (logger.isDebugEnabled()) logger.debug("Exit HTableClient::init, table object: " + table);
 	    return true;
 	}
@@ -454,7 +456,10 @@ public class HTableClient {
 	      throw new Exception("Cannot create Table Snapshot Scanner");
 	  }
     
-	  preFetch = inPreFetch;
+          if (useSnapshotScan)
+             preFetch = false;
+          else
+	     preFetch = inPreFetch;
 	  if (preFetch)
 	  {
 	    scanHelper = new ScanHelper(); 

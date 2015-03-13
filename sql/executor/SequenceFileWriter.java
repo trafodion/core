@@ -375,14 +375,13 @@ public class SequenceFileWriter {
       throws MasterNotRunningException, ZooKeeperConnectionException, ServiceException, IOException
   {
     logger.debug("SequenceFileWriter.init(" + zkServers + ", " + zkPort + ") called.");
-    if (conf != null)
-      return true;
-    
-    conf = HBaseConfiguration.create();
-    if (zkServers.length() > 0)
-      conf.set("hbase.zookeeper.quorum", zkServers);
-    if (zkPort.length() > 0)
-      conf.set("hbase.zookeeper.property.clientPort", zkPort);
+    if (conf != null)		
+       return true;		
+    conf = HBaseConfiguration.create();		
+    if (zkServers.length() > 0)		
+      conf.set("hbase.zookeeper.quorum", zkServers);		
+    if (zkPort.length() > 0)		
+      conf.set("hbase.zookeeper.property.clientPort", zkPort);		
     HBaseAdmin.checkHBaseAvailable(conf);
     return true;
   }
@@ -452,37 +451,7 @@ public class SequenceFileWriter {
 
     return true;
   }
-  private boolean updatePermissionForEntries(FileStatus[] entries) throws IOException 
-  {
-    if (entries == null) {
-      return true;
-    }
-    for (FileStatus child : entries) {
-      Path path = child.getPath();
-      List<AclEntry> lacl = AclEntry.parseAclSpec("user::rwx,group::rwx,other::rwx", true) ;
-      fs.modifyAclEntries(path, lacl);
-      if (child.isDir()) 
-      {
-        FileStatus[] files = FSUtils.listStatus(fs,path);
-        updatePermissionForEntries(files);
-      } 
-    }
-    return true;
-  }
-  public boolean setArchPermissions( String tabName) throws IOException,ServiceException
-  {
-    Path rootDir = FSUtils.getRootDir(conf);
-    fs = FileSystem.get(rootDir.toUri(),conf);
-    Path tabArcPath = HFileArchiveUtil.getTableArchivePath(conf,  TableName.valueOf(tabName));
-    if (tabArcPath == null)
-      return true;
-    List<AclEntry> lacl = AclEntry.parseAclSpec("user::rwx,group::rwx,other::rwx", true) ;
-    fs.modifyAclEntries(tabArcPath, lacl);
-    FileStatus[] files = FSUtils.listStatus(fs,tabArcPath);
-    updatePermissionForEntries(files); 
 
-    return true;
-  }
   public boolean release()  throws IOException
   {
     if (admin != null)

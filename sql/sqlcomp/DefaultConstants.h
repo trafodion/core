@@ -3074,6 +3074,9 @@ enum DefaultConstants
   // enable special features to be used for compatability with certain vendors.
   MODE_SPECIAL_4,
 
+  // toggle display system grants for SHOWDDL
+  SHOWDDL_DISPLAY_PRIVILEGE_GRANTS,
+
   // ***** END REGULAR DEFAULTS *********************************
   
   // Add regular default values (CQDs) before this line.
@@ -3666,11 +3669,20 @@ enum DefaultConstants
   NCM_SKEW_COST_ADJ_FOR_PROBES, 
   PCODE_NE_IN_SHOWPLAN,
   TRAF_TABLE_SNAPSHOT_SCAN,
-  TRAF_TABLE_SNAPSHOT_SCAN_TMP_BASE_LOCATION,
   TRAF_TABLE_SNAPSHOT_SCAN_TMP_LOCATION,
   TRAF_TABLE_SNAPSHOT_SCAN_SNAP_SUFFIX,
   TRAF_TABLE_SNAPSHOT_SCAN_TIMEOUT,
   HBASE_REGION_SERVER_MAX_HEAP_SIZE,
+
+  TRAF_TABLE_SNAPSHOT_SCAN_TABLE_SIZE_THRESHOLD,
+
+  PCODE_DEBUG_LOGDIR,
+  PCODE_EXPR_CACHE_CMP_ONLY,
+  PCODE_EXPR_CACHE_DEBUG,
+  PCODE_EXPR_CACHE_ENABLED,
+  PCODE_NE_ENABLED,
+  PCODE_EXPR_CACHE_SIZE,
+
   // This enum constant must be the LAST one in the list; it's a count,
   // not an Attribute (it's not IN DefaultDefaults; it's the SIZE of it)!
   __NUM_DEFAULT_ATTRIBUTES
@@ -3752,6 +3764,7 @@ enum DefaultToken {
  DF_JNI_TRX,
  DF_KEYINDEXES,
  DF_LASTROW,
+ DF_LATEST,
  DF_LOADNODUP,
  DF_LOCAL,
  DF_LOCAL_NODE,
@@ -3794,6 +3807,7 @@ enum DefaultToken {
  DF_SQLMP,
  DF_SSD,
  DF_STOP,
+ DF_SUFFIX,
  DF_SYSTEM,
  DF_TANDEM,
  DF_THRIFT,

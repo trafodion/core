@@ -252,22 +252,22 @@ public:
   
   HTC_RetCode init();
   
-  HTC_RetCode startScan(Int64 transID, const Text& startRowID, const Text& stopRowID, const TextVec& cols, Int64 timestamp, bool cacheBlocks, Lng32 numCacheRows,
+  HTC_RetCode startScan(Int64 transID, const Text& startRowID, const Text& stopRowID, const LIST(HbaseStr) & cols, Int64 timestamp, bool cacheBlocks, Lng32 numCacheRows,
                         NABoolean preFetch,
-			const TextVec *inColNamesToFilter, 
-			const TextVec *inCompareOpList,
-			const TextVec *inColValuesToCompare,
+			const LIST(NAString) *inColNamesToFilter, 
+			const LIST(NAString) *inCompareOpList,
+			const LIST(NAString) *inColValuesToCompare,
 			Float32 samplePercent = -1.0f,
 			NABoolean useSnapshotScan = FALSE,
 			Lng32 snapTimeout = 0,
 			char * snapName = NULL,
 			char * tmpLoc = NULL,
 			Lng32 espNum = 0);
-  HTC_RetCode startGet(Int64 transID, const Text& rowID, const TextVec& cols, 
+  HTC_RetCode startGet(Int64 transID, const HbaseStr& rowID, const LIST(HbaseStr) & cols, 
 		Int64 timestamp);
-  HTC_RetCode startGets(Int64 transID, const TextVec& rowIDs, const TextVec& cols, 
+  HTC_RetCode startGets(Int64 transID, const LIST(HbaseStr)& rowIDs, const LIST(HbaseStr) & cols, 
 		Int64 timestamp);
-  HTC_RetCode deleteRow(Int64 transID, HbaseStr &rowID, const TextVec& columns, Int64 timestamp);
+  HTC_RetCode deleteRow(Int64 transID, HbaseStr &rowID, const LIST(HbaseStr)& columns, Int64 timestamp);
   HTC_RetCode deleteRows(Int64 transID, short rowIDLen, HbaseStr &rowIDs, Int64 timestamp);
   HTC_RetCode checkAndDeleteRow(Int64 transID, HbaseStr &rowID, const Text &columnToCheck, const Text &colValToCheck, Int64 timestamp);
   HTC_RetCode insertRow(Int64 transID, HbaseStr &rowID, HbaseStr &row,
@@ -456,6 +456,12 @@ typedef enum {
  ,HBC_ERROR_ROWCOUNT_EST_EXCEPTION
  ,HBC_ERROR_REL_HBLC_EXCEPTION
  ,HBC_ERROR_GET_CACHE_FRAC_EXCEPTION
+ ,HBC_ERROR_GET_LATEST_SNP_PARAM
+ ,HBC_ERROR_GET_LATEST_SNP_EXCEPTION
+ ,HBC_ERROR_CLEAN_SNP_TMP_LOC_PARAM
+ ,HBC_ERROR_CLEAN_SNP_TMP_LOC_EXCEPTION
+ ,HBC_ERROR_SET_ARC_PERMS_PARAM
+ ,HBC_ERROR_SET_ARC_PERMS_EXCEPTION
  ,HBC_LAST
 } HBC_RetCode;
 
@@ -498,6 +504,9 @@ public:
   HBC_RetCode revoke(const Text& user, const Text& tableName, const TextVec& actionCodes);
   HBC_RetCode estimateRowCount(const char* tblName, Int32 partialRowSize,
                                Int32 numCols, Int64& rowCount);
+  HBC_RetCode getLatestSnapshot(const char * tabname, char *& snapshotName, NAHeap * heap);
+  HBC_RetCode cleanSnpTmpLocation(const char * path);
+  HBC_RetCode setArchivePermissions(const char * path);
   HBC_RetCode getBlockCacheFraction(float& frac);
 
   // req processing in worker threads
@@ -542,6 +551,9 @@ private:
    ,JM_EST_RC
    ,JM_REL_HBLC
    ,JM_GET_CAC_FRC
+   ,JM_GET_LATEST_SNP
+   ,JM_CLEAN_SNP_TMP_LOC
+   ,JM_SET_ARC_PERMS
    ,JM_LAST
   };
   static jclass          javaClass_; 
@@ -728,7 +740,8 @@ private:
 
 };
 
-jobjectArray convertToByteArrayObjectArray(const TextVec &vec);
+jobjectArray convertToByteArrayObjectArray(const LIST(NAString) &vec);
+jobjectArray convertToByteArrayObjectArray(const LIST(HbaseStr) &vec);
 jobjectArray convertToByteArrayObjectArray(const char **array,
                    int numElements, int elementLen);
 jobjectArray convertToStringObjectArray(const TextVec &vec);

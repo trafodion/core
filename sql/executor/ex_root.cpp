@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1995-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1995-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@
 #include "ExSMTrace.h"
 #include "ExSMGlobals.h"
 #include "ExSMCommon.h"
-
+#include "ExpHbaseInterface.h"
 // this contains the location where a longjmp is done after
 // an assertion failure in executor. See file ex_ex.h.
 jmp_buf ExeBuf;
@@ -1103,6 +1103,69 @@ Int32 ex_root_tcb::execute(CliGlobals *cliGlobals,
   return 0;
 }
 
+void ex_root_tcb::setupWarning(Lng32 retcode, const char * str,
+    const char * str2, ComDiagsArea* & diagsArea)
+{
+  ContextCli *currContext = GetCliGlobals()->currContext();
+  // Make sure retcode is positive.
+  if (retcode < 0)
+    retcode = -retcode;
+
+  if ((ABS(retcode) >= HBASE_MIN_ERROR_NUM)
+      && (ABS(retcode) <= HBASE_MAX_ERROR_NUM))
+  {
+    if (diagsArea == NULL)
+      diagsArea = ComDiagsArea::allocate(getHeap());
+    Lng32 cliError = 0;
+
+    Lng32 intParam1 = retcode;
+    ComDiagsArea * newDiags = NULL;
+    ExRaiseSqlWarning(getHeap(), &newDiags, (ExeErrorCode) (8448), NULL,
+        &intParam1, &cliError, NULL, (str ? (char*) str : (char*) " "),
+        getHbaseErrStr(retcode),
+        (str2 ? (char*) str2 : (char *) currContext->getJniErrorStr().data()));
+    diagsArea->mergeAfter(*newDiags);
+  }
+  ex_assert( 0, "invalid return code value");
+}
+
+void ex_root_tcb::snapshotScanCleanup(ComDiagsArea* & diagsArea)
+{
+  const char * tmpLoc = root_tdb().getSnapshotScanTempLocation();
+  if (tmpLoc == NULL)
+    return;
+
+  ExpHbaseInterface* ehi = ExpHbaseInterface::newInstance
+                           (STMTHEAP, "", "");
+
+  ex_assert(ehi != NULL, "cannot connect to HBase");
+  Int32 retcode = ehi->init(NULL);
+  if (retcode != 0)
+  {
+    setupWarning(retcode, "ExpHbaseInterface::init", "", diagsArea);
+  } 
+  else
+  {
+    retcode = ehi->cleanSnpTmpLocation(tmpLoc);
+    if (retcode != 0)
+      setupWarning(retcode, "ExpHbaseInterface::cleanSnpTmpLocation", "", diagsArea);
+    if (root_tdb().getListOfSnapshotScanTables())
+      root_tdb().getListOfSnapshotScanTables()->position();
+    for (int i = 0; i < root_tdb().getListOfSnapshotScanTables()->entries(); i++)
+    {
+      char * tbl = (char*) root_tdb().getListOfSnapshotScanTables()->getCurr();
+      retcode = ehi->setArchivePermissions((const char *) tbl);
+      if (retcode != 0)
+      {
+        setupWarning(retcode, "ExpHbaseInterface::setArchivePermissions", "", diagsArea);
+      }
+      root_tdb().getListOfSnapshotScanTables()->advance();
+
+    }
+  }
+  delete ehi;
+  return;
+}
 ////////////////////////////////////////////////////////
 // RETURNS: 0, success. 100, EOF. -1, error. 1, warning
 ////////////////////////////////////////////////////////
@@ -1716,7 +1779,7 @@ Int32 ex_root_tcb::fetch(CliGlobals *cliGlobals,
 	  
             // this may have woken up the scheduler, make sure we call it
             schedRetcode = WORK_CALL_AGAIN;
-          }
+          }//loop for(Lng32 i = 0; i < queueSize && (retcode == 0 || retcode ==1); i++)
 
 	if (retcode == 100)
 	  {
@@ -1731,6 +1794,10 @@ Int32 ex_root_tcb::fetch(CliGlobals *cliGlobals,
 	  if ((retcode < 0) || (retcode == 100) || ((retcode > 0) && doneWithRowsets))
 	  {
             ipcEnv->deleteCompletedMessages(); // cleanup messages
+            if (root_tdb().getSnapshotScanTempLocation())
+            {
+              snapshotScanCleanup(diagsArea);
+            }
 	    return retcode;
 	  }
 	}
@@ -2399,6 +2466,10 @@ Int32 ex_root_tcb::cancel(ExExeStmtGlobals * glob, ComDiagsArea *&diagsArea,
         {
           // deregister to avoid a leak in broker process MXSSMP.
           deregisterCB();
+          if (root_tdb().getSnapshotScanTempLocation())
+          {
+            snapshotScanCleanup(diagsArea);
+          }
           return fatal_error(glob, diagsArea, TRUE);
         }
 
@@ -2415,7 +2486,10 @@ Int32 ex_root_tcb::cancel(ExExeStmtGlobals * glob, ComDiagsArea *&diagsArea,
   glob->castToExMasterStmtGlobals()->clearCancelState();
 
   deregisterCB();
-
+  if (root_tdb().getSnapshotScanTempLocation())
+  {
+    snapshotScanCleanup(diagsArea);
+  }
   return 0;
 }
 
@@ -2427,7 +2501,7 @@ Int32 ex_root_tcb::deallocAndDelete(ExExeStmtGlobals *glob,
   glob->castToExMasterStmtGlobals()->resetCancelState();
 
   // Warning:  deleteMe() will delete this tcb!!!!
-  glob->deleteMe(); 
+  glob->deleteMe(fatalError_); 
   return 0;
 }
 
@@ -2591,8 +2665,12 @@ Int32 ex_root_tcb::fatal_error( ExExeStmtGlobals * glob,
 
 void ex_root_tcb::completeOutstandingCancelMsgs()
 {
-  ExExeStmtGlobals *glob = getGlobals()->castToExExeStmtGlobals();
-  while (glob->anyCancelMsgesOut())
+  ExMasterStmtGlobals *glob = getGlobals()->castToExExeStmtGlobals()->
+                               castToExMasterStmtGlobals();
+  
+  while (!fatalError_ && 
+         (glob->getRtFragTable()->getState() != ExRtFragTable::ERROR) && 
+         glob->anyCancelMsgesOut())
   {
     if (root_tdb().getQueryUsesSM() && glob->getIpcEnvironment()->smEnabled())
       EXSM_TRACE(EXSM_TRACE_MAIN_THR | EXSM_TRACE_CANCEL,
@@ -2600,12 +2678,23 @@ void ex_root_tcb::completeOutstandingCancelMsgs()
                  this, (int) glob->numCancelMsgesOut());
 
     // work may have finished before a cancel request 
-    // was answered by some ESP or exe-in-dp2.  However, 
-    // this little loop will ensure that replies to
-    // these cancel messages will happen while the transid 
-    // is valid -- else ArkFs may raise an FEINVTRANSID.
+    // was answered by some ESP. 
     glob->getIpcEnvironment()->getAllConnections()->waitOnAll();
   }
+
+  // Note about cleanup after fatalError: When a fatalError happens,
+  // we can no longer user the data connections and ex_queues. The 
+  // query must be deallocated; it cannot be simply reexecuted. So 
+  // it is unreliable to depend on ESPs to reply to data messages.
+  // Therefore we skip it. What happens to the connections to ESPs?
+  // Any pending messages are subjected to BCANCELREQ when they
+  // timeout (from Statement::releaseTransaction or ex_root_tcb::cancel).
+  // The data connections are closed as part of the destructor of 
+  // the send top tcbs.  The control connections are closed as 
+  // part of ExEspManager::releaseEsp and this will cause any
+  // functioning ESP to exit when it get the system close message.
+  // Any hanging ESP will stick around. If it ever comes out of the
+  // hang, it will check for the system close message and exit.
 }
 
 NABoolean ex_root_tcb::externalEventCompleted(void)
