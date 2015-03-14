@@ -44,8 +44,10 @@ jdk_1_7_hdp2_1:
 
 jdk_1_7:
 	$(MAKE) build_chk_1_7
+	echo "$(MAVEN) compile -X -Dcompile-protobuf"
 	echo "$(MAVEN) package -DskipTests"
 	echo "### For full Maven output, see file build_trx.log"
+	set -o pipefail && $(MAVEN) compile -X -Dcompile-protobuf| tee build_trx.log | grep --line-buffered -E -e '^\[[^WId]' -e '^\[INFO\] B[Uu][Ii][Ll][Dd]' -e 'to compile'
 	set -o pipefail && $(MAVEN) package -DskipTests | tee build_trx.log | grep --line-buffered -E -e '^\[[^WId]' -e '^\[INFO\] B[Uu][Ii][Ll][Dd]' -e 'to compile'
 	cp -pf target/$(BLD_HBASE_TRX_JARNAME) $(MY_SQROOT)/export/lib
 	$(RM) $(VFILE)
