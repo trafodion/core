@@ -2612,6 +2612,7 @@ short HbaseAccess::codeGen(Generator * generator)
     new(space) ComTdbHbaseAccess::HbasePerfAttributes();
   if (CmpCommon::getDefault(COMP_BOOL_184) == DF_ON)
     hbpa->setUseMinMdamProbeSize(TRUE);
+ hbpa->setUseMinMdamProbeSize(TRUE);
   generator->setHBaseNumCacheRows(MAXOF(getEstRowsAccessed().getValue(),
                                         getMaxCardEst().getValue()), 
                                   hbpa) ;

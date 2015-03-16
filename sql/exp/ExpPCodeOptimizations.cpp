@@ -277,7 +277,7 @@ NA_EIDPROC ULng32 collIndexHashFunc2(const CollIndex & o) {
 }
 
 // This function is used as built-in hash function for PCodeCfg::targets_
-// which is instance of NAHashDictionary class template. Its input is the 
+// which is instance of NAHashDictionary class template. Its input is the
 // key of the hash dictionary (a pointer to a sequence of PCodeBinaries)
 // and it must return a 32-bit hash value required by the template, see
 // common/Collections.h. Though the casting would truncate the upper 32-bit
@@ -428,7 +428,7 @@ Int32 PCodeConstants::getConstantValue(CollIndex bvIndex,
           return 0;
      else return UNKNOWN_CONSTANT ;
   }
-  if ( isOne ) 
+  if ( isOne )
   {
      if ( !isNeg1 )
           return 1;
@@ -442,7 +442,7 @@ Int32 PCodeConstants::getConstantValue(CollIndex bvIndex,
 
 //
 // Copy known constants of one index into another.  Return the known constant
-// if one is found. 
+// if one is found.
 // 
 Int32 PCodeConstants::copyConstantVectors(CollIndex bvIndexFrom,
                                           CollIndex bvIndexTo,

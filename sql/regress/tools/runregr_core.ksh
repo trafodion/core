@@ -289,6 +289,7 @@ skippedfiles=
 #
 ################################################################
 testfiles="$prettyfiles"
+testfiles="TEST001"
 prettyfiles=
 
 # skip these tests on all platforms.
