@@ -1,0 +1,12 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Daniel Lu <ping.lu@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+1: Zbigniew Omanski <zbigniew.omanski@hp.com>
+Code-Review+2: Arvind Narain <arvind.narain@hp.com>
+Workflow+1: Arvind Narain <arvind.narain@hp.com>
+Code-Review+1: xiu-zhu.zhang <xiu-zhu.zhang@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 17 Mar 2015 17:59:49 +0000
+Reviewed-on: https://review.trafodion.org/1260
+Project: trafodion/core
+Branch: refs/heads/master
