@@ -30,15 +30,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.net.DNS;
 
 import org.trafodion.rest.util.RestConfiguration;
-import org.trafodion.rest.util.Strings;
 import org.trafodion.rest.util.VersionInfo;
 
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.security.Constraint;
+import org.mortbay.jetty.security.ConstraintMapping;
+import org.mortbay.jetty.security.SecurityHandler;
+import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.thread.QueuedThreadPool;
@@ -89,14 +91,15 @@ public class TrafodionRest implements Runnable, RestConstants {
 		// check for user-defined port setting, if so override the conf
 		if (commandLine != null && commandLine.hasOption("port")) {
 			String val = commandLine.getOptionValue("port");
-			servlet.getConfiguration().setInt("trafodion.rest.port", Integer.valueOf(val));
+			servlet.getConfiguration().setInt("rest.port.port", Integer.valueOf(val));
 			LOG.debug("port set to " + val);
 		}
 
 		// check if server should only process GET requests, if so override the conf
 		if (commandLine != null && commandLine.hasOption("readonly")) {
-			servlet.getConfiguration().setBoolean("trafodion.rest.readonly", true);
-			LOG.debug("readonly set to true");
+			servlet.getConfiguration().setBoolean("rest.port.readonly", true);
+			if(LOG.isDebugEnabled())
+			    LOG.debug("readonly set to true");
 		}
 /*
 		// check for user-defined info server port setting, if so override the conf
@@ -151,9 +154,35 @@ public class TrafodionRest implements Runnable, RestConstants {
 		// set up Jetty and run the embedded server
 		Server server = new Server();
 
-		Connector connector = new SelectChannelConnector();
-		connector.setPort(servlet.getConfiguration().getInt("trafodion.rest.port", 8080));
-		connector.setHost(servlet.getConfiguration().get("trafodion.rest.host", "0.0.0.0"));
+		SelectChannelConnector connector = new SelectChannelConnector();
+		connector.setPort(servlet.getConfiguration().getInt("rest.port", 8080));
+		connector.setHost(servlet.getConfiguration().get("rest.host", "0.0.0.0"));
+		
+		//SSL
+        int sslPort = servlet.getConfiguration().getInt("rest.https.port", 8443);
+        connector.setConfidentialPort(sslPort);
+        String sKeyStore = servlet.getConfiguration().get("rest.keystore", "${rest.conf.dir}/rest-keystore"); 
+        String sKeyStorePswd = servlet.getConfiguration().get("rest.ssl.password", "trafrest11");  
+         
+         if(LOG.isDebugEnabled())
+             LOG.debug("setPort(" + sslPort + ")" +
+                       ",setKeystore(" + sKeyStore + ")" +
+                       ",setTruststore(" + sKeyStore + ")" +
+                       ",setPassword(" + sKeyStorePswd + ")" +
+                       ",setKeyPassword(" + sKeyStorePswd + ")" +
+                       ",setTrustPassword(" + sKeyStorePswd + ")");
+        
+        // Second, construct and populate a SSL Context object (for use in the Channel Connector)
+        SslSocketConnector sslConnector = new SslSocketConnector( );
+        sslConnector.setPort(sslPort);
+        sslConnector.setKeystore(sKeyStore);
+        sslConnector.setTruststore(sKeyStore);
+        sslConnector.setPassword(sKeyStorePswd);
+        sslConnector.setKeyPassword(sKeyStorePswd);
+        sslConnector.setTrustPassword(sKeyStorePswd);
+
+        // Finally, register both connectors with this server object 
+        server.setConnectors(new Connector[ ] { connector, sslConnector});
 
 		server.addConnector(connector);
 
@@ -170,9 +199,22 @@ public class TrafodionRest implements Runnable, RestConstants {
 		server.setSendServerVersion(false);
 		server.setSendDateHeader(false);
 		server.setStopAtShutdown(true);
+		
+        //Create the internal mechanisms to handle secure connections and redirects
+        Constraint constraint = new Constraint();
+        constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+        
+        ConstraintMapping cm = new ConstraintMapping();
+        cm.setConstraint(constraint);
+        cm.setPathSpec("/*");
+        
+        SecurityHandler shd = new SecurityHandler();
+        shd.setConstraintMappings(new ConstraintMapping[] { cm });
+
 
 		Context context = new Context(server, "/", Context.SESSIONS);
 		context.addServlet(sh, "/*");
+        context.addHandler(shd);
 		
 		try {
 			server.start();
