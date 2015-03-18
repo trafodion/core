@@ -54,5 +54,6 @@ public class CleanOldTransactionsChore extends Chore {
       //LOG.trace("CleanOldTransactionsChore: region " + this.trx_Region.getRegionNameAsString());
         
       trx_Region.removeUnNeededStaleScanners();
+      trx_Region.checkMemoryUsage();
   }
 }
