@@ -22,6 +22,7 @@ BLD_HBASE_APACHE_TRX_JARNAME     =hbase-trx-hbase_98_4-$(TRAFODION_VER).jar
 BLD_HBASE_CDH_TRX_JARNAME        =hbase-trx-cdh5_3-$(TRAFODION_VER).jar
 BLD_HBASE_MAPR_TRX_JARNAME       =hbase-trx-mapr4_0-$(TRAFODION_VER).jar
 BLD_HBASE_HDP_TRX_JARNAME        =hbase-trx-hdp2_2-$(TRAFODION_VER).jar
+BLD_HBASE_SSCC_TRX_JARNAME       =hbase-trx-sscc-$(TRAFODION_VER).jar
 
 VFILE			    =hbase-trx.jar.versions
 GENVERS			    =./genvers
@@ -29,6 +30,12 @@ GENVERS			    =./genvers
 .NOTPARALLEL: all
 
 all: build_all
+
+jdk_1_7_sscc:
+	$(MAKE) build_chk_sscc
+	set -o pipefail && $(MAVEN) -f pom.xml.sscc package -DskipTests | tee -a build_trx.log
+	cp -pf target/$(BLD_HBASE_SSCC_TRX_JARNAME) $(MY_SQROOT)/export/lib
+	$(RM) $(VFILE)
 
 jdk_1_7_cdh:
 	$(MAKE) build_chk_cdh
@@ -56,7 +63,7 @@ jdk_1_7_apache:
 	cp -pf target/$(BLD_HBASE_APACHE_TRX_JARNAME) $(MY_SQROOT)/export/lib
 	$(RM) $(VFILE)
 
-build_all: jdk_1_7_apache jdk_1_7_cdh jdk_1_7_hdp jdk_1_7_mapr
+build_all: jdk_1_7_apache jdk_1_7_cdh jdk_1_7_hdp jdk_1_7_mapr jdk_1_7_sscc
 #build_all: jdk_1_7_apache jdk_1_7_cdh
 
 build_chk_apache:
@@ -79,14 +86,21 @@ build_chk_hdp:
 	@if [ $(GENVERS) -nt target/$(BLD_HBASE_HDP_TRX_JARNAME) ]; then echo "update manifest"; $(RM) -f target/$(BLD_HBASE_HDP_TRX_JARNAME); fi
 	@if [ $(MY_SQROOT)/export/include/SCMBuildStr.h -nt target/$(BLD_HBASE_HDP_TRX_JARNAME) ]; then echo "update manifest"; $(RM) -f target/$(BLD_HBASE_HDP_TRX_JARNAME); fi
 
+build_chk_sscc:
+	$(GENVERS) > $(VFILE)
+	@if [ $(GENVERS) -nt target/$(BLD_HBASE_SSCC_TRX_JARNAME) ]; then echo "update manifest"; $(RM) -f target/$(BLD_HBASE_SSCC_TRX_JARNAME); fi
+	@if [ $(MY_SQROOT)/export/include/SCMBuildStr.h -nt target/$(BLD_HBASE_SSCC_TRX_JARNAME) ]; then echo "update manifest"; $(RM) -f target/$(BLD_HBASE_SSCC_TRX_JARNAME); fi
+
 clean:
 	$(RM) $(MY_SQROOT)/export/lib/$(BLD_HBASE_APACHE_TRX_JARNAME)
 	$(RM) $(MY_SQROOT)/export/lib/$(BLD_HBASE_CDH_TRX_JARNAME)
 	$(RM) $(MY_SQROOT)/export/lib/$(BLD_HBASE_MAPR_TRX_JARNAME)
 	$(RM) $(MY_SQROOT)/export/lib/$(BLD_HBASE_HDP_TRX_JARNAME)
+	$(RM) $(MY_SQROOT)/export/lib/$(BLD_HBASE_SSCC_TRX_JARNAME)
 	-$(MAVEN) -f pom.xml.apache clean | grep ERROR
 	-$(MAVEN) -f pom.xml.cdh clean | grep ERROR
 	-$(MAVEN) -f pom.xml.mapr clean | grep ERROR
 	-$(MAVEN) -f pom.xml.hdp clean | grep ERROR
+	-$(MAVEN) -f pom.xml.sscc clean | grep ERROR
 	$(RM) build_trx.log
 	$(RM) $(VFILE)
