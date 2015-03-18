@@ -897,7 +897,8 @@ public class HBaseTxClient {
                                 // TransactionState ts = new TransactionState(txID);
                                 try {
                                     audit.getTransactionState(ts);
-                                    if (ts.getStatus().equals("COMMITTED")) {
+                                    if (LOG.isDebugEnabled()) LOG.debug("TRAF RCOV THREAD: AAA transState " + ts.getStatus());
+                                    if (ts.getStatus().equals("STATE_COMMITTED")) {
                                         if (LOG.isDebugEnabled())
                                             LOG.debug("TRAF RCOV THREAD:Redriving commit for " + txID + " number of regions " + ts.getParticipatingRegions().size() +
                                                     " and tolerating UnknownTransactionExceptions");
@@ -906,7 +907,7 @@ public class HBaseTxClient {
                                             long nextAsn = tLog.getNextAuditSeqNum((int)(txID >> 32));
                                             tLog.putSingleRecord(txID, "FORGOTTEN", null, forceForgotten, nextAsn);
                                         }
-                                    } else if (ts.getStatus().equals("ABORTED")) {
+                                    } else if (ts.getStatus().equals("STATE_ABORTED")) {
                                         if (LOG.isDebugEnabled())
                                             LOG.debug("TRAF RCOV THREAD:Redriving abort for " + txID);
                                         txnManager.abort(ts);
