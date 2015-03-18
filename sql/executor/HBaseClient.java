@@ -82,6 +82,7 @@ import org.apache.hadoop.hbase.regionserver.StoreFileInfo;
 import org.apache.hadoop.hbase.HConstants;
 
 import com.google.protobuf.ServiceException;
+import org.apache.hadoop.hbase.client.DtmConst;
 
 public class HBaseClient {
 
@@ -219,6 +220,12 @@ public class HBaseClient {
                 colDesc.setMaxVersions(1);
                 desc.addFamily(colDesc);
             }
+            //create metadata column family for transaction handling
+            HColumnDescriptor metaColDesc = new HColumnDescriptor(DtmConst.TRANSACTION_META_FAMILY);
+            metaColDesc.setMaxVersions(DtmConst.MAX_VERSION * 2);
+            metaColDesc.setInMemory(true);
+            desc.addFamily(metaColDesc);
+
             HBaseAdmin admin = new HBaseAdmin(config);
             admin.createTable(desc);
             admin.close();
@@ -390,6 +397,11 @@ public class HBaseClient {
                 }
             }
             desc.addFamily(colDesc);
+            //create column family for transaction metadata
+            HColumnDescriptor metaColDesc = new HColumnDescriptor(DtmConst.TRANSACTION_META_FAMILY);
+            metaColDesc.setMaxVersions(DtmConst.MAX_VERSION * 2);
+            metaColDesc.setInMemory(true);
+            desc.addFamily(metaColDesc);
             HBaseAdmin admin = new HBaseAdmin(config);
             if (beginEndKeys != null && beginEndKeys.length > 0)
             {
