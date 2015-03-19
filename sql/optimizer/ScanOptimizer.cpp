@@ -8503,7 +8503,9 @@ void MDAMCostWA::compute()
       {
         if (optimizer_.getIndexDesc()->getPrimaryTableDesc()->getNATable()->isHbaseTable())
         {
-          scmCost_ = optimizer_.scmComputeMDAMCostForHbase(totalRows, totalSeeks, 
+          CostScalar totRowsProcessed = totalRows + totalRqsts;
+          CostScalar totSeeks = totalSeeks + totalRqsts;
+          scmCost_ = optimizer_.scmComputeMDAMCostForHbase(totRowsProcessed, totSeeks, 
                                                            totalSeqKBRead, incomingProbes_);
 
         }
