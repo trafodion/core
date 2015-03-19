@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Sean Broeder <sean.broeder@hp.com>
+Workflow+1: Sean Broeder <sean.broeder@hp.com>
+Code-Review+2: Shang-Sheng Tung <shang-sheng.tung@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 19 Mar 2015 01:05:15 +0000
+Reviewed-on: https://review.trafodion.org/1333
+Project: trafodion/core
+Branch: refs/heads/master
