@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: ron cassou <ron.cassou@hp.com>
+Code-Review+2: Narendra Goyal <narendra.goyal@hp.com>
+Workflow+1: Narendra Goyal <narendra.goyal@hp.com>
+Code-Review+2: Gonzalo Correa <gonzalo.correa@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 19 Mar 2015 05:50:06 +0000
+Reviewed-on: https://review.trafodion.org/1338
+Project: trafodion/core
+Branch: refs/heads/master
