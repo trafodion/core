@@ -817,6 +817,23 @@ bool CTmTxBase::req_registerRegion(CTmTxMessage * pp_msg)
    return false; //Never terminate the thread if there's no more work to do
 } //req_registerRegion
 
+// --------------------------------------------------------------
+// req_ddloperation
+// Purpose - Txn Thread specific processing for ddl operations
+// This is only received in Seatrans for HBase-trx participants
+// --------------------------------------------------------------
+bool CTmTxBase::req_ddloperation(CTmTxMessage *pp_msg)
+{
+   TMTrace (2, ("CTmTxBase::req_ddloperation : ID (%d,%d) ENTRY.\n",
+      node(), seqnum()));
+
+   short lv_error = branches()->ddlOperation(this, 0, pp_msg);
+
+   TMTrace (2, ("CTmTxBase::req_ddloperation : EXIT error %d, Txn ID (%d,%d).\n",
+      lv_error, node(), seqnum()));
+
+   return true;
+}
 
 //------------------------------------------------------------------------------
 // register_branch

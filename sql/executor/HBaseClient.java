@@ -61,6 +61,7 @@ import org.apache.hadoop.hbase.regionserver.BloomType;
 //import org.apache.hadoop.hbase.regionserver.StoreFile.BloomType ;
 import org.apache.hadoop.hbase.regionserver.KeyPrefixRegionSplitPolicy;
 import org.apache.hadoop.hbase.client.Durability;
+import org.apache.hadoop.hbase.client.transactional.RMInterface;
 import org.trafodion.sql.HBaseAccess.HTableClient;
 import org.apache.hadoop.hbase.ServerLoad;
 import org.apache.hadoop.hbase.RegionLoad;
@@ -88,6 +89,9 @@ public class HBaseClient {
     static Logger logger = Logger.getLogger(HBaseClient.class.getName());
     public static Configuration config = HBaseConfiguration.create();
     String lastError;
+    RMInterface table = null;
+    boolean useDDLTrans;    
+
     private PoolMap<String, HTableClient> hTableClientsFree;
     private PoolMap<String, HTableClient> hTableClientsInUse;
     // this set of constants MUST be kept in sync with the C++ enum in
@@ -151,10 +155,23 @@ public class HBaseClient {
     public boolean init(String zkServers, String zkPort) 
 	throws MasterNotRunningException, ZooKeeperConnectionException, ServiceException, IOException
     {
-         if (logger.isDebugEnabled()) logger.debug("HBaseClient.init(" + zkServers + ", " + zkPort
+        if (logger.isDebugEnabled()) logger.debug("HBaseClient.init(" + zkServers + ", " + zkPort
                          + ") called.");
-         HBaseAdmin.checkHBaseAvailable(config);
-         return true;
+        HBaseAdmin.checkHBaseAvailable(config);
+ 
+        table = new RMInterface(config);
+
+        this.useDDLTrans = false;
+        try {
+            String useDDLTransactions = System.getenv("TM_ENABLE_DDL_TRANS");
+            if (useDDLTransactions != null) {
+                useDDLTrans = (Integer.parseInt(useDDLTransactions) !=0);
+            }
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) logger.debug("HBaseClient.init TM_ENABLE_DDL_TRANS is not in ms.env.");
+        }
+       
+        return true;
     }
  
     private void  cleanup(PoolMap hTableClientsPool) throws IOException
@@ -226,7 +243,7 @@ public class HBaseClient {
    } 
 
     public boolean createk(String tblName, Object[] tableOptions, 
-        Object[]  beginEndKeys) 
+        Object[]  beginEndKeys, long transID) 
         throws IOException, MasterNotRunningException {
             if (logger.isDebugEnabled()) logger.debug("HBaseClient.createk(" + tblName + ") called.");
             String trueStr = "TRUE";
@@ -396,10 +413,19 @@ public class HBaseClient {
                byte[][] keys = new byte[beginEndKeys.length][];
                for (int i = 0; i < beginEndKeys.length; i++) 
                    keys[i] = (byte[])beginEndKeys[i]; 
-               admin.createTable(desc, keys);
+               if (transID != 0 && useDDLTrans == true) {
+                   table.createTable(desc, keys);
+               } else {
+                   admin.createTable(desc, keys);
+               }
             }
-            else
-               admin.createTable(desc);
+            else {
+               if (transID != 0 && useDDLTrans == true) {
+                  table.createTable(desc, null);   
+               } else {   
+                  admin.createTable(desc);
+               }
+            }
             admin.close();
         return true;
     }

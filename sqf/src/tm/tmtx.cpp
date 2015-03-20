@@ -996,6 +996,9 @@ void TM_TX_Info::process_eventQ()
       case TM_MSG_TYPE_AX_REG:
          lv_exit = req_ax_reg(lp_msg);
          break;
+      case TM_MSG_TYPE_DDLREQUEST:
+         lv_exit = req_ddloperation(lp_msg);
+         break;      
       case TM_MSG_TYPE_REGISTERREGION:
          lv_exit = req_registerRegion(lp_msg);
 /*	 if (! lp_msg->replyPending()) {
