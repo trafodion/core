@@ -92,12 +92,7 @@ public:
   void disableVolatileSchemaInUse();
   void saveVolatileSchemaInUse();
   void restoreVolatileSchemaInUse();
-  void setParentQid(const char *parentQid) 
-  { 
-     // Need to revisit the parentQid concept with embedded compiler
-     // For now, it is not supported
-     parentQid_ = NULL;
-  }
+  void setParentQid(const char *parentQid) { parentQid_ = parentQid; }
   const char *getParentQid() { return parentQid_; }
 
   inline Lng32 getNumSessions() { return numSessions_; }

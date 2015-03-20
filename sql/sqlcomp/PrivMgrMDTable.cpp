@@ -29,6 +29,7 @@
 #include "ComDiags.h"
 #include "ComQueue.h"
 #include "CmpCommon.h"
+#include "CmpContext.h"
 
 // *****************************************************************************
 //    PrivMgrMDRow methods
@@ -228,7 +229,8 @@ int32_t cliRC = cliInterface.fetchRowsPrologue(SQLStatement.c_str(),true/*no exe
 PrivStatus PrivMgrMDTable::CLIImmediate(const std::string & SQLStatement)
 {
 
-ExeCliInterface cliInterface(STMTHEAP);
+ExeCliInterface cliInterface(STMTHEAP, NULL, NULL, 
+  CmpCommon::context()->sqlSession()->getParentQid());
 
 int32_t cliRC = cliInterface.executeImmediate(SQLStatement.c_str());
 
@@ -311,7 +313,8 @@ PrivStatus PrivMgrMDTable::executeFetchAll(
    
 {
 
-ExeCliInterface cliInterface(STMTHEAP);
+ExeCliInterface cliInterface(STMTHEAP, NULL, NULL, 
+  CmpCommon::context()->sqlSession()->getParentQid());
 
    queue = NULL;
    
@@ -383,7 +386,8 @@ std::string selectStmt ("SELECT COUNT(*) FROM  ");
    selectStmt += whereClause;
 
 int32_t length = 0;
-ExeCliInterface cliInterface(STMTHEAP);
+ExeCliInterface cliInterface(STMTHEAP, NULL, NULL, 
+  CmpCommon::context()->sqlSession()->getParentQid());
 
 int32_t cliRC = cliInterface.executeImmediate(selectStmt.c_str(),
                                               (char*)&rowCount, 
