@@ -24,8 +24,10 @@ import java.io.DataOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
 import org.apache.hadoop.hbase.client.HConnection;
@@ -35,6 +37,7 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.client.transactional.TransactionManager;
@@ -67,11 +70,13 @@ public class RMInterface {
 
     static Map<Long, Set<RMInterface>> mapRMsPerTransaction = new HashMap<Long,  Set<RMInterface>>();
     private TransactionalTableClient ttable = null;
+    private HTable table;
     static {
         System.loadLibrary("stmlib");
    }
 
     private native void registerRegion(int port, byte[] hostname, long startcode, byte[] regionInfo);
+    private native void createTableReq(byte[] lv_byte_htabledesc);
 
     public static void main(String[] args) {
       System.out.println("MAIN ENTRY");      
@@ -100,6 +105,10 @@ public class RMInterface {
         }
 
         if (LOG.isTraceEnabled()) LOG.trace("RMInterface ctor.");
+    }
+
+    public RMInterface(final Configuration conf) throws IOException {
+        mapTransactionStates = new ConcurrentHashMap<Long, TransactionState>();
     }
 
     public synchronized TransactionState registerTransaction(final long transactionID, final byte[] row) throws IOException {
@@ -148,6 +157,16 @@ public class RMInterface {
 
         if (LOG.isTraceEnabled()) LOG.trace("Exit registerTransaction, transaction ID: " + transactionID);
         return ts;
+    }
+
+    public void createTable(HTableDescriptor desc, byte[][] keys) throws IOException {
+        if (LOG.isTraceEnabled()) LOG.trace("createTable ENTER: ");
+     
+        byte[] lv_byte_desc = desc.toByteArray();
+
+        if (LOG.isTraceEnabled()) LOG.trace("createTable: htabledesc bytearray: " + lv_byte_desc + "desc in hex: " + Hex.encodeHexString(lv_byte_desc));
+
+        createTableReq(lv_byte_desc);
     }
 
     static public void clearTransactionStates(final long transactionID) {
