@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1997-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1997-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -608,4 +608,17 @@ NABoolean CmpSqlSession::volatileSchemaInUse()
 { 
   return ((volatileSchemaInUse_) &&
 	  (NOT Get_SqlParser_Flags(DISABLE_VOLATILE_SCHEMA)));
+}
+
+void CmpSqlSession::setParentQid(const char *parentQid)
+{
+  if (parentQid)
+  {
+    Int32 len = str_len(parentQid);
+    if (len < ComSqlId::MIN_QUERY_ID_LEN)
+      abort();
+    if (0 != str_cmp(parentQid, COM_SESSION_ID_PREFIX, 4))
+      abort();
+  }
+  parentQid_ = parentQid;
 }
