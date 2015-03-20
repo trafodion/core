@@ -263,11 +263,13 @@ short ExDDLTcb::work()
 	   CmpCommon::context() && (CmpCommon::context()->getRecursionLevel() == 0)
 	  )
         {
-          Int32 cpStatus;
-
+          CmpCommon::context()->sqlSession()->setParentQid(
+            masterGlob->getStatement()->getUniqueStmtId());
           if (cpDiagsArea == NULL)
 	    cpDiagsArea = ComDiagsArea::allocate(getHeap());
-          cpStatus = CmpCommon::context()->compileDirect(
+          // Despite its name, the compileDirect method is where 
+          // the DDL is actually performed. 
+          Int32 cpStatus = CmpCommon::context()->compileDirect(
                                  data, dataLen,
                                  currContext->exHeap(),
                                  ddlTdb().queryCharSet_,
@@ -284,8 +286,6 @@ short ExDDLTcb::work()
            // catCache.cleanupCache();
               // clear diagsArea of cli context which may have warnings
               // set when calling cli inside the embedded compiler
-	      //set the parent QID 
-	      CmpCommon::context()->sqlSession()->setParentQid(masterGlob->getStatement()->getUniqueStmtId());
               if (!currContext->diags().getNumber(DgSqlCode::ERROR_))
                 currContext->diags().clear();
               goto endOfData;
@@ -1361,7 +1361,8 @@ short ExProcessVolatileTableTcb::work()
   ExTransaction *ta = currContext->getTransaction();
   ComDiagsArea *embCmpDiagsArea = NULL;
   
-  ExeCliInterface cliInterface(getHeap(), 0, currContext);
+  ExeCliInterface cliInterface(getHeap(), 0, currContext, 
+    masterGlob->getStatement()->getUniqueStmtId());
 
   while (1)
     {
@@ -1789,7 +1790,8 @@ short ExProcessInMemoryTableTcb::work()
   ExMasterStmtGlobals *masterGlob = exeGlob->castToExMasterStmtGlobals();
   ContextCli * currContext = masterGlob->getStatement()->getContext();
 
-  ExeCliInterface cliInterface(getHeap(), 0, currContext);
+  ExeCliInterface cliInterface(getHeap(), 0, currContext,
+    masterGlob->getStatement()->getUniqueStmtId());
   ExSqlComp *cmp = NULL;
 
   while (1)
