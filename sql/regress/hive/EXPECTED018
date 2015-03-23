@@ -466,7 +466,7 @@ Task:  MERGE FILES     Status: Ended      ET: 00:00:00.093
 >>
 >>log;
 regrhadoop.ksh fs -du -s /bulkload/customer_demographics_salt/merged_customer_demogs_3
-778224  /bulkload/customer_demographics_salt/merged_customer_demogs_3
+778224  778224  /bulkload/customer_demographics_salt/merged_customer_demogs_3
 >>-------------------
 >>--unload 5
 >>UNLOAD  
@@ -489,7 +489,7 @@ Task:  MERGE FILES     Status: Ended      ET: 00:00:00.072
 >>
 >>log;
 regrhadoop.ksh fs -du -s /bulkload/customer_demographics_salt/merged_customer_demogs_4.gz
-78431  /bulkload/customer_demographics_salt/merged_customer_demogs_4.gz
+78431  78431  /bulkload/customer_demographics_salt/merged_customer_demogs_4.gz
 >>
 >>--exp4
 >>explain options 'f' 
