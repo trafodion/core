@@ -81,6 +81,7 @@ import org.apache.hadoop.hbase.io.hfile.HFile;
 import org.apache.hadoop.hbase.io.hfile.HFileScanner;
 import org.apache.hadoop.hbase.regionserver.StoreFileInfo;
 import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.client.DtmConst;
 
 import com.google.protobuf.ServiceException;
 
@@ -119,7 +120,7 @@ public class HBaseClient {
     public static final int HBASE_DURABILITY = 20;
     public static final int HBASE_MEMSTORE_FLUSH_SIZE = 21;
     public static final int HBASE_SPLIT_POLICY = 22;
-
+    boolean useSscc = false;
     
     public HBaseClient() {
       if (hTableClientsFree == null)
@@ -166,6 +167,7 @@ public class HBaseClient {
         }
         
         this.useDDLTrans = false;
+        this.useSscc= false;
         try {
             String useDDLTransactions = System.getenv("TM_ENABLE_DDL_TRANS");
             if (useDDLTransactions != null) {
@@ -175,6 +177,14 @@ public class HBaseClient {
             if (logger.isDebugEnabled()) logger.debug("HBaseClient.init TM_ENABLE_DDL_TRANS is not in ms.env.");
         }
 
+        try {
+            String useSsccEnv= System.getenv("TM_USE_SSCC");
+            if (useSsccEnv!= null) {
+                useSscc= (Integer.parseInt(useSsccEnv) !=0);
+            }
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) logger.debug("HBaseClient.init TM_USE_SSCC is not in ms.env.");
+        }
         return true;
     }
  
@@ -239,6 +249,12 @@ public class HBaseClient {
                 HColumnDescriptor colDesc = new HColumnDescriptor(colFam);
                 colDesc.setMaxVersions(1);
                 desc.addFamily(colDesc);
+            }
+            if(useSscc == true)  {
+                HColumnDescriptor metaColDesc = new HColumnDescriptor(DtmConst.TRANSACTION_META_FAMILY);
+                metaColDesc.setMaxVersions(DtmConst.MAX_VERSION * 2);
+                metaColDesc.setInMemory(true);
+                desc.addFamily(metaColDesc);
             }
             HBaseAdmin admin = new HBaseAdmin(config);
             admin.createTable(desc);
@@ -411,6 +427,12 @@ public class HBaseClient {
                 }
             }
             desc.addFamily(colDesc);
+            if(useSscc == true)  {
+                HColumnDescriptor metaColDesc = new HColumnDescriptor(DtmConst.TRANSACTION_META_FAMILY);
+                metaColDesc.setMaxVersions(DtmConst.MAX_VERSION * 2);
+                metaColDesc.setInMemory(true);
+                desc.addFamily(metaColDesc);
+            }
             HBaseAdmin admin = new HBaseAdmin(config);
 
             try {
