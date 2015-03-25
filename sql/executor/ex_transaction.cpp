@@ -1384,7 +1384,8 @@ short ExTransTcb::work()
                                               SQLCHARSETCODE_UTF8,
                                               EXSQLCOMP::SET_TRANS,
                                               dummyReply, dummyLength,
-                                              currCtxt->getSqlParserFlags());
+                                              currCtxt->getSqlParserFlags(),
+                                              NULL, 0);
             if (cmpRet != 0)
               {
                 char emsText[120];

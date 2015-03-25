@@ -300,7 +300,8 @@ short ExStoredProcTcb::work()
                                  CmpMessageObj::INTERNALSP_REQUEST,
                                  (char* &)returnedBuffer_, returnedBuflen,
                                  master_glob->getStatement()->getContext()->getSqlParserFlags(),
-                                 cpDiagsArea);
+
+                                 NULL, 0, cpDiagsArea);
             if(cpStatus != 0)//FAILURE
             {
                //replied length exceeds the return buffer length, this will abort an dump the core
@@ -345,7 +346,7 @@ short ExStoredProcTcb::work()
                                  CmpMessageObj::INTERNALSP_GETNEXT,
                                  (char* &)returnedBuffer_, returnedBuflen,
                                  master_glob->getStatement()->getContext()->getSqlParserFlags(),
-                                 cpDiagsArea);
+                                 NULL, 0, cpDiagsArea);
                                  
              if(cpStatus != 0)//FAILURE
              {

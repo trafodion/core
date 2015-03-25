@@ -3723,7 +3723,8 @@ void ContextCli::createMxcmpSession()
       cmpStatus = CmpCommon::context()->compileDirect(pMessage,
                                (ULng32) sizeof(userMessage), &exHeap_,
                                SQLCHARSETCODE_UTF8, EXSQLCOMP::DATABASE_USER,
-                               dummyReply, dummyLen, getSqlParserFlags());
+                               dummyReply, dummyLen, getSqlParserFlags(),
+                               NULL, 0);
       if (cmpStatus != 0)
         {
           char emsText[120];
@@ -3880,7 +3881,8 @@ void ContextCli::endMxcmpSession(NABoolean cleanupEsps)
       cmpStatus = CmpCommon::context()->compileDirect((char *) &flags,
                                (ULng32) sizeof(Lng32), &exHeap_,
                                SQLCHARSETCODE_UTF8, EXSQLCOMP::END_SESSION,
-                               dummyReply, dummyLen, getSqlParserFlags());
+                               dummyReply, dummyLen, getSqlParserFlags(),
+                               NULL, 0);
       if (cmpStatus != 0)
         {
           char emsText[120];
