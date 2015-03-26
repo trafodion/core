@@ -1,7 +1,7 @@
 //**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1996-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1996-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -5450,6 +5450,45 @@ void ContextCli::setDatabaseUserInESP(const Int32 &uid, const char *uname,
     setDatabaseUser(uid, uname);
 }
 
+void ContextCli::setAuthStateInCmpContexts(NABoolean authEnabled,
+                                           NABoolean authReady)
+{
+  // change authorizationEnabled and authorizationReady state
+  // in all the compiler contexts
+  CmpContextInfo *cmpCntxtInfo;
+  CmpContext *cmpCntxt;
+  short i;
+  for (i = 0; i < cmpContextInfo_.entries(); i++)
+    {
+      cmpCntxtInfo = cmpContextInfo_[i];
+      cmpCntxt = cmpCntxtInfo->getCmpContext();
+      cmpCntxt->setIsAuthorizationEnabled(authEnabled);
+      cmpCntxt->setIsAuthorizationReady(authReady);
+    }
+}
+
+void ContextCli::getAuthState(bool &authenticationEnabled,
+                              bool &authorizationEnabled,
+                              bool &authorizationReady,
+                              bool &auditingEnabled)
+{
+  // Check for authentication status
+  char * env = getenv("TRAFODION_ENABLE_AUTHENTICATION");
+  if (env)
+     authenticationEnabled = (strcmp(env, "YES") == 0) ? true : false;
+  else
+     authenticationEnabled = false;
+
+  // Check authorization state
+  CmpContext *cmpCntxt = CmpCommon::context();
+  ex_assert(cmpCntxt, "No compiler context exists");
+  authorizationEnabled = cmpCntxt->isAuthorizationEnabled();
+  authorizationReady = cmpCntxt->isAuthorizationReady();
+
+  // set auditingState to FALSE
+  // TDB - add auditing support
+  auditingEnabled = false;
+}
 
 
 void ContextCli::setUdrXactAborted(Int64 currTransId, NABoolean b)
