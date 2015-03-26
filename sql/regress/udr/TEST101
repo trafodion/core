@@ -869,6 +869,8 @@ create procedure rs3p(in query1 char(1000),
 language java parameter style java reads sql data dynamic result sets 3
 external name 'TEST101.rs3p' library TEST101;
 
+showddl procedure rs3p;
+
 ?section udr_memory_leak
 --------------------------------------------------------------------------
 -- This gets run only for DEBUG builds.
