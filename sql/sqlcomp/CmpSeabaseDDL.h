@@ -378,10 +378,11 @@ class CmpSeabaseDDL
   ExpHbaseInterface* allocEHI(const char * server, const char * zkPort,
                               NABoolean raiseError);
   
-  // if prevContext is defined, get the controlDB from the previous context so the
-  // defaults are copied from the previous cmp context to the new cmp context. This is only
-  // required for embedded compilers where a SWITCH is taking place
-  short sendAllControlsAndFlags(CmpContext* prevContext=NULL);
+  Int32 passUserControls(CmpContext *prevContext, ExeCliInterface &cli);
+  // if prevContext is defined, get some user CQDs int the controlDB from
+  // the previous context so the defaults are copied to the new cmp context
+  short sendAllControlsAndFlags(CmpContext* prevContext=NULL,
+				Int32 cntxtType=-1);
 
   void restoreAllControlsAndFlags();
   

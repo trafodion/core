@@ -149,7 +149,10 @@ public:
   enum Flags
   {
     // indicates that this default was set by user through a CQD stmt.
-    USER_DEFAULT = 0x01
+    USER_DEFAULT = 0x01,
+    // indicates that this default will be passed to new CmpContext if set by
+    // user through a CQD stmt.
+    PROPAGATE    = 0x02
   };
 
   enum DefFlags
@@ -271,6 +274,12 @@ public:
   {return (flags_[attrEnum] & USER_DEFAULT) != 0;}
   void             setUserDefault(Int32 attrEnum, NABoolean v)
   { (v ? flags_[attrEnum] |= USER_DEFAULT : flags_[attrEnum] &= ~USER_DEFAULT);
+  }
+
+  NABoolean        toPropagate(Int32 attrEnum)
+  {return (flags_[attrEnum] & PROPAGATE) != 0;}
+  void             setToPropagate(Int32 attrEnum, NABoolean v)
+  { (v ? flags_[attrEnum] |= PROPAGATE : flags_[attrEnum] &=  PROPAGATE);
   }
 
   NABoolean seabaseDefaultsTableRead() const { return defFlags_ & SEABASE_DEFAULTS_TABLE_READ;}

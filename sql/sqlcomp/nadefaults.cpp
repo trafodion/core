@@ -2863,8 +2863,7 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   // Do the query analysis phase
   DDkwd__(QUERY_ANALYSIS,	"ON"),
 
- // IpcGuardianServer::spawnProcess sets a 384 MB limit on mxcmp heap.
- // Exceeding this limit crashes mxcmp. So set query_cache max to 200 MB.
+ // query_cache max should be 200 MB. Set it 0 to turn off query cache
  //XDD0_200000(QUERY_CACHE,                  "0"),
  XDD0_200000(QUERY_CACHE,                  "16384"),
 
@@ -5825,6 +5824,14 @@ enum DefaultConstants NADefaults::validateAndInsert(const char *attrName,
               validateAndInsert("USTAT_IUS_PERSISTENT_CBF_PATH", value, FALSE);
            } 
         }
+      }
+      break;
+
+      // attrs that need to pass to new CmpContext when switching
+      case TRAF_TABLE_SNAPSHOT_SCAN:
+      {
+	  if (userDefault(attrEnum))
+          setToPropagate(attrEnum, TRUE);
       }
       break;
 
