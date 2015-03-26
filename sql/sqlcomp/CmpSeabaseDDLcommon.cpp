@@ -118,11 +118,27 @@ CmpSeabaseDDL::CmpSeabaseDDL(NAHeap *heap, NABoolean syscatInit)
     }
 }
 
+// We normally don't send user CQDs to the metadata CmpContext.
+// To bypass this set the env variable TRAF_PROPAGATE_USER_CQDS to 1.
+// The sendAllControlsAndFlags() uses current CmpContext pointer, if given,
+// to get the user CQDs and pass them to the new CmpContext.
+static THREAD_P Int32 passingUserCQDs = -1;
+
 // RETURN: -1, if error. 0, if context switched successfully.
 short CmpSeabaseDDL::switchCompiler(Int32 cntxtType)
 {
+  if (passingUserCQDs == -1)
+    {
+      const char *pucStr = getenv("TRAF_PROPAGATE_USER_CQDS");
+      passingUserCQDs = 0;  // check the flag only once
+      if (pucStr != NULL && atoi(pucStr) == 1)
+        passingUserCQDs = 1;
+    }
+
   cmpSwitched_ = FALSE;
   CmpContext* currContext = CmpCommon::context();
+
+  // we should switch to another CI only if we are in an embedded CI
   if (IdentifyMyself::GetMyName() == I_AM_EMBEDDED_SQL_COMPILER)
     {
       if (SQL_EXEC_SWITCH_TO_COMPILER_TYPE(cntxtType))
@@ -134,7 +150,7 @@ short CmpSeabaseDDL::switchCompiler(Int32 cntxtType)
       cmpSwitched_ = TRUE;
     }
 
-  if (sendAllControlsAndFlags(currContext))
+  if (sendAllControlsAndFlags(currContext, cntxtType))
     {
       switchBackCompiler();
       return -1;
@@ -1294,7 +1310,43 @@ short CmpSeabaseDDL::validateVersions(NADefaults *defs,
   return retcode;
 }   
 
-short CmpSeabaseDDL::sendAllControlsAndFlags(CmpContext* prevContext)
+Int32 CmpSeabaseDDL::passUserControls(CmpContext *prevContext,
+				      ExeCliInterface &cli)
+{
+  ControlDB *cdb = prevContext->getControlDB();
+  SchemaDB *sdb = prevContext->getSchemaDB();
+  Int32 retcode = 0;
+  char buf[512];
+
+  // passing only those user CQDs that need by current (normally metadata) CI
+  for (Int32 i = 0; i < cdb->getCQDList().entries(); i++)
+    {
+      ControlQueryDefault * cqd = cdb->getCQDList()[i];
+      NAString quotedString;
+
+      if (sdb->getDefaults().toPropagate(cqd->getAttrEnum()))
+	{
+	  // check if the CQD has different values
+          if (CmpCommon::getDefaultString(cqd->getAttrEnum()) !=
+	      sdb->getDefaults().getString(cqd->getAttrEnum()))
+	    {
+	      ToQuotedString (quotedString, cqd->getValue());
+	      sprintf(buf, "CONTROL QUERY DEFAULT %s %s;",
+		      cqd->getToken().data(), quotedString.data());
+	      retcode = cli.executeImmediate(buf);
+	      if (retcode < 0)
+		{
+		  cli.retrieveSQLDiagnostics(CmpCommon::diags());
+		  return -1;
+		}
+	    }
+	}
+    }
+  return retcode;
+}
+
+short CmpSeabaseDDL::sendAllControlsAndFlags(CmpContext* prevContext,
+					     Int32 cntxtType)
 {
   const NAString * val =
     ActiveControlDB()->getControlSessionValue("SHOWPLAN");
@@ -1311,11 +1363,26 @@ short CmpSeabaseDDL::sendAllControlsAndFlags(CmpContext* prevContext)
   savedCmpParserFlags_ = Get_SqlParser_Flags (0xFFFFFFFF);
   SQL_EXEC_GetParserFlagsForExSqlComp_Internal(savedCliParserFlags_);
 
-  if (sendAllControls(FALSE, FALSE, FALSE, COM_VERS_COMPILER_VERSION, sendCSs, prevContext) < 0)
+  // pass the old context pointer to propagate user CQDs from previous
+  // compiler context to new metadata CmpContext if specified.
+  // Currently this switchCompiler() method is only called when switching
+  // to the metadata compiler. To pass CQDs to other type of compiler,
+  // add code here.
+  CmpContext *ci = NULL;
+  if (passingUserCQDs == 1 && cntxtType == CmpContextInfo::CMPCONTEXT_TYPE_META)
+    ci = prevContext;
+
+  if (sendAllControls(FALSE, FALSE, FALSE, COM_VERS_COMPILER_VERSION, sendCSs, ci) < 0)
     return -1;
 
   Lng32 cliRC;
   ExeCliInterface cliInterface(STMTHEAP);
+
+  // few user CQDs needed to be sent from previous to current CmpContext
+  // instance, see NADefaults::validateAndInsert()
+  if (prevContext != NULL && ci == NULL && prevContext != CmpCommon::context())
+    if (passUserControls(prevContext, cliInterface) < 0)
+      return -1;
 
   cliRC = cliInterface.holdAndSetCQD("volatile_schema_in_use", "OFF");
   if (cliRC < 0)

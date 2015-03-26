@@ -7308,7 +7308,6 @@ desc_struct * CmpSeabaseDDL::getSeabaseUserTableDesc(const NAString &catName,
   //Make sure to restore the CQDs after this query including error paths.            
   cliInterface.holdAndSetCQD("MERGE_JOINS", "OFF");
   cliInterface.holdAndSetCQD("HASH_JOINS", "OFF");
-  cliInterface.holdAndSetCQD("OPTIMIZATION_LEVEL", "3");
   
   Queue * indexInfoQueue = NULL;
   cliRC = cliInterface.fetchAllRows(indexInfoQueue, query, 0, FALSE, FALSE, TRUE);
@@ -7324,7 +7323,6 @@ desc_struct * CmpSeabaseDDL::getSeabaseUserTableDesc(const NAString &catName,
   //restore CQDs.
   cliInterface.restoreCQD("MERGE_JOINS");
   cliInterface.restoreCQD("HASH_JOINS");
-  cliInterface.restoreCQD("OPTIMIZATION_LEVEL");
   
   if (cliRC < 0)
     return NULL;
