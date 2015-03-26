@@ -37,7 +37,7 @@ SAFEPROGS=monitor,sqwatchdog
 # 2. Separate each entry with a comma.
 # 3. NO SPACES WHATSOEVER; this list is an argument to ps -C.
 PROGS=PTPA,TPA_Publish,UNA,amp,backout,check_ntp_peer,compression_publish,\
-cpu_metrics,dp2,dtmci,filesystem_metrics,gomon.cold,harness.pl,import,\
+cpu_metrics,dp2,dtmci,filesystem_metrics,gomon.cold,harness.pl,idtmsrv,import,\
 lc_core_metrics_sh,lc_disk_metrics_sh,lc_filesystem_metrics_sh,\
 lc_loadavg_metrics_sh,lc_memory_metrics_sh,lc_network_metrics_sh,\
 lc_virtualmem_metrics_sh,lunmgr,lx_disk_metrics,lx_loadavg_metrics,\
