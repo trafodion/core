@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Sandhya Sundaresan <sandhya.sundaresan@hp.com>
+Workflow+1: Sandhya Sundaresan <sandhya.sundaresan@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Thu, 26 Mar 2015 21:39:48 +0000
+Reviewed-on: https://review.trafodion.org/1384
+Project: trafodion/core
+Branch: refs/heads/master
