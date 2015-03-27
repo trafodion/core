@@ -3823,12 +3823,9 @@ InputOutputExpr::inputValues(atp_struct *atp,
 	  }
 
           if (DFS2REC::isSQLVarChar(sourceType)) {
-              sourceLen = ExpTupleDesc::getVarLength(source, 
-                            ExpTupleDesc::SQLARK_EXPLODED_FORMAT);
-              source = &source[sizeof(short)];
-#ifdef _DEBUG
-	      assert(SQL_VARCHAR_HDR_SIZE == sizeof(short));
-#endif
+            Lng32 vcIndLen = inputDesc->getVarIndicatorLength(entry);
+            sourceLen = ExpTupleDesc::getVarLength(source, vcIndLen);
+            source = &source[vcIndLen];
           }
 
 	  // 12/22/97: added for Unicode Vchar.

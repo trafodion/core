@@ -1341,7 +1341,7 @@ short ExeCliInterface::clearExecFetchCloseOpt(char * inputBuf,
   Lng32 retcode = 0;
 
   if (inputBuf)
-    str_cpy_all(inputBuf_, inputBuf, inputDatalen_);
+    str_cpy_all(inputBuf_, inputBuf, inputBufLen);
 
   if (rowsAffected)
     *rowsAffected = 0;
@@ -1399,10 +1399,12 @@ short ExeCliInterface::clearExecFetchCloseOpt(char * inputBuf,
 }
 
 Lng32 ExeCliInterface::executeImmediateCEFC(const char * stmtStr,
-					  char * outputBuf,
-					  Lng32 * outputBufLen,
-					  Int64 * rowsAffected
-					  )
+                                            char * inputBuf,
+                                            Lng32 inputBufLen,
+                                            char * outputBuf,
+                                            Lng32 * outputBufLen,
+                                            Int64 * rowsAffected
+                                            )
 {
   Lng32 retcode = 0;
 
@@ -1416,8 +1418,8 @@ Lng32 ExeCliInterface::executeImmediateCEFC(const char * stmtStr,
 				    rowsAffected);
   if (retcode < 0)
     goto ExecuteImmediateCEFCReturn;
-
-  retcode = clearExecFetchClose(0, 0);
+  
+  retcode = clearExecFetchCloseOpt(inputBuf, inputBufLen, NULL, NULL, rowsAffected);
 
 ExecuteImmediateCEFCReturn:
   return retcode;

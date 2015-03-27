@@ -430,6 +430,7 @@ public:
   char * getVarData(Lng32 entry);
   char * getVarData(Lng32 entry, Lng32 idxrow);
   Int32 getVarDataLength(Lng32 entry);
+  Int32 getVarIndicatorLength(Lng32 entry);
   const char * getVarDataCharSet(Lng32 entry);
   char * getIndData(Lng32 entry);
   char * getIndData(Lng32 entry, Lng32 idxrow);

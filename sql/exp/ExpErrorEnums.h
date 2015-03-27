@@ -72,6 +72,9 @@ enum ExeErrorCode
   EXE_CANCEL_NOT_AUTHORIZED             = 8029,
   EXE_CANCEL_NOT_POSSIBLE               = 8031,
 
+  EXE_NO_QID_EXPLAIN_INFO                   = 8032,
+  EXE_EXPLAIN_PLAN_TOO_LARGE            = 8033,
+
   // ---------------------------------------------------------------------
   // Data integrity errors
   // ---------------------------------------------------------------------

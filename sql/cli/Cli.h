@@ -477,6 +477,13 @@ SQLCLI_LIB_FUNC	Lng32 SQLCLI_GetDiagnosticsCondInfo3 (
                                /*INOUT*/ char * explain_ptr,
                                /*IN*/    Int32 explain_len,
                                /*INOUT*/ Int32 * ret_explain_len);
+
+   Lng32 SQLCLI_StoreExplainData(
+                                 /*IN*/ CliGlobals * cliGlobals,
+                                 /*IN*/ Int64 * exec_start_utc_ts,
+                                 /*IN*/   char * query_id,
+                                 /*INOUT*/ char * explain_ptr,
+                                 /*IN*/    Int32 explain_len);
   
    Lng32 SQLCLI_ResDescName(/*IN*/          CliGlobals * cliGlobals,
                             /*INOUT*/       SQLDESC_ID * statement_id,

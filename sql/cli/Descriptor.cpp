@@ -425,6 +425,12 @@ Int32 Descriptor::getVarDataLength(Lng32 entry)
   return desc[entryZB].length;
 }
 
+Int32 Descriptor::getVarIndicatorLength(Lng32 entry)
+{
+  register Lng32 entryZB = entry - 1;
+  return desc[entryZB].vc_ind_length;
+}
+
 Int32 Descriptor::getIndLength(Lng32 entry)
 {
   register Lng32 entryZB = entry - 1;

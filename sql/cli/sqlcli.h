@@ -1775,6 +1775,12 @@ SQLCLI_LIB_FUNC Int32 SQL_EXEC_GetExplainData(
                                               /*IN*/    Int32 explain_len,
                                               /*INOUT*/ Int32 * ret_explain_len);
 
+SQLCLI_LIB_FUNC Int32 SQL_EXEC_StoreExplainData(
+                                                /*IN*/ Int64 * exec_start_utc_ts,
+                                                /*IN*/    char * query_id,
+                                                /*INOUT*/ char * explain_ptr,
+                                                /*IN*/    Int32 explain_len);
+
 SQLCLI_LIB_FUNC Int32 SQL_EXEC_CleanUpPfsResources();
 
 SQLCLI_LIB_FUNC Int32 SQL_EXEC_Prepare(

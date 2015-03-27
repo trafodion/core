@@ -5064,6 +5064,50 @@ SQLCLI_LIB_FUNC Int32 SQL_EXEC_GetExplainData(
    return retcode;
 }
 
+SQLCLI_LIB_FUNC Int32 SQL_EXEC_StoreExplainData(
+                                                /*IN*/ Int64 * exec_start_utc_ts,
+                                                /*IN*/    char * query_id,
+                                                /*INOUT*/ char * explain_ptr,
+                                                /*IN*/    Int32 explain_len)
+{
+   Lng32 retcode;
+   CLISemaphore *tmpSemaphore;
+   ContextCli   *threadContext;
+
+   CLI_NONPRIV_PROLOGUE(retcode);
+
+   try
+   {
+      tmpSemaphore = getCliSemaphore(threadContext);
+      tmpSemaphore->get();
+      threadContext->incrNumOfCliCalls();
+      retcode =
+        SQLCLI_StoreExplainData(GetCliGlobals(),
+                                exec_start_utc_ts,
+                                query_id,
+                                explain_ptr,
+                                explain_len);
+   }
+   catch(...)
+   {
+     retcode = -CLI_INTERNAL_ERROR;
+#if defined(_THROW_EXCEPTIONS)
+     if (cliWillThrow())
+       {
+         threadContext->decrNumOfCliCalls();
+         tmpSemaphore->release();
+         throw;
+       }
+#endif
+   }
+
+   threadContext->decrNumOfCliCalls();
+   tmpSemaphore->release();
+
+   retcode = RecordError(NULL, retcode);
+   return retcode;
+}
+
 SQLCLI_LIB_FUNC
 Lng32 SQL_EXEC_ResDescName(/*INOUT*/       SQLDESC_ID * statement_id,
                           /*IN OPTIONAL*/ SQLSTMT_ID * from_statement,
