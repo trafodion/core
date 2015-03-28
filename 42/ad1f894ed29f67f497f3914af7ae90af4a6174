@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Joanie Cooper <joanie.cooper@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Shang-Sheng Tung <shang-sheng.tung@hp.com>
+Workflow+1: Shang-Sheng Tung <shang-sheng.tung@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Sat, 28 Mar 2015 03:26:55 +0000
+Reviewed-on: https://review.trafodion.org/1407
+Project: trafodion/core
+Branch: refs/heads/master
