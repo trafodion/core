@@ -79,7 +79,7 @@ End of MXCI Session
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:45:19.393138
+FUNKY_OPT_UNIQUE  2015-03-30 15:08:16.256182
 
 --- 1 row(s) selected.
 >>
@@ -94,7 +94,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:45:19.393138
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:45:19.788973
+FUNKY_OPT_UNIQUE  2015-03-30 15:08:16.816137
 
 --- 1 row(s) selected.
 >>
@@ -109,7 +109,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:45:19.788973
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:45:22.680389
+FUNKY_OPT_UNIQUE  2015-03-30 15:08:19.590991
 
 --- 1 row(s) selected.
 >>
@@ -124,7 +124,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:45:22.680389
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:45:23.644877
+FUNKY_OPT_UNIQUE  2015-03-30 15:08:20.545628
 
 --- 1 row(s) selected.
 >>
@@ -197,7 +197,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:45:23.644877
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject launch canceler - FUNKY_OPT_UNIQUE  21:45:23.806774
+subject launch canceler - FUNKY_OPT_UNIQUE  15:08:20.725900
 
 --- 1 row(s) selected.
 >>
@@ -215,7 +215,7 @@ subject launch canceler - FUNKY_OPT_UNIQUE  21:45:23.806774
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject synch cancel - FUNKY_OPT_UNIQUE     21:45:24.902654
+subject synch cancel - FUNKY_OPT_UNIQUE     15:08:21.840976
 
 --- 1 row(s) selected.
 >>
@@ -242,7 +242,7 @@ subject synch cancel - FUNKY_OPT_UNIQUE     21:45:24.902654
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:45:32.218833
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:08:30.976517
 
 --- 1 row(s) selected.
 >>log;
@@ -254,7 +254,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:45:32.218833
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject execute s1 - FUNKY_OPT_UNIQUE       21:45:32.236297
+subject execute s1 - FUNKY_OPT_UNIQUE       15:08:30.993144
 
 --- 1 row(s) selected.
 >>
@@ -277,7 +277,7 @@ subject execute s1 - FUNKY_OPT_UNIQUE       21:45:32.236297
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject - FUNKY_OPT_UNIQUE                  21:45:45.274477
+subject - FUNKY_OPT_UNIQUE                  15:08:47.028510
 
 --- 1 row(s) selected.
 >>
@@ -304,7 +304,7 @@ subject - FUNKY_OPT_UNIQUE                  21:45:45.274477
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:45:45.300320
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:08:47.051739
 
 --- 1 row(s) selected.
 >>log;
@@ -329,7 +329,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:45:45.300320
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:45:32.198271
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:08:30.956249
 
 --- 1 row(s) selected.
 >>
@@ -341,7 +341,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:45:32.198271
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:45:45.212060
+canceler woke up - FUNKY_OPT_UNIQUE         15:08:43.976965
 
 --- 1 row(s) selected.
 >>
@@ -358,7 +358,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_899_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_899_S1;
 
 --- SQL operation complete.
 >>
@@ -373,7 +373,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:45:45.270985
+canceler - FUNKY_OPT_UNIQUE                 15:08:47.027044
 
 --- 1 row(s) selected.
 >>log;
@@ -441,7 +441,7 @@ canceler - FUNKY_OPT_UNIQUE                 21:45:45.270985
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:45:54.747586
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:08:58.340184
 
 --- 1 row(s) selected.
 >>log;
@@ -467,7 +467,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:45:54.747586
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject - FUNKY_OPT_UNIQUE                  21:46:10.792464
+subject - FUNKY_OPT_UNIQUE                  15:09:11.324235
 
 --- 1 row(s) selected.
 >>
@@ -494,7 +494,7 @@ subject - FUNKY_OPT_UNIQUE                  21:46:10.792464
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:46:10.828287
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:09:11.347109
 
 --- 1 row(s) selected.
 >>log;
@@ -519,7 +519,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:46:10.828287
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:45:54.720824
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:08:58.248396
 
 --- 1 row(s) selected.
 >>
@@ -531,7 +531,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:45:54.720824
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:46:07.733873
+canceler woke up - FUNKY_OPT_UNIQUE         15:09:11.261329
 
 --- 1 row(s) selected.
 >>
@@ -548,7 +548,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1024_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1024_S1;
 
 --- SQL operation complete.
 >>
@@ -563,7 +563,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:46:10.782325
+canceler - FUNKY_OPT_UNIQUE                 15:09:11.314531
 
 --- 1 row(s) selected.
 >>log;
@@ -594,7 +594,7 @@ canceler - FUNKY_OPT_UNIQUE                 21:46:10.782325
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject launch canceler - FUNKY_OPT_UNIQUE  21:46:12.936922
+subject launch canceler - FUNKY_OPT_UNIQUE  15:09:13.452841
 
 --- 1 row(s) selected.
 >>
@@ -612,7 +612,7 @@ subject launch canceler - FUNKY_OPT_UNIQUE  21:46:12.936922
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject synch cancel - FUNKY_OPT_UNIQUE     21:46:12.951497
+subject synch cancel - FUNKY_OPT_UNIQUE     15:09:13.467133
 
 --- 1 row(s) selected.
 >>
@@ -639,7 +639,7 @@ subject synch cancel - FUNKY_OPT_UNIQUE     21:46:12.951497
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:46:20.259410
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:09:22.597942
 
 --- 1 row(s) selected.
 >>log;
@@ -651,7 +651,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:46:20.259410
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject execute s1 - FUNKY_OPT_UNIQUE       21:46:20.286011
+subject execute s1 - FUNKY_OPT_UNIQUE       15:09:22.612013
 
 --- 1 row(s) selected.
 >>
@@ -672,7 +672,7 @@ subject execute s1 - FUNKY_OPT_UNIQUE       21:46:20.286011
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject - FUNKY_OPT_UNIQUE                  21:46:42.869550
+subject - FUNKY_OPT_UNIQUE                  15:09:45.439633
 
 --- 1 row(s) selected.
 >>
@@ -699,7 +699,7 @@ subject - FUNKY_OPT_UNIQUE                  21:46:42.869550
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:46:42.895421
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:09:45.464901
 
 --- 1 row(s) selected.
 >>log;
@@ -724,7 +724,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:46:42.895421
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:46:20.229572
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:09:22.601022
 
 --- 1 row(s) selected.
 >>
@@ -736,7 +736,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:46:20.229572
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:46:33.242191
+canceler woke up - FUNKY_OPT_UNIQUE         15:09:35.615380
 
 --- 1 row(s) selected.
 >>
@@ -753,7 +753,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1039_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1039_S1;
 
 --- SQL operation complete.
 >>
@@ -768,7 +768,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:46:36.289976
+canceler - FUNKY_OPT_UNIQUE                 15:09:38.661682
 
 --- 1 row(s) selected.
 >>log;
@@ -791,7 +791,7 @@ canceler - FUNKY_OPT_UNIQUE                 21:46:36.289976
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject launch canceler - FUNKY_OPT_UNIQUE  21:46:44.995450
+subject launch canceler - FUNKY_OPT_UNIQUE  15:09:47.539812
 
 --- 1 row(s) selected.
 >>
@@ -809,7 +809,7 @@ subject launch canceler - FUNKY_OPT_UNIQUE  21:46:44.995450
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject synch cancel - FUNKY_OPT_UNIQUE     21:46:45.010540
+subject synch cancel - FUNKY_OPT_UNIQUE     15:09:47.554277
 
 --- 1 row(s) selected.
 >>
@@ -836,7 +836,7 @@ subject synch cancel - FUNKY_OPT_UNIQUE     21:46:45.010540
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:46:52.319292
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:09:56.684472
 
 --- 1 row(s) selected.
 >>log;
@@ -848,7 +848,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:46:52.319292
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject execute s1 - FUNKY_OPT_UNIQUE       21:46:52.335308
+subject execute s1 - FUNKY_OPT_UNIQUE       15:09:56.698520
 
 --- 1 row(s) selected.
 >>
@@ -869,7 +869,7 @@ subject execute s1 - FUNKY_OPT_UNIQUE       21:46:52.335308
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject - FUNKY_OPT_UNIQUE                  21:47:13.265468
+subject - FUNKY_OPT_UNIQUE                  15:10:15.360732
 
 --- 1 row(s) selected.
 >>
@@ -896,7 +896,7 @@ subject - FUNKY_OPT_UNIQUE                  21:47:13.265468
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:47:13.290478
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:10:15.384139
 
 --- 1 row(s) selected.
 >>log;
@@ -921,7 +921,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:47:13.290478
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:46:52.248355
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:09:56.624410
 
 --- 1 row(s) selected.
 >>
@@ -933,7 +933,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:46:52.248355
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:47:05.261385
+canceler woke up - FUNKY_OPT_UNIQUE         15:10:09.637270
 
 --- 1 row(s) selected.
 >>
@@ -950,7 +950,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1055_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1055_S1;
 
 --- SQL operation complete.
 >>
@@ -965,7 +965,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:47:05.320970
+canceler - FUNKY_OPT_UNIQUE                 15:10:12.683949
 
 --- 1 row(s) selected.
 >>log;
@@ -987,7 +987,7 @@ canceler - FUNKY_OPT_UNIQUE                 21:47:05.320970
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject launch canceler - FUNKY_OPT_UNIQUE  21:47:16.333087
+subject launch canceler - FUNKY_OPT_UNIQUE  15:10:18.408982
 
 --- 1 row(s) selected.
 >>
@@ -1005,7 +1005,7 @@ subject launch canceler - FUNKY_OPT_UNIQUE  21:47:16.333087
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject synch cancel - FUNKY_OPT_UNIQUE     21:47:16.346870
+subject synch cancel - FUNKY_OPT_UNIQUE     15:10:18.421936
 
 --- 1 row(s) selected.
 >>
@@ -1032,7 +1032,7 @@ subject synch cancel - FUNKY_OPT_UNIQUE     21:47:16.346870
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:47:23.654626
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:10:27.652140
 
 --- 1 row(s) selected.
 >>log;
@@ -1044,7 +1044,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:47:23.654626
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject execute s1 - FUNKY_OPT_UNIQUE       21:47:23.669300
+subject execute s1 - FUNKY_OPT_UNIQUE       15:10:27.670905
 
 --- 1 row(s) selected.
 >>
@@ -1065,7 +1065,7 @@ subject execute s1 - FUNKY_OPT_UNIQUE       21:47:23.669300
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject - FUNKY_OPT_UNIQUE                  21:47:41.325891
+subject - FUNKY_OPT_UNIQUE                  15:10:45.305995
 
 --- 1 row(s) selected.
 >>
@@ -1092,7 +1092,7 @@ subject - FUNKY_OPT_UNIQUE                  21:47:41.325891
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:47:41.351654
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:10:45.330077
 
 --- 1 row(s) selected.
 >>log;
@@ -1117,7 +1117,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:47:41.351654
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:47:23.636747
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:10:27.562195
 
 --- 1 row(s) selected.
 >>
@@ -1129,7 +1129,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:47:23.636747
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:47:36.650452
+canceler woke up - FUNKY_OPT_UNIQUE         15:10:40.575111
 
 --- 1 row(s) selected.
 >>
@@ -1146,7 +1146,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1070_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1070_S1;
 
 --- SQL operation complete.
 >>
@@ -1161,7 +1161,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:47:39.703845
+canceler - FUNKY_OPT_UNIQUE                 15:10:43.626712
 
 --- 1 row(s) selected.
 >>log;
@@ -1201,7 +1201,7 @@ canceler - FUNKY_OPT_UNIQUE                 21:47:39.703845
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject launch canceler - FUNKY_OPT_UNIQUE  21:47:43.569838
+subject launch canceler - FUNKY_OPT_UNIQUE  15:10:47.543683
 
 --- 1 row(s) selected.
 >>
@@ -1219,7 +1219,7 @@ subject launch canceler - FUNKY_OPT_UNIQUE  21:47:43.569838
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject synch cancel - FUNKY_OPT_UNIQUE     21:47:43.585447
+subject synch cancel - FUNKY_OPT_UNIQUE     15:10:47.557407
 
 --- 1 row(s) selected.
 >>
@@ -1246,7 +1246,7 @@ subject synch cancel - FUNKY_OPT_UNIQUE     21:47:43.585447
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:47:50.895800
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:10:56.788759
 
 --- 1 row(s) selected.
 >>log;
@@ -1258,7 +1258,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:47:50.895800
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject execute s1 - FUNKY_OPT_UNIQUE       21:47:50.910566
+subject execute s1 - FUNKY_OPT_UNIQUE       15:10:56.802917
 
 --- 1 row(s) selected.
 >>
@@ -1279,7 +1279,7 @@ subject execute s1 - FUNKY_OPT_UNIQUE       21:47:50.910566
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject - FUNKY_OPT_UNIQUE                  21:48:08.019375
+subject - FUNKY_OPT_UNIQUE                  15:11:13.822411
 
 --- 1 row(s) selected.
 >>
@@ -1306,7 +1306,7 @@ subject - FUNKY_OPT_UNIQUE                  21:48:08.019375
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:48:08.043836
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:11:13.846384
 
 --- 1 row(s) selected.
 >>log;
@@ -1331,7 +1331,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:48:08.043836
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:47:50.881261
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:10:56.701141
 
 --- 1 row(s) selected.
 >>
@@ -1343,7 +1343,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:47:50.881261
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:48:03.894667
+canceler woke up - FUNKY_OPT_UNIQUE         15:11:09.714239
 
 --- 1 row(s) selected.
 >>
@@ -1360,7 +1360,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1194_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1194_S1;
 
 --- SQL operation complete.
 >>
@@ -1375,7 +1375,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:48:06.946580
+canceler - FUNKY_OPT_UNIQUE                 15:11:12.761633
 
 --- 1 row(s) selected.
 >>log;
@@ -1416,7 +1416,7 @@ canceler - FUNKY_OPT_UNIQUE                 21:48:06.946580
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject launch canceler - FUNKY_OPT_UNIQUE  21:48:10.277109
+subject launch canceler - FUNKY_OPT_UNIQUE  15:11:16.079137
 
 --- 1 row(s) selected.
 >>
@@ -1434,7 +1434,7 @@ subject launch canceler - FUNKY_OPT_UNIQUE  21:48:10.277109
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject synch cancel - FUNKY_OPT_UNIQUE     21:48:10.291249
+subject synch cancel - FUNKY_OPT_UNIQUE     15:11:16.092629
 
 --- 1 row(s) selected.
 >>
@@ -1461,7 +1461,7 @@ subject synch cancel - FUNKY_OPT_UNIQUE     21:48:10.291249
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:48:17.702372
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:11:25.323633
 
 --- 1 row(s) selected.
 >>log;
@@ -1473,7 +1473,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:48:17.702372
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject execute s1 - FUNKY_OPT_UNIQUE       21:48:17.717536
+subject execute s1 - FUNKY_OPT_UNIQUE       15:11:25.337030
 
 --- 1 row(s) selected.
 >>
@@ -1494,7 +1494,7 @@ subject execute s1 - FUNKY_OPT_UNIQUE       21:48:17.717536
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject - FUNKY_OPT_UNIQUE                  21:48:33.668962
+subject - FUNKY_OPT_UNIQUE                  15:11:38.312090
 
 --- 1 row(s) selected.
 >>
@@ -1521,7 +1521,7 @@ subject - FUNKY_OPT_UNIQUE                  21:48:33.668962
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:48:33.793247
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:11:38.435594
 
 --- 1 row(s) selected.
 >>log;
@@ -1546,7 +1546,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:48:33.793247
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:48:17.608179
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:11:25.246233
 
 --- 1 row(s) selected.
 >>
@@ -1558,7 +1558,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:48:17.608179
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:48:30.621825
+canceler woke up - FUNKY_OPT_UNIQUE         15:11:38.259922
 
 --- 1 row(s) selected.
 >>
@@ -1575,7 +1575,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1209_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1209_S1;
 
 --- SQL operation complete.
 >>
@@ -1590,7 +1590,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:48:33.671906
+canceler - FUNKY_OPT_UNIQUE                 15:11:38.315504
 
 --- 1 row(s) selected.
 >>log;
@@ -1646,7 +1646,7 @@ canceler - FUNKY_OPT_UNIQUE                 21:48:33.671906
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:48:43.322560
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:11:49.799423
 
 --- 1 row(s) selected.
 >>log;
@@ -1671,7 +1671,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:48:43.322560
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-subject - FUNKY_OPT_UNIQUE                  21:49:03.379311
+subject - FUNKY_OPT_UNIQUE                  15:12:09.903404
 
 --- 1 row(s) selected.
 >>
@@ -1698,7 +1698,7 @@ subject - FUNKY_OPT_UNIQUE                  21:49:03.379311
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE   21:49:03.403759
+done with synch_cancel - FUNKY_OPT_UNIQUE   15:12:09.927593
 
 --- 1 row(s) selected.
 >>log;
@@ -1723,7 +1723,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE   21:49:03.403759
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:48:43.252491
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:11:49.780882
 
 --- 1 row(s) selected.
 >>
@@ -1735,7 +1735,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:48:43.252491
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:48:56.265214
+canceler woke up - FUNKY_OPT_UNIQUE         15:12:02.793579
 
 --- 1 row(s) selected.
 >>
@@ -1752,7 +1752,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1225_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1225_S1;
 
 --- SQL operation complete.
 >>
@@ -1767,7 +1767,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:48:56.321747
+canceler - FUNKY_OPT_UNIQUE                 15:12:02.849214
 
 --- 1 row(s) selected.
 >>log;
@@ -1813,6 +1813,29 @@ canceler - FUNKY_OPT_UNIQUE                 21:48:56.321747
 
 --- 1 row(s) inserted.
 >>
+>>obey TEST106(synch_cancel);
+>>
+>>insert into T106_interleaved_log values
++>(CURRENT_TIME (6), 
++>'foreground awaits synch_cancel');
+
+--- 1 row(s) inserted.
+>>
+>>-- wait until other mxci is ready
+>>sh sh $scriptsdir/executor/synch_106.ksh;
+>>
+>>select 'done with synch_cancel - FUNKY_OPT_UNIQUE', 
++>       CURRENT_TIME (6) from (values (1)) as t1;
+
+(EXPR)                                     (EXPR)         
+-----------------------------------------  ---------------
+
+done with synch_cancel - FUNKY_OPT_UNIQUE  15:12:21.289648
+
+--- 1 row(s) selected.
+>>log;
+>>
+>>
 >>insert into T106_interleaved_log values
 +>(CURRENT_TIME (6), 
 +>'escalation1, execute s1, start');
@@ -1829,10 +1852,10 @@ canceler - FUNKY_OPT_UNIQUE                 21:48:56.321747
 >>
 >>select 'subject - FUNKY_OPT_UNIQUE', CURRENT_TIME (6) from (values (1)) as t1;
 
-(EXPR)                      (EXPR)         
---------------------------  ---------------
+(EXPR)                                     (EXPR)         
+-----------------------------------------  ---------------
 
-subject - FUNKY_OPT_UNIQUE  21:49:36.076155
+subject - FUNKY_OPT_UNIQUE                 15:12:45.417683
 
 --- 1 row(s) selected.
 >>
@@ -1859,7 +1882,7 @@ subject - FUNKY_OPT_UNIQUE  21:49:36.076155
 (EXPR)                                     (EXPR)         
 -----------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE  21:49:36.108302
+done with synch_cancel - FUNKY_OPT_UNIQUE  15:12:45.441490
 
 --- 1 row(s) selected.
 >>log;
@@ -1884,7 +1907,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE  21:49:36.108302
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:49:12.936294
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:12:21.288707
 
 --- 1 row(s) selected.
 >>
@@ -1896,7 +1919,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:49:12.936294
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:49:25.949449
+canceler woke up - FUNKY_OPT_UNIQUE         15:12:34.301382
 
 --- 1 row(s) selected.
 >>
@@ -1913,7 +1936,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1240_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1240_S1;
 
 --- SQL operation complete.
 >>
@@ -1928,7 +1951,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:49:28.995980
+canceler - FUNKY_OPT_UNIQUE                 15:12:34.359068
 
 --- 1 row(s) selected.
 >>log;
@@ -2146,7 +2169,7 @@ CONTROL_RUNNING_QUERY =====================  SEQ_NO 1        NO CHILDREN
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:49:42.413409
+FUNKY_OPT_UNIQUE  2015-03-30 15:12:52.361244
 
 --- 1 row(s) selected.
 >>
@@ -2162,7 +2185,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:49:42.413409
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:49:43.107425
+FUNKY_OPT_UNIQUE  2015-03-30 15:12:53.045841
 
 --- 1 row(s) selected.
 >>
@@ -2178,7 +2201,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:49:43.107425
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:50:13.219748
+FUNKY_OPT_UNIQUE  2015-03-30 15:13:23.156834
 
 --- 1 row(s) selected.
 >>
@@ -2194,7 +2217,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:50:13.219748
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:50:14.032796
+FUNKY_OPT_UNIQUE  2015-03-30 15:13:23.957046
 
 --- 1 row(s) selected.
 >>
@@ -2210,7 +2233,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:50:14.032796
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:50:14.058317
+FUNKY_OPT_UNIQUE  2015-03-30 15:13:54.068248
 
 --- 1 row(s) selected.
 >>
@@ -2226,7 +2249,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:50:14.058317
 (EXPR)            (EXPR)                    
 ----------------  --------------------------
 
-FUNKY_OPT_UNIQUE  2015-03-25 21:50:44.169874
+FUNKY_OPT_UNIQUE  2015-03-30 15:13:54.869479
 
 --- 1 row(s) selected.
 >>
@@ -2240,9 +2263,9 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:50:44.169874
 >>log;
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1487_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1490_S1;
 
-*** ERROR[8031] Server declined cancel request for query ID MXID11000032218212294079824971702000000000206U3333300_1487_S1. The query is not in OPEN or FETCH or EXECUTE state.
+*** ERROR[8031] Server declined cancel request for query ID MXID11000022315212294488014051702000000000206U3333300_1490_S1. The query is not in OPEN or FETCH or EXECUTE state.
 
 --- SQL operation failed with errors.
 >>
@@ -2355,7 +2378,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:50:44.169874
 >>
 >>insert into T106_interleaved_log values
 +>(CURRENT_TIME (6),
-+>'escalation1, launch canceler, start');
++>'ustats_test, launch canceler, start');
 
 --- 1 row(s) inserted.
 >>
@@ -2363,36 +2386,7 @@ FUNKY_OPT_UNIQUE  2015-03-25 21:50:44.169874
 >>
 >>insert into T106_interleaved_log values
 +>(CURRENT_TIME (6),
-+>'escalation1, launch canceler, finished');
-
---- 1 row(s) inserted.
->>
->>insert into T106_interleaved_log values
-+>(CURRENT_TIME (6),
-+>'escalation1, execute s1, start');
-
---- 1 row(s) inserted.
->>
->>execute s1;
-
-*** ERROR[8007] The operation has been canceled.
-
-*** ERROR[8811] Trying to close a statement that is either not in the open state or has not reached EOF.
-
---- SQL operation failed with errors.
->>
->>select 'subject - FUNKY_OPT_UNIQUE', CURRENT_TIME (6) from (values (1)) as t1;
-
-(EXPR)                      (EXPR)         
---------------------------  ---------------
-
-subject - FUNKY_OPT_UNIQUE  21:51:58.513438
-
---- 1 row(s) selected.
->>
->>insert into T106_interleaved_log values
-+>(CURRENT_TIME (6),
-+>'escalation1, execute s1, finished');
++>'ustats_test, launch canceler, finished');
 
 --- 1 row(s) inserted.
 >>
@@ -2413,7 +2407,59 @@ subject - FUNKY_OPT_UNIQUE  21:51:58.513438
 (EXPR)                                     (EXPR)         
 -----------------------------------------  ---------------
 
-done with synch_cancel - FUNKY_OPT_UNIQUE  21:51:58.544726
+done with synch_cancel - FUNKY_OPT_UNIQUE  15:14:56.103387
+
+--- 1 row(s) selected.
+>>log;
+>>
+>>
+>>insert into T106_interleaved_log values
++>(CURRENT_TIME (6),
++>'ustats_test, execute s1, start');
+
+--- 1 row(s) inserted.
+>>
+>>execute s1;
+
+*** ERROR[8007] The operation has been canceled.
+
+*** ERROR[8811] Trying to close a statement that is either not in the open state or has not reached EOF.
+
+--- SQL operation failed with errors.
+>>
+>>select 'subject - FUNKY_OPT_UNIQUE', CURRENT_TIME (6) from (values (1)) as t1;
+
+(EXPR)                                     (EXPR)         
+-----------------------------------------  ---------------
+
+subject - FUNKY_OPT_UNIQUE                 15:15:12.342559
+
+--- 1 row(s) selected.
+>>
+>>insert into T106_interleaved_log values
++>(CURRENT_TIME (6),
++>'ustats_test, execute s1, finished');
+
+--- 1 row(s) inserted.
+>>
+>>obey TEST106(synch_cancel);
+>>
+>>insert into T106_interleaved_log values
++>(CURRENT_TIME (6), 
++>'foreground awaits synch_cancel');
+
+--- 1 row(s) inserted.
+>>
+>>-- wait until other mxci is ready
+>>sh sh $scriptsdir/executor/synch_106.ksh;
+>>
+>>select 'done with synch_cancel - FUNKY_OPT_UNIQUE', 
++>       CURRENT_TIME (6) from (values (1)) as t1;
+
+(EXPR)                                     (EXPR)         
+-----------------------------------------  ---------------
+
+done with synch_cancel - FUNKY_OPT_UNIQUE  15:15:12.366797
 
 --- 1 row(s) selected.
 >>log;
@@ -2438,7 +2484,7 @@ done with synch_cancel - FUNKY_OPT_UNIQUE  21:51:58.544726
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler going to sleep - FUNKY_OPT_UNIQUE  21:51:41.947656
+canceler going to sleep - FUNKY_OPT_UNIQUE  15:14:56.078365
 
 --- 1 row(s) selected.
 >>
@@ -2450,7 +2496,7 @@ canceler going to sleep - FUNKY_OPT_UNIQUE  21:51:41.947656
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler woke up - FUNKY_OPT_UNIQUE         21:51:54.960632
+canceler woke up - FUNKY_OPT_UNIQUE         15:15:09.090967
 
 --- 1 row(s) selected.
 >>
@@ -2467,7 +2513,7 @@ Execute End Time         -1
 --- 1 row(s) inserted.
 >>
 >>obey cancel_cmd;
->>control query cancel qid MXID11000032218212294079824971702000000000206U3333300_1492_S1;
+>>control query cancel qid MXID11000022315212294488014051702000000000206U3333300_1495_S1;
 
 --- SQL operation complete.
 >>
@@ -2482,7 +2528,7 @@ Execute End Time         -1
 (EXPR)                                      (EXPR)         
 ------------------------------------------  ---------------
 
-canceler - FUNKY_OPT_UNIQUE                 21:51:55.016358
+canceler - FUNKY_OPT_UNIQUE                 15:15:12.137815
 
 --- 1 row(s) selected.
 >>log;
