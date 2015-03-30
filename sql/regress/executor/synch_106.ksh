@@ -1,5 +1,5 @@
 loopcnt=0
-while [ "$loopcnt" -lt "1200" ]
+while [ "$loopcnt" -lt "36000" ]
 do 
   if [ -f ./test106_synch ]; then
     exit

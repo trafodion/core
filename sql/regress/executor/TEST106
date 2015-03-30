@@ -630,6 +630,8 @@ insert into T106_interleaved_log values
 (CURRENT_TIME (6), 
 'escalation1, launch canceler, finished');
 
+obey TEST106(synch_cancel);
+
 insert into T106_interleaved_log values
 (CURRENT_TIME (6), 
 'escalation1, execute s1, start');
@@ -743,17 +745,19 @@ obey TEST106(make_cancel_stmt);
 
 insert into T106_interleaved_log values
 (CURRENT_TIME (6),
-'escalation1, launch canceler, start');
+'ustats_test, launch canceler, start');
 
 sh sqlci -i"TEST106(do_cancel)" & ;
 
 insert into T106_interleaved_log values
 (CURRENT_TIME (6),
-'escalation1, launch canceler, finished');
+'ustats_test, launch canceler, finished');
+
+obey TEST106(synch_cancel);
 
 insert into T106_interleaved_log values
 (CURRENT_TIME (6),
-'escalation1, execute s1, start');
+'ustats_test, execute s1, start');
 
 execute s1;
 
@@ -761,7 +765,7 @@ select 'subject - FUNKY_OPT_UNIQUE', CURRENT_TIME (6) from (values (1)) as t1;
 
 insert into T106_interleaved_log values
 (CURRENT_TIME (6),
-'escalation1, execute s1, finished');
+'ustats_test, execute s1, finished');
 
 obey TEST106(synch_cancel);
 
@@ -930,6 +934,8 @@ sh sqlci -i"TEST106(do_cancel_nid_pid)" & ;
 insert into T106_interleaved_log values
 (CURRENT_TIME (6), 
 'escalation1_nid_pid, launch canceler, finished');
+
+obey TEST106(synch_cancel);
 
 insert into T106_interleaved_log values
 (CURRENT_TIME (6), 
@@ -1110,6 +1116,8 @@ sh sqlci -i"TEST106(do_cancel_pname)" & ;
 insert into T106_interleaved_log values
 (CURRENT_TIME (6), 
 'escalation1_pname, launch canceler, finished');
+
+obey TEST106(synch_cancel);
 
 insert into T106_interleaved_log values
 (CURRENT_TIME (6), 
