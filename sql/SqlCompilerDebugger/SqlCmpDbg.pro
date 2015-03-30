@@ -113,7 +113,7 @@ INCLUDEPATH += ../eh \
                ../ddl \
                ../dml \
                ../arkcmp \
-               ../../log4cpp/log4cpp-1.0/include \
+	       ../../log4cpp/$$(LOG4CPP_VER)/include \
                ../../sqf/export/include \
                ../../sqf/commonLogger
 
