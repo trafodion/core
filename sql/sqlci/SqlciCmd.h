@@ -110,9 +110,13 @@ public:
 
 class QueryId : public SqlciCmd {
 public:
-  QueryId(char *, Lng32 arglen_);
-  ~QueryId(){};
+  QueryId(char * argument_, Lng32 arglen_,
+          NABoolean isSet, char * qidVal);
+  ~QueryId();
   short process(SqlciEnv * sqlci_env);
+ private:
+  NABoolean isSet_;
+  char * qidVal_;
 };
 
 class FixCommand : public SqlciCmd {

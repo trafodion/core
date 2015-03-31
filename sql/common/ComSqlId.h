@@ -163,6 +163,7 @@ public:
        };
   
   enum {MAX_QUERY_ID_LEN = 160};
+#define MAX_QUERY_ID_LEN_STR "160"
 
   enum {MAX_DP2_QUERY_ID_LEN = 16};
 
