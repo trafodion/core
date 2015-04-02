@@ -16,6 +16,7 @@
 package org.trafodion.rest;
 
 import java.util.*;
+import java.text.SimpleDateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -98,6 +99,10 @@ public class RegisteredServer  {
 	}
 	public Date getTimestampAsDate() {
 	    return new Date(timestamp);
+	}
+	public String getTimestampAsSimpleDateFormat() {
+	    SimpleDateFormat sdf = new SimpleDateFormat();
+	    return sdf.format(getTimestampAsDate());
 	}
 	public void setClientName(String value) {
 		clientName = value;
