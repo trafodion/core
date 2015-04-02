@@ -151,6 +151,12 @@ private:
 
 }; // class ExprValueId
 
+// declarations for ItemExpr::treeWalk below
+typedef ItemExpr * (*ItemTreeWalkFunc)(ItemExpr *,
+                                       CollHeap *outHeap,
+                                       void *context);
+enum ItemTreeWalkSeq { ITM_PREFIX_WALK, ITM_POSTFIX_WALK };
+
 // -----------------------------------------------------------------------
 // A generic item expression node.
 // -----------------------------------------------------------------------
@@ -808,6 +814,13 @@ public:
 
   // Find all eqaulity columns in an item expression tree.
   void findEqualityCols(ValueIdSet & result);
+
+  // execute transformation function f on each node of the tree and
+  // return the transformed tree
+  ItemExpr *treeWalk(ItemTreeWalkFunc f,
+                     CollHeap *outHeap = NULL,
+                     enum ItemTreeWalkSeq sequence = ITM_POSTFIX_WALK,
+                     void *context = NULL);
 
   // --------------------------------------------------------------------
   // isCovered() : (for a ValueId)
