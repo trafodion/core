@@ -794,7 +794,7 @@ SDDkwd__(CAT_ENABLE_QUERY_INVALIDATION, "ON"),
   DDkwd__(COMP_BOOL_40,			"ON"),
   DDkwd__(COMP_BOOL_41,			"OFF"),
   DDkwd__(COMP_BOOL_42,			"ON"),
-  DDkwd__(COMP_BOOL_43,			"OFF"), 
+  DDkwd__(COMP_BOOL_43,			"OFF"),
   DDkwd__(COMP_BOOL_44,			"OFF"),
   DDkwd__(COMP_BOOL_45,			"ON"),
   DDkwd__(COMP_BOOL_46,			"OFF"),
@@ -1064,7 +1064,7 @@ SDDkwd__(CAT_ENABLE_QUERY_INVALIDATION, "ON"),
   DDflt0_(CPUCOST_EXCHANGE_MAPPING_FUNCTION,		".01"),
   // was 0.1, but now 0.011
   // XDDflt0_(CPUCOST_EXCHANGE_REMOTENODE_COST_PER_BYTE,    ".011"),
-  
+
   // Set the additional cost of copying a byte to message buffer for
   // remote node to be the same as for inter node, 0.01
   // Also change it to be internalized
@@ -1164,7 +1164,7 @@ SDDui___(CYCLIC_ESP_PLACEMENT,                  "1"),
  DDdskNS(DDL_DEFAULT_LOCATIONS,                ""),
 
   DDkwd__(DDL_EXPLAIN,                           "OFF"),
-
+  DDkwd__(DDL_TRANSACTIONS,		"OFF"),
     // We ignore this setting for the first (SYSTEM_DEFAULTS) table open+read.
   DDkwd__(DEFAULTS_TABLE_ACCESS_WARNINGS,	"OFF"),
 
@@ -1372,7 +1372,7 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
 
   DDui___(EXPLAIN_OUTPUT_ROW_SIZE,   "80"),
 
-  DDui1__(EXPLAIN_ROOT_INPUT_VARS_MAX,           "2000"), // maximum number of inputs that we can tolerate to 
+  DDui1__(EXPLAIN_ROOT_INPUT_VARS_MAX,           "2000"), // maximum number of inputs that we can tolerate to
                                                           // explain information for inputVars expression
                                                           // this is needed to avoid stack overflow
 
@@ -1403,7 +1403,7 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
   DDkwd__(FAST_DELETE,                          "OFF"),
 
   DDkwd__(FAST_DP2_SUBSET_OPT,			"ON"),
- // upper and lower limit (2,10) must be in sync with error values in 
+ // upper and lower limit (2,10) must be in sync with error values in
  //ExFastTransport.cpp
   DDkwd__(FAST_EXTRACT_DIAGS,			"OFF"),
   DDui2_10(FAST_EXTRACT_IO_BUFFERS,             "6"),
@@ -1583,7 +1583,7 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
   DDui1__(GEN_PA_SIZE_DOWN,			"2048"),
   DDui1__(GEN_PA_SIZE_UP,			"2048"),
   DDui1__(GEN_PROBE_CACHE_NUM_ENTRIES,          "16384"),// number of entries
-  DDui___(GEN_PROBE_CACHE_NUM_INNER,            "0"), //0 means compiler decides  
+  DDui___(GEN_PROBE_CACHE_NUM_INNER,            "0"), //0 means compiler decides
   DDui1__(GEN_PROBE_CACHE_SIZE_DOWN,            "2048"),
   DDui1__(GEN_PROBE_CACHE_SIZE_UP,              "2048"),
   DDui1__(GEN_RCRS_BUFFER_SIZE,			"2"),
@@ -1705,7 +1705,7 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
   DDui1__(GEN_XPLN_SIZE_UP,			"16"),
 
 
-  // When less or equal to this CQD (5000 rows by default), a partial root 
+  // When less or equal to this CQD (5000 rows by default), a partial root
   // will be running in the Master. Set to 0 to disable the feature.
   DDint__(GROUP_BY_PARTIAL_ROOT_THRESHOLD,	"5000"),
 
@@ -1764,8 +1764,8 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
   DDkwd__(HBASE_SALTED_TABLE_SET_SPLIT_POLICY,	"ON"),
   DD_____(HBASE_SCHEMA,                         "HBASE"),
  DDkwd__(HBASE_SERIALIZATION,		"OFF"),
- 
-  DD_____(HBASE_SERVER,                         ""), 
+
+  DD_____(HBASE_SERVER,                         ""),
   DDkwd__(HBASE_SQL_IUD_SEMANTICS,		"ON"),
   DDkwd__(HBASE_STATS_PARTITIONING,           	"ON"),
   DDkwd__(HBASE_TRANSFORM_UPDATE_TO_DELETE_INSERT,		"OFF"),
@@ -1914,7 +1914,7 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
   DDkwd__(HIST_SKIP_MC_FOR_NONKEY_JOIN_COLUMNS,   "OFF"),
   DDui___(HIST_TUPLE_FREQVAL_LIST_THRESHOLD,     "40"),
   DDkwd__(HIST_USE_HIGH_FREQUENCY_INFO,          "ON"),
- XDDkwd__(HIST_USE_SAMPLE_FOR_CARDINALITY_ESTIMATION ,      "ON"), 
+ XDDkwd__(HIST_USE_SAMPLE_FOR_CARDINALITY_ESTIMATION ,      "ON"),
 
  // CQDs for Trafodion on Hive
  // Main ones to use:
@@ -1956,7 +1956,7 @@ SDDkwd__(EXE_DIAGNOSTIC_EVENTS,		"OFF"),
   DDkwd__(HQC_CONVDOIT_DISABLE_NUMERIC_CHECK, "OFF"),
   DDkwd__(HQC_LOG, "OFF"),
   DD_____(HQC_LOG_FILE,    ""),
-  DDui1_10(HQC_MAX_VALUES_PER_KEY, "5"), 
+  DDui1_10(HQC_MAX_VALUES_PER_KEY, "5"),
   DDkwd__(HYBRID_QUERY_CACHE, "ON"),
   DDkwd__(IF_LOCKED,				"WAIT"),
 
@@ -2042,14 +2042,14 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   SDDkwd__(LIMIT_MAX_NUMERIC_PRECISION,		"SYSTEM"),
 
   DDint__(LOB_HDFS_PORT,                       "0"),
-  DD_____(LOB_HDFS_SERVER,                 "default"), 
- 
+  DD_____(LOB_HDFS_SERVER,                 "default"),
+
   // default size is 2 G  (2000 M)
   DDint__(LOB_MAX_SIZE,                         "2000"),
 
-  DD_____(LOB_STORAGE_FILE_DIR,                 "/lobs"), 
+  DD_____(LOB_STORAGE_FILE_DIR,                 "/lobs"),
 
-  // storage types defined in exp/ExpLOBenum.h. 
+  // storage types defined in exp/ExpLOBenum.h.
   // Default is hdfs_file (value = 1)
   DDint__(LOB_STORAGE_TYPE,                     "2"),
 
@@ -2087,7 +2087,7 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   //
   // The max number of ESPs per cpu for a given operator.
   // i.e. this number times the number of available CPUs is "max pipelines".
-  // 
+  //
   // On Linux, "CPU" means cores.
   //
   DDflt__(MAX_ESPS_PER_CPU_PER_OP,	"0.5"),
@@ -2286,7 +2286,7 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   DDflte_(MSCF_ET_NUM_LOCAL_MSGS,		"0.000125"),
   // Assume sending a remote message takes 10000 cpu instructions
   //  DDflte_(MSCF_ET_NUM_REMOTE_MSGS,		"0.00125"),
-  
+
   // Change the number of instructions to encode a remote message to be
   // the same as the local message
   DDflte_(MSCF_ET_NUM_REMOTE_MSGS,		"0.000125"),
@@ -2294,7 +2294,7 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   // (Based on 10 Megabit/second Ethernet transfer rate)
   // MSCF_ET_REMOTE_MSG_TRANSFER units are kb/Sec
   //  DDflte_(MSCF_ET_REMOTE_MSG_TRANSFER,		"0.001"),
-  
+
   // the remote msg are 10% more costly than the local transfer
   // but also may depend on the physical link, so externalize it
   DDflte_(MSCF_ET_REMOTE_MSG_TRANSFER,		"0.00005"),
@@ -2800,7 +2800,7 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
   DD_____(PCODE_NE_LOG_PATH,  ""  ), // Pathname of log file for Native Expression work - OBSOLETE
 
   DDint__(PCODE_OPT_FLAGS,                      "60"),
- 
+
   DDkwd__(PCODE_OPT_LEVEL,		"MAXIMUM"),
 
   DDint__(PHY_MEM_CONTINGENCY_MB,     "3072"),
@@ -2819,7 +2819,7 @@ SDDkwd__(ISO_MAPPING,           (char *)SQLCHARSETSTRING_ISO88591),
    // default to 300 GB
    DDui___(POS_DEFAULT_LARGEST_DISK_SIZE_GB,            "300"),
 
-   // default to 72GB 
+   // default to 72GB
    DDui___(POS_DEFAULT_SMALLEST_DISK_SIZE_GB,            "72"),
    DDdskNS(POS_DISKS_IN_SEGMENT,                 ""),
   SDDui___(POS_DISK_POOL,			"0"),
@@ -2983,7 +2983,7 @@ SDDflt0_(QUERY_CACHE_SELECTIVITY_TOLERANCE,       "0"),
   DDkwd__(REORG_VERIFY,                         "OFF"),
 
   DDrlis_(REPLICATE_ALLOW_ROLES,                ""),
-  // Determines the compression type to be used with DDL when replicating 
+  // Determines the compression type to be used with DDL when replicating
   DDkwd__(REPLICATE_COMPRESSION_TYPE,           "SYSTEM"),
   // Determines if DISK POOL setting should be passed with DDL when replicating
   DDkwd__(REPLICATE_DISK_POOL,                  "ON"),
@@ -3153,7 +3153,7 @@ SDDflt0_(QUERY_CACHE_SELECTIVITY_TOLERANCE,       "0"),
   DDui1__(SORT_EX_BUFFER_SIZE,			"5."),
   DDkwd__(SORT_INTERMEDIATE_SCRATCH_CLEANUP,    "ON"),
   DDui1__(SORT_IO_BUFFER_SIZE,                        "128."),
-  
+
   DD1_200000(SORT_MAX_HEAP_SIZE_MB,            "800"),
   DDkwd__(SORT_MEMORY_QUOTA_SYSTEM,             "ON"),
   DD1_128(SORT_MERGE_BUFFER_UNIT_56KB,          "1"),
@@ -3254,19 +3254,19 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
 
   DDkwd__(TOTAL_RESOURCE_COSTING,               "ON"),
 
- DDkwd__(TRAF_BLOB_AS_VARCHAR,                 "ON"), //set to OFF to enable Lobs support  
+ DDkwd__(TRAF_BLOB_AS_VARCHAR,                 "ON"), //set to OFF to enable Lobs support
 
- DDkwd__(TRAF_BOOTSTRAP_MD_MODE,                            "OFF"),   
+ DDkwd__(TRAF_BOOTSTRAP_MD_MODE,                            "OFF"),
 
-  DDkwd__(TRAF_COL_LENGTH_IS_CHAR,                 "ON"),   
+  DDkwd__(TRAF_COL_LENGTH_IS_CHAR,                 "ON"),
 
   DDansi_(TRAF_CREATE_TABLE_WITH_UID,          ""),
 
- DDkwd__(TRAF_DEFAULT_ALIGNED_FORMAT,                 "OFF"),   
+ DDkwd__(TRAF_DEFAULT_ALIGNED_FORMAT,                 "OFF"),
 
  DDkwd__(TRAF_DEFAULT_COL_CHARSET,            (char *)SQLCHARSETSTRING_ISO88591),
- 
- DDkwd__(TRAF_ENABLE_ORC_FORMAT,                 "OFF"),   
+
+ DDkwd__(TRAF_ENABLE_ORC_FORMAT,                 "OFF"),
 
   DDkwd__(TRAF_LOAD_FORCE_CIF,                  "ON"),
 
@@ -3298,8 +3298,8 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
   DD_____(TRAF_SAMPLE_TABLE_LOCATION,                  "/sample/"),
   DDint__(TRAF_SEQUENCE_CACHE_SIZE,        "-1"),
   //TRAF_TABLE_SNAPSHOT_SCAN CQD can be set to :
-  //NONE-->    Snapshot scan is disabled and regular scan is used , 
-  //SUFFIX --> Snapshot scan enabled for the bulk unload (bulk unload 
+  //NONE-->    Snapshot scan is disabled and regular scan is used ,
+  //SUFFIX --> Snapshot scan enabled for the bulk unload (bulk unload
   //           behavior id not changed)
   //LATEST --> enabled for the scan independently from bulk unload
   //           the latest snapshot is used if it exists
@@ -3309,7 +3309,7 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
   //defined by  TRAF_TABLE_SNAPSHOT_SCAN_TABLE_SIZE_THRESHOLD
   //regular scan instead of snapshot scan
   //does not apply to bulk unload which maintains the old behavior
-  DDint__(TRAF_TABLE_SNAPSHOT_SCAN_TABLE_SIZE_THRESHOLD, "1000"), 
+  DDint__(TRAF_TABLE_SNAPSHOT_SCAN_TABLE_SIZE_THRESHOLD, "1000"),
   //timeout before we give up when trying to create the snapshot scanner
   DDint__(TRAF_TABLE_SNAPSHOT_SCAN_TIMEOUT,            "6000"),
   //location for temporary links and files produced by snapshot scan
@@ -3344,8 +3344,8 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
   // UDF scalar indicating maximum number of rows out for each row in.
   DDui___(UDF_FANOUT,                            "1"),
   // Must be in form <cat>.<sch>.  Delimited catalog names not allowed.
-  DD_____(UDF_METADATA_SCHEMA,                  "TRAFODION.\"_UDF_\""), 
-                                                                         
+  DD_____(UDF_METADATA_SCHEMA,                  "TRAFODION.\"_UDF_\""),
+
   DDkwd__(UDF_SUBQ_IN_AGGS_AND_GBYS,            "SYSTEM"),
 
  XDDui___(UDR_DEBUG_FLAGS,                      "0"), // see sqludr/sqludr.h for values
@@ -3447,8 +3447,8 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
 
   DDui1_6(USTAT_IUS_MAX_NUM_HASH_FUNCS,         "5"),
 
-  // the max disk space IUS CBFs can use is 
-  // MINOF(USTAT_IUS_MAX_PERSISTENT_DATA_IN_MB, 
+  // the max disk space IUS CBFs can use is
+  // MINOF(USTAT_IUS_MAX_PERSISTENT_DATA_IN_MB,
   //       TtotalSpace * USTAT_IUS_MAX_PERSISTENT_DATA_IN_PERCENTAGE)
   DDui___(USTAT_IUS_MAX_PERSISTENT_DATA_IN_MB,        "50000"), // 50GB
   DDflt0_(USTAT_IUS_MAX_PERSISTENT_DATA_IN_PERCENTAGE,  "0.20"), // 20% of the total
@@ -3543,7 +3543,7 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
   // not running at full system parallelism
  SDDflte_(WORK_UNIT_ESP,      "0.08"),
  SDDflte_(WORK_UNIT_ESP_DATA_COPY_COST, "0.001"),
- 
+
   // ZIG_ZAG_TREES ON means do ZIG_ZAG_TREES
   // $$$ OFF for beta
   DDkwd__(ZIG_ZAG_TREES,			"SYSTEM"),
@@ -4285,7 +4285,7 @@ void NADefaults::updateSystemParameters(NABoolean reInit)
           if ((coresPerNode <= TSEsPerNode) || (TSEsPerNode == 0))
           {
              if (coresPerNode > 1)
-                numESPsPerNode = DEFAULT_ESPS_PER_NODE; 
+                numESPsPerNode = DEFAULT_ESPS_PER_NODE;
           }
           else if (coresPerNode > (TSEsPerNode*2))
           {
@@ -4560,9 +4560,9 @@ void NADefaults::readFromSQLTable(const char *tname,
           }
 	else {
 	  value[0] = 0; // NULL terminator
-	  if (fscanf(flatfile, " %100[A-Za-z0-9_#] ,", attrName) < 0) 
+	  if (fscanf(flatfile, " %100[A-Za-z0-9_#] ,", attrName) < 0)
 	    sqlcode = +100;
-	  else 
+	  else
 	    fgets((char *) value, sizeof(value), flatfile);
 	}
 
@@ -4631,14 +4631,14 @@ void NADefaults::readFromSQLTables(Provenance overwriteIfNotYet, Int32 errOrWarn
       // keep this name in sync with file cli/SessionDefaults.cpp
       NAString confFile(getenv("MY_SQROOT"));
       confFile += "/etc/SQSystemDefaults.conf";
-      readFromFlatFile(confFile, overwriteIfNotYet, errOrWarn);  
-      tablesRead_.insert(confFile);           
+      readFromFlatFile(confFile, overwriteIfNotYet, errOrWarn);
+      tablesRead_.insert(confFile);
 
       CmpSeabaseDDL cmpSBD((NAHeap *)heap_, FALSE);
       Lng32 hbaseErr = 0;
       NAString hbaseErrStr;
-      Lng32 errNum = cmpSBD.validateVersions(this, NULL, NULL, NULL, 
-                                             NULL, NULL, NULL, 
+      Lng32 errNum = cmpSBD.validateVersions(this, NULL, NULL, NULL,
+                                             NULL, NULL, NULL,
                                              NULL, NULL, NULL, NULL,
                                              &hbaseErr, &hbaseErrStr);
       if (errNum == 0) // seabase is initialized properly
@@ -4646,7 +4646,7 @@ void NADefaults::readFromSQLTables(Provenance overwriteIfNotYet, Int32 errOrWarn
           // read from seabase defaults table
           cmpSBD.readAndInitDefaultsFromSeabaseDefaultsTable
             (overwriteIfNotYet, errOrWarn, this);
-          
+
           // set authorization state
 #ifdef _DEBUG
           NABoolean checkAllPrivTables = TRUE;
@@ -4857,7 +4857,7 @@ ULng32 NADefaults::getAsULong(Int32 attrEnum) const
 
 ULng32 NADefaults::getNumOfESPsPerNode() const
 {
-  return (ULng32)MAXOF(ceil(getNumOfESPsPerNodeInFloat()), 1); 
+  return (ULng32)MAXOF(ceil(getNumOfESPsPerNodeInFloat()), 1);
 }
 
 float NADefaults::getNumOfESPsPerNodeInFloat() const
@@ -4865,9 +4865,9 @@ float NADefaults::getNumOfESPsPerNodeInFloat() const
    double maxEspPerCpuPerOp = getAsDouble(MAX_ESPS_PER_CPU_PER_OP);
 
    CollIndex cores =
-     (OSIM_isNSKbehavior() || 
+     (OSIM_isNSKbehavior() ||
       (CmpCommon::context() && CURRSTMT_OPTDEFAULTS->isFakeHardware())
-     ) ?  
+     ) ?
         getAsLong(DEF_NUM_SMP_CPUS) :
         gpClusterInfo->numberOfCpusPerSMP();
 
@@ -5011,7 +5011,7 @@ NABoolean NADefaults::isReadonlyAttribute(const char* attrName) const
 {
    if ((( stricmp(attrName, "ISO_MAPPING") == 0 ) ||
         ( stricmp(attrName, "OVERFLOW_MODE") == 0 ) ||
-	( stricmp(attrName, "SORT_ALGO") == 0 )) 
+	( stricmp(attrName, "SORT_ALGO") == 0 ))
         && ( CmpCommon::getDefault(DISABLE_READ_ONLY) == DF_ON ))
      return FALSE; // for internal development and testing purposes
 
@@ -5117,7 +5117,7 @@ enum DefaultConstants NADefaults::validateAndInsert(const char *attrName,
     if (!CmpCommon::context()->isSecondaryMxcmp() &&
         !Get_SqlParser_Flags(INTERNAL_QUERY_FROM_EXEUTIL))
     {
-      // This logic will catch if the set-once CQD 
+      // This logic will catch if the set-once CQD
       // is set, but the ALLOW_SET_ONCE_DEFAULTS parserflags
       // are not set.  This is absolutely necessary for security
       // to ensure that the correct parserflags are set.
@@ -5152,10 +5152,10 @@ enum DefaultConstants NADefaults::validateAndInsert(const char *attrName,
       // to apply in these cases
       if ( attrEnum == LAST0_MODE )
         return attrEnum;
-      
+
     }
-  
-      
+
+
     overwrite = getProvenance(attrEnum) < overwriteIfNotYet;
 
     // Put value into canonical form (trimmed, upcased where pertinent).
@@ -5493,26 +5493,26 @@ enum DefaultConstants NADefaults::validateAndInsert(const char *attrName,
       case MODE_SPECIAL_4:
 	{
 	  NAString val;
-          
+
           if (value == "ON")
             val = "ON";
           else
             val = "OFF";
-          
+
           insert(ALLOW_INCOMPATIBLE_COMPARISON, val, errOrWarn);
-          
+
           insert(ALLOW_INCOMPATIBLE_ASSIGNMENT, val, errOrWarn);
-          
+
           insert(ALLOW_NULLABLE_UNIQUE_KEY_CONSTRAINT, val, errOrWarn);
-          
+
           insert(MODE_SPECIAL_3, val, errOrWarn);
-          
+
           NAString csVal;
           if (value == "ON")
             csVal = SQLCHARSETSTRING_UTF8;
           else
             csVal = "";
-          
+
           validateAndInsert("TRAF_DEFAULT_COL_CHARSET", csVal, FALSE, errOrWarn);
 
           NAString notVal;
@@ -5532,11 +5532,11 @@ enum DefaultConstants NADefaults::validateAndInsert(const char *attrName,
             costVal1 = "1.0";
             costVal2 = "1.0" ;
           }
-          validateAndInsert("NCM_IND_JOIN_COST_ADJ_FACTOR", costVal1, 
+          validateAndInsert("NCM_IND_JOIN_COST_ADJ_FACTOR", costVal1,
                             FALSE, errOrWarn);
-          validateAndInsert("NCM_IND_SCAN_COST_ADJ_FACTOR", costVal2, 
+          validateAndInsert("NCM_IND_SCAN_COST_ADJ_FACTOR", costVal2,
                             FALSE, errOrWarn);
- 
+
           if (value == "ON")
             Set_SqlParser_Flags(IN_MODE_SPECIAL_4);
           else
@@ -5678,14 +5678,14 @@ enum DefaultConstants NADefaults::validateAndInsert(const char *attrName,
 	  NAString_setIsoMapCS((SQLCHARSET_CODE) SqlParser_NADefaults_->ISO_MAPPING_);
 	}
 	break;
-	
+
       case DEFAULT_CHARSET:
 	{
 	  SqlParser_NADefaults_->DEFAULT_CHARSET_ = CharInfo::getCharSetEnum(value);
 	  SqlParser_NADefaults_->ORIG_DEFAULT_CHARSET_ = CharInfo::getCharSetEnum(value);
 	}
 	break;
-	
+
       case ESP_ON_AGGREGATION_NODES_ONLY:
         {
          NABoolean useAgg = (getToken(attrEnum) == DF_ON);
@@ -5785,7 +5785,7 @@ enum DefaultConstants NADefaults::validateAndInsert(const char *attrName,
               value = home;
               value += "/cbfs";
               validateAndInsert("USTAT_IUS_PERSISTENT_CBF_PATH", value, FALSE);
-           } 
+           }
         }
       }
       break;
@@ -6087,7 +6087,7 @@ NABoolean NADefaults::setSchema(NAString &value,
     if (overwrite)
       insert(SCHEMA,
 	     nam.getSchemaNamePartAsAnsiString());
-    
+
     // If 2 parts, overwrite any prior catalog default
     if (!nam.getCatalogNamePart().isEmpty()) {
       if (overwrite)
@@ -6328,7 +6328,7 @@ DefaultToken NADefaults::token(Int32 attrEnum,
          attrEnum == MVQR_PUBLISH_TABLE_LOCATION ||
          attrEnum == MVQR_WORKLOAD_ANALYSIS_MV_NAME ||
          attrEnum == HIST_SCRATCH_VOL)
-      return DF_SYSTEM;   
+      return DF_SYSTEM;
 
     const char *k = value.data();
     char *match = (char*) bsearch(

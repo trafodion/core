@@ -904,7 +904,7 @@ enum DefaultConstants
   MVQR_FILENAME_PREFIX,           // path/prefix of files to dump descriptors to
   MVQR_LOG_QUERY_DESCRIPTORS,     // whether or not to log query descriptors
   MVQR_MAX_MV_JOIN_SIZE,          // max # joins for publishable MV
-  MVQR_PARAMETERIZE_EQ_PRED,      // whether or not to parameterize equality 
+  MVQR_PARAMETERIZE_EQ_PRED,      // whether or not to parameterize equality
   MVQR_PRIVATE_QMS_INIT,          // how to init private qms: SMD, XML, NONE (default)
   MVQR_PUBLISH_TABLE_LOCATION,    // MV query rewrite publish table location
   MVQR_PUBLISH_TO,                // PRIVATE(default) qms, PUBLIC qms, BOTH
@@ -1078,7 +1078,7 @@ enum DefaultConstants
 
   // Specifies the type of graceful termination to use
   OPTIMIZER_GRACEFUL_TERMINATION,
-  
+
   // -------------------------------------------------------------------------
   // Temp. optimizer heuristics. Used for testing only, The heuristic is
   // renamed after proven worthy
@@ -1321,7 +1321,7 @@ enum DefaultConstants
   SORT_EX_BUFFER_SIZE,            // Executor buffer size.
   SORT_TREE_NODE_SIZE,            // Internal node size of Tournament Tree.
   // -------------------------------------------------------------------------
-  // For Triggers Temporary Table's LOCATION and PARTITIONS   
+  // For Triggers Temporary Table's LOCATION and PARTITIONS
   // -------------------------------------------------------------------------
   TEMPORARY_TABLE_HASH_PARTITIONS, // Hash partitions for the trig temp tables
 
@@ -1776,6 +1776,9 @@ enum DefaultConstants
   // Specifies locations for CREATE statements that don't have a
   // LOCATION clause
   DDL_DEFAULT_LOCATIONS,
+
+  //Support transactions for DDL operations.
+  DDL_TRANSACTIONS,
 
   // controls various optimizations, see enum QueryOptimizationOptions.
   QUERY_OPTIMIZATION_OPTIONS,
@@ -2397,7 +2400,7 @@ enum DefaultConstants
   //   rows the routine can return for each row passed in (maximum).
   // The UEC value is an average UEC for a routine. For scalarUDFs it
   //   is usually 1.
- 
+
   INITIAL_UDF_CPU_COST,
   INITIAL_UDF_IO_COST,
   INITIAL_UDF_MSG_COST,
@@ -2471,7 +2474,7 @@ enum DefaultConstants
   // The following 3 are only for testing overflow
   EXE_TEST_FORCE_CLUSTER_SPLIT_AFTER_MB,
   EXE_TEST_FORCE_HASH_LOOP_AFTER_NUM_BUFFERS,
-  EXE_TEST_HASH_FORCE_OVERFLOW_EVERY, 
+  EXE_TEST_HASH_FORCE_OVERFLOW_EVERY,
 
   // Force HJ to use at least that many clusters
   EXE_HJ_MIN_NUM_CLUSTERS,
@@ -2587,7 +2590,7 @@ enum DefaultConstants
   POS_SEC_EXT_SIZE,
 
   PURGEDATA_WITH_OFFLINE_TABLE,
-  
+
   SORT_REC_THRESHOLD,
   SORT_MERGE_BUFFER_UNIT_56KB,
 
@@ -2640,11 +2643,11 @@ enum DefaultConstants
 
   // Disallow/Allow routine joins in MultiJoin framework
   ROUTINE_JOINS_SPOIL_JBB,
-  
+
   POS_TEMP_TABLE_FREESPACE_THRESHOLD_PERCENT,
 
   // Specifies whether sample tables should be created for fetch count
-  HIST_AUTO_GENERATION_OF_SAMPLE, 
+  HIST_AUTO_GENERATION_OF_SAMPLE,
 
   NEXT_VALUE_FOR_BUFFER_SIZE,
   NEXT_VALUE_FOR_NUM_BUFFERS,
@@ -2731,7 +2734,7 @@ enum DefaultConstants
   // The default value is OFF.
   ALLOW_NULLABLE_UNIQUE_KEY_CONSTRAINT,
 
-  // if set to ON, then ORDER BY could be 
+  // if set to ON, then ORDER BY could be
   // specified in a regular CREATE VIEW (not a create MV) statement.
   ALLOW_ORDER_BY_IN_CREATE_VIEW,
 
@@ -2740,15 +2743,15 @@ enum DefaultConstants
   EXE_LOG_RETRY_IPC,
 
   ALLOW_IMPLICIT_CHAR_CASTING,
-  
+
   IN_MEMORY_OBJECT_DEFN,
 
   // Update statistics command updates the histogram tables of the schema
-  // where the table is created. 
-  // 
+  // where the table is created.
+  //
   // This default points to the schema whose histogram tables, instead of
-  // the original table's histogram tables, are to be updated during an 
-  // 'update statistics' command. 
+  // the original table's histogram tables, are to be updated during an
+  // 'update statistics' command.
   HISTOGRAMS_SCHEMA,
 
   // specifying a pre-existing file with sampled rows for update stats
@@ -2781,9 +2784,9 @@ enum DefaultConstants
   SQLMX_UTIL_ONLINE_POPINDEX,
 
   // Pubsub holdable cursor is not closed on rollback by default
-  // But, ANSI standard expects the holdable cursor to be closed on rollback 
+  // But, ANSI standard expects the holdable cursor to be closed on rollback
   PSHOLD_CLOSE_ON_ROLLBACK,
-  // To ensure the Pubsub holdable cursor is fetched after commit in case of 
+  // To ensure the Pubsub holdable cursor is fetched after commit in case of
   // positioned update/deletes. Pubsub holdable cursor is not checked for this
   // condition by default
   PSHOLD_UPDATE_BEFORE_FETCH,
@@ -2808,7 +2811,7 @@ enum DefaultConstants
   // This allows us to skip metadata views creation during regression run
   // and avoid any possible delay due to views creation for every new catalog
   SKIP_METADATA_VIEWS,
-  CREATE_METADATA_TABLE, 
+  CREATE_METADATA_TABLE,
   CREATE_EXTERNAL_USER_NAME_INDEX,
   SKIP_TRANSLATE_SYSCAT_DEFSCH_NAMES,
 
@@ -2832,15 +2835,15 @@ enum DefaultConstants
   COMPILER_TRACKING_LOGFILE,
   COMPILER_TRACKING_LOGTABLE,
 
-  // allow the frequency of the 1st and the 2nd mostly occurred values to 
+  // allow the frequency of the 1st and the 2nd mostly occurred values to
   // be used in max cardinality and local predicate evaluation.
   HIST_USE_HIGH_FREQUENCY_INFO,
   USTAT_SHOW_MFV_INFO,
 
-  // These CQDs are reserved for NCM. These are mostly used for 
-  // internal testing, turning on/off features for debugging, and for tuning. 
-  // In normal situations, these will not be externalized in keeping 
-  // with the very few CQDs philosophy of NCM. 
+  // These CQDs are reserved for NCM. These are mostly used for
+  // internal testing, turning on/off features for debugging, and for tuning.
+  // In normal situations, these will not be externalized in keeping
+  // with the very few CQDs philosophy of NCM.
   // These are applicable only in conjunction with SIMPLE_COST_MODEL 'on'.
   NCM_CACHE_SIZE_IN_BLOCKS,
   NCM_COSTLIMIT_FACTOR,
@@ -2885,20 +2888,20 @@ enum DefaultConstants
   CPUCOST_NJ_TUPLST_FF,
 
   ////////////////////////////////////////////////////////////////////////
-  // this cqd returns showddl output for validate or create phase of 
+  // this cqd returns showddl output for validate or create phase of
   // a replicate command.
   // For validate, output is returned without any generated or other names
   // that can vary from one system to another (like constraint name, or
-  // location clause, or partition name). 
+  // location clause, or partition name).
   // For create, output is returned for 'some' generated names, like that
   // of system created implicit indices or constraints.
-  // Used by bulk replicator to validate that the ddl on source 
+  // Used by bulk replicator to validate that the ddl on source
   // system is exactly the same as that on the target system. This
-  // validation is done by matching showddl output of the table on the source 
+  // validation is done by matching showddl output of the table on the source
   // and target systems.
-  // Also used by bulk replicator to create the source ddl on the target 
+  // Also used by bulk replicator to create the source ddl on the target
   // system.
-  // 
+  //
   // Value of 0: this cqd not specified
   // Value of 1: return object showddl(base table, internal system indices)
   //             in 'validate' format.
@@ -2934,25 +2937,25 @@ enum DefaultConstants
 
 
   // Total mem size (MB) for a query
-  EXE_MEMORY_LIMIT_PER_CPU, 
+  EXE_MEMORY_LIMIT_PER_CPU,
 
-  // The percent of total nBMO memory in EXE_MEMORY_LIMIT_PER_CPU 
-  EXE_MEMORY_LIMIT_NONBMOS_PERCENT, 
+  // The percent of total nBMO memory in EXE_MEMORY_LIMIT_PER_CPU
+  EXE_MEMORY_LIMIT_NONBMOS_PERCENT,
 
-  // lower-bound memory limit for BMOs 
+  // lower-bound memory limit for BMOs
   EXE_MEMORY_LIMIT_LOWER_BOUND_HASHJOIN,
   EXE_MEMORY_LIMIT_LOWER_BOUND_MERGEJOIN,
   EXE_MEMORY_LIMIT_LOWER_BOUND_HASHGROUPBY ,
   EXE_MEMORY_LIMIT_LOWER_BOUND_SORT ,
 
-  // lower-bound memory limit for nBMOs 
+  // lower-bound memory limit for nBMOs
   EXE_MEMORY_LIMIT_LOWER_BOUND_PROBE_CACHE ,
   EXE_MEMORY_LIMIT_LOWER_BOUND_PA ,
   EXE_MEMORY_LIMIT_LOWER_BOUND_SEQUENCE ,
   EXE_MEMORY_LIMIT_LOWER_BOUND_EXCHANGE ,
 
   // Limit CPU time a query can use in master, ESP, or DP2.  Unit is seconds.
-  QUERY_LIMIT_SQL_PROCESS_CPU, 
+  QUERY_LIMIT_SQL_PROCESS_CPU,
   QUERY_LIMIT_SQL_PROCESS_CPU_DEBUG,
   QUERY_LIMIT_SQL_PROCESS_CPU_XPROD,
   QUERY_LIMIT_SQL_PROCESS_CPU_DP2_FREQ,
@@ -3042,7 +3045,7 @@ enum DefaultConstants
   //specifies the maximum number of rows per olap buffer
   OLAP_MAX_ROWS_IN_OLAP_BUFFER,
   //aplies for fixed window-- number of additional oplap buffers
-  //to allocate on top of the minumum numbers 
+  //to allocate on top of the minumum numbers
   OLAP_MAX_FIXED_WINDOW_EXTRA_BUFFERS,
 
   // create frequent value list for tuple list if the elements in the list are
@@ -3068,7 +3071,7 @@ enum DefaultConstants
   // CLI caller to redrive CTAS(create table as) for child query monitoring
   REDRIVE_CTAS,
 
-  // type a CASE expression or ValueIdUnion as varchar if its leaves 
+  // type a CASE expression or ValueIdUnion as varchar if its leaves
   // are of type CHAR of unequal length
   TYPE_UNIONED_CHAR_AS_VARCHAR,
 
@@ -3079,7 +3082,7 @@ enum DefaultConstants
   SHOWDDL_DISPLAY_PRIVILEGE_GRANTS,
 
   // ***** END REGULAR DEFAULTS *********************************
-  
+
   // Add regular default values (CQDs) before this line.
   // Add session defaults below this line.
 
@@ -3126,7 +3129,7 @@ enum DefaultConstants
   HIST_FREQ_VALS_NULL_FIX,
   HIST_MERGE_FREQ_VALS_FIX,
   HIST_SKEW_COST_ADJUSTMENT,
-  USTAT_AUTO_MC_MAX_WIDTH, 
+  USTAT_AUTO_MC_MAX_WIDTH,
   USTAT_USE_INTERNAL_SORT_FOR_MC,
   USTAT_USE_INTERNAL_SORT_FOR_MC_LOOP,
   USTAT_USE_INTERNAL_SORT_FOR_MC_NEW_HIST, // TEMP SHOULD REMOVE
@@ -3150,17 +3153,17 @@ enum DefaultConstants
   COMPRESSED_INTERNAL_FORMAT_ROOT_DOES_CONVERSION,
   COMPRESSED_INTERNAL_FORMAT_BULK_MOVE,
 
-  CAT_IGNORE_ALREADY_EXISTS_ERROR, 
-  CAT_IGNORE_DOES_NOT_EXIST_ERROR, 
+  CAT_IGNORE_ALREADY_EXISTS_ERROR,
+  CAT_IGNORE_DOES_NOT_EXIST_ERROR,
   CAT_IGNORE_EMPTY_CATALOGS,
   OR_PRED_ADD_BLOCK_TO_IN_LIST,
   OR_PRED_KEEP_CAST_VC_UCS2,
 
   // SeaMonster messaging
   SEAMONSTER,
-  
+
   CAT_LIBRARY_PATH_RELATIVE,
-  
+
   MDAM_UNDER_NJ_PROBES_THRESHOLD,
 
   MDOP_CPUS_PENALTY,
@@ -3187,15 +3190,15 @@ enum DefaultConstants
 
   // Enable the query invalidation processing in catman
   CAT_ENABLE_QUERY_INVALIDATION,
-  
+
   // Control creation of column privileges for object-level privileges
   CAT_REDUNDANT_COLUMN_PRIVS,
-  
+
   MC_SKEW_SENSITIVITY_THRESHOLD, // multi-column skew threshold value
 
-  MTD_MDAM_NJ_UEC_THRESHOLD, // the threshold of the UEC of predicate-less 
+  MTD_MDAM_NJ_UEC_THRESHOLD, // the threshold of the UEC of predicate-less
                              // leading key columns of a MTD table, above
-                             // which the MTD table can be the inner table of 
+                             // which the MTD table can be the inner table of
                              // NJ.
   // this should be used for testing only. DML should not be executed on
   // non-audited tables
@@ -3203,7 +3206,7 @@ enum DefaultConstants
 
   CAT_ALLOW_NEW_FEATUREX,  // to turn on and off features
 
-  DOP_REDUCTION_ROWCOUNT_THRESHOLD, // the threshold below which dop can 
+  DOP_REDUCTION_ROWCOUNT_THRESHOLD, // the threshold below which dop can
                                     // be reduced
 
   MC_SKEW_INNER_BROADCAST_THRESHOLD, // MC-SB inner side broadcast threshold
@@ -3211,7 +3214,7 @@ enum DefaultConstants
 
   NESTED_JOIN_CACHE_PREDS,
   //Temporary fix to bypass volatile schema name checking for non-table objects - ALM Case#4764
-  BYPASS_CHECK_FOR_VOLATILE_SCHEMA_NAME, 
+  BYPASS_CHECK_FOR_VOLATILE_SCHEMA_NAME,
 
   //--------------------------------------------------------------------------
   // Query Invalidation - Debug/Regression test CQDs
@@ -3220,12 +3223,12 @@ enum DefaultConstants
   QI_PRIV,
 
   // The switch to control whether N2J (O(n^2) open) nested joins should
-  // be generated. 
+  // be generated.
   NESTED_JOINS_NO_NSQUARE_OPENS,
 
-  NESTED_JOINS_OCR_GROUPING,   // Hans' fix to check mapped left and right part func. 
+  NESTED_JOINS_OCR_GROUPING,   // Hans' fix to check mapped left and right part func.
 
-  NESTED_JOINS_KEYLESS_INNERJOINS,  // When ON, optimistically allow potential keyless joins 
+  NESTED_JOINS_KEYLESS_INNERJOINS,  // When ON, optimistically allow potential keyless joins
                                     // when the inner contains joins
 
   MERGE_JOIN_ACCEPT_MULTIPLE_NJ_PROBES, // merge join accepts multiple NJ probes
@@ -3254,7 +3257,7 @@ enum DefaultConstants
   CAT_IGNORE_REPL_AUTHIDS_ERROR,  // CatMan internal support for REPLICATE AUTHORIZATION
   REPLICATE_DISPLAY_INTERNAL_CMD, // Display a BDR-internally-generated command before executing it
   REPLICATE_EXEC_INTERNAL_CMD,    // Executing commands generated internally by BDR
-  
+
   REPLICATE_COMPRESSION_TYPE, // Compression type to be used when replicating the DDL
   // only reorg if ReorgCheck indicates that a reorg is needed.
   REORG_IF_NEEDED,
@@ -3263,7 +3266,7 @@ enum DefaultConstants
   NESTED_JOINS_CHECK_LEADING_KEY_SKEW,
   NESTED_JOINS_LEADING_KEY_SKEW_THRESHOLD,
 
-  // This CQD controls the display of detailed interval information for MC histograms 
+  // This CQD controls the display of detailed interval information for MC histograms
   // using showstats output
   USTAT_SHOW_MC_INTERVAL_INFO,
 
@@ -3271,7 +3274,7 @@ enum DefaultConstants
   CANCEL_MINIMUM_BLOCKING_INTERVAL,
 
   // propagate child available Btree indexes from child for arity 1 ops
-  GA_PROP_INDEXES_ARITY_1, 
+  GA_PROP_INDEXES_ARITY_1,
   // FAst extract Routines
   GEN_FE_BUFFER_SIZE,
   GEN_FE_NUM_BUFFERS,
@@ -3299,8 +3302,8 @@ enum DefaultConstants
   NESTED_JOINS_PLAN3_TRY_SORT, // try sort when plan2 produces a non-sort plan
 
   HJ_NEW_MCSB_PLAN, // control the new MCSB feature
-  
-  USTAT_INCREMENTAL_UPDATE_STATISTICS, // main control switch for 
+
+  USTAT_INCREMENTAL_UPDATE_STATISTICS, // main control switch for
                                       // incremental update stats (IUS): on / off
 
   USTAT_INCREMENTAL_FALSE_PROBABILITY,
@@ -3322,7 +3325,7 @@ enum DefaultConstants
   USTAT_IUS_MAX_PERSISTENT_DATA_IN_MB,
 
   USTAT_IUS_MAX_PERSISTENT_DATA_IN_PERCENTAGE,
- 
+
   USTAT_COLLECT_MC_SKEW_VALUES,   // controls MC skew values
 
   HIST_MIN_MAX_OPTIMIZATION,
@@ -3341,12 +3344,12 @@ enum DefaultConstants
 
   USTAT_IUS_SIMPLE_SYNTAX,
 
-  // Collect reorg stats. Default is ON and stats are collected. 
+  // Collect reorg stats. Default is ON and stats are collected.
   // This cqd is added in case
   // one need to go back to the old behavior of no reorg stats, or if a problem
   // need to be debugged.
   COLLECT_REORG_STATS,
-  
+
   HIVE_MAX_STRING_LENGTH,
   HIVE_USE_FAKE_TABLE_DESC,
   HIVE_LIB_HDFS_PORT_OVERRIDE,
@@ -3382,7 +3385,7 @@ enum DefaultConstants
   // size of each row in full explain output. Default is 80.
   EXPLAIN_OUTPUT_ROW_SIZE,
 
-  // to avoid stackoverflow when statement is an insert with a large 
+  // to avoid stackoverflow when statement is an insert with a large
   // tuple list
   EXPLAIN_ROOT_INPUT_VARS_MAX,
 
@@ -3401,7 +3404,7 @@ enum DefaultConstants
   HBASE_MAX_COLUMN_VAL_LENGTH,
   HBASE_MAX_COLUMN_INFO_LENGTH,
 
-  // Hbase silently inserts a duplicate row. 
+  // Hbase silently inserts a duplicate row.
   // Hbase doesn't tell whether a row got deleted.
   // if set to ON, follow SQL semantics.
   // Return an error when a duplicate row is inserted.
@@ -3419,10 +3422,10 @@ enum DefaultConstants
 
   HBASE_TRANSFORM_UPDATE_TO_DELETE_INSERT,
 
-  // ON, if blocks should be cached for this scan. This includes subset scans used by Update and Delete 
+  // ON, if blocks should be cached for this scan. This includes subset scans used by Update and Delete
   HBASE_CACHE_BLOCKS,
 
-  // minimum number of rows to cache for a scan. Default is 100. 
+  // minimum number of rows to cache for a scan. Default is 100.
   // This includes subset scans used by Update and Delete
   HBASE_NUM_CACHE_ROWS_MIN,
   // maximum number of rows to cache for a scan. Default is 10000.
@@ -3434,7 +3437,7 @@ enum DefaultConstants
   // OFF by default, in closed source. ON by default, in open source.
   SEABASE_VOLATILE_TABLES,
 
-  // During a drop of seabase table or index, the object is first removed from 
+  // During a drop of seabase table or index, the object is first removed from
   // seabase metadata. If that succeeds, the corresponding hbase object is dropped.
   // if set, this drop of hbase table is done in another worker thread. That speeds up the
   // over drop. If a create of the same table comes in later and an error is returned
@@ -3467,7 +3470,7 @@ enum DefaultConstants
   // For PCODE - Native Expressions work
   PCODE_NE_LOG_PATH,
   PCODE_NE_DBG_LEVEL,
-   
+
   // To set Reorg verify command for REORG CHECK command
   REORG_VERIFY,
 
@@ -3520,7 +3523,7 @@ enum DefaultConstants
   SHOW_MEMO_STATS,
 
   // Default is ON. If ON will use JNI and the Java API provided
-  // by Hive to access metadata for Hive which could be in any 
+  // by Hive to access metadata for Hive which could be in any
   // DB that supports JDBC
   HIVE_METADATA_JAVA_ACCESS,
 
@@ -3542,7 +3545,7 @@ enum DefaultConstants
   // if set, do not use natable cache. Reload it.
   // Used internally until full Xn support for DDL is in.
   TRAF_RELOAD_NATABLE_CACHE,
-  
+
   TRAF_UPSERT_ADJUST_PARAMS,
   TRAF_UPSERT_WB_SIZE,
   TRAF_UPSERT_AUTO_FLUSH,
@@ -3585,7 +3588,7 @@ enum DefaultConstants
   // being declared with an explicit charset.
   TRAF_DEFAULT_COL_CHARSET,
 
-  // if set to ON, then the length specified for a char/varchar datatype is 
+  // if set to ON, then the length specified for a char/varchar datatype is
   // in characters unless it is explicitly qualified as BYTES or CHARACTERS.
   TRAF_COL_LENGTH_IS_CHAR,
 
@@ -3605,7 +3608,7 @@ enum DefaultConstants
   // if not null, then add this suffix to the original name and select from that hive table.
   USE_HIVE_SOURCE,
 
-  // if set to ON, then query is not run as part of an enclosing DTM transaction 
+  // if set to ON, then query is not run as part of an enclosing DTM transaction
   // nor is a transaction started to execute it.
   // It is run using underlying hbase single row transaction consistency.
   TRAF_NO_DTM_XN,
@@ -3649,13 +3652,13 @@ enum DefaultConstants
   TRAF_MAX_CHARACTER_COL_LENGTH,
 
   // set when metadata definition is to be read from hardcoded structs
-  // and not from metadata. 
+  // and not from metadata.
   TRAF_BOOTSTRAP_MD_MODE,
 
   UDR_DEBUG_FLAGS,
 
-  // The threshold on the number of rows scanned in an index join scan. 
-  // If the estimated value is below the threshold, the index will be 
+  // The threshold on the number of rows scanned in an index join scan.
+  // If the estimated value is below the threshold, the index will be
   // subjected to the elimination heuristics.
   INDEX_ELIMINATION_THRESHOLD,
 
@@ -3670,7 +3673,7 @@ enum DefaultConstants
   NCM_IND_JOIN_SELECTIVITY,
   NCM_IND_SCAN_SELECTIVITY,
   NCM_OLTP_ET_THRESHOLD,
-  NCM_SKEW_COST_ADJ_FOR_PROBES, 
+  NCM_SKEW_COST_ADJ_FOR_PROBES,
   PCODE_NE_IN_SHOWPLAN,
   TRAF_TABLE_SNAPSHOT_SCAN,
   TRAF_TABLE_SNAPSHOT_SCAN_TMP_LOCATION,

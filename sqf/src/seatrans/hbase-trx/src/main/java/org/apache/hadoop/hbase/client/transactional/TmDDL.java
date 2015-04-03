@@ -97,7 +97,8 @@ public class TmDDL {
    
    public void putRow(final long transid, final String state, final ArrayList<String> createList, final ArrayList<String> dropList) throws Exception {
       long threadId = Thread.currentThread().getId();
-      if (LOG.isTraceEnabled()) LOG.trace("putRow start in thread " + threadId);
+      if (LOG.isTraceEnabled()) LOG.trace("TmDDL putRow start in thread " + threadId + "TransID" + transid);
+      LOG.error("TmDDL putRow start in thread " + threadId + "TransID" + transid);
       boolean lvResult = true;
       StringBuilder ctableString = new StringBuilder();
       StringBuilder dtableString = new StringBuilder();
@@ -158,7 +159,8 @@ public class TmDDL {
    public void putRow(final long transid, final String Operation, final String tableName) throws Exception {
 		
 		long threadId = Thread.currentThread().getId();
-		if (LOG.isTraceEnabled()) LOG.trace("putRow Operation in thread " + threadId);
+		if (LOG.isTraceEnabled()) LOG.trace("TmDDL putRow Operation in thread " + threadId + "TransID" + transid);
+		LOG.error("TmDDL putRow Operation in thread " + threadId + "TransID" + transid);
 		byte [] value = null;
 		StringBuilder tableString = null;
 		Result r = null;
@@ -176,10 +178,13 @@ public class TmDDL {
 		}
 		
 		//Check and set State
-		value = r.getValue(TDDL_FAMILY, TDDL_STATE);
-		if((value != null) && Bytes.toString(value).equals("INVALID"))
+		if(! r.isEmpty())
 		{
-			LOG.error("putRow on invalid Transaction :" + transid);
+			value = r.getValue(TDDL_FAMILY, TDDL_STATE);
+		}
+		if((value != null) && (value.length > 0) && Bytes.toString(value).equals("INVALID"))
+		{
+			LOG.error("TmDDL putRow on invalid Transaction :" + transid);
 			throw new RuntimeException("putRow on invalid Transaction State :" + transid);
 		}
 		else
@@ -190,18 +195,25 @@ public class TmDDL {
 		//Check and append table name
 		if(Operation.equals("CREATE"))
 		{
-			value = r.getValue(TDDL_FAMILY, TDDL_CREATE);
-            
-			if((value != null) && Bytes.toString(value).equals("INVALID"))
+			if(! r.isEmpty())
+			{
+				value = r.getValue(TDDL_FAMILY, TDDL_CREATE);
+			}
+            if((value != null) && (value.length > 0) && Bytes.toString(value).equals("INVALID"))
 			{
 				LOG.error("putRow on invalid Transaction :" + transid);
 				throw new RuntimeException("putRow on invalid Transaction State :" + transid);
 			}
 			else
-			{			
-				tableString = new StringBuilder(Bytes.toString(value));
-				tableString.append(",");
-                tableString.append(tableName);
+			{	
+				tableString = new StringBuilder();
+				if(value != null && value.length > 0)
+				{	
+					tableString.append(Bytes.toString(value));
+					tableString.append(",");
+				}
+				tableString.append(tableName);
+				                
 				p.add(TDDL_FAMILY, TDDL_CREATE, Bytes.toBytes(tableString.toString()));
 			}
 			
@@ -210,18 +222,26 @@ public class TmDDL {
 		//Check and append table name
 		if(Operation.equals("DROP"))
 		{
-			value = r.getValue(TDDL_FAMILY, TDDL_DROP);
+			if(! r.isEmpty())
+			{
+				value = r.getValue(TDDL_FAMILY, TDDL_DROP);
+			}
             
-			if((value != null) && Bytes.toString(value).equals("INVALID"))
+			if((value != null) && (value.length > 0) && Bytes.toString(value).equals("INVALID"))
 			{
 				LOG.error("putRow on invalid Transaction :" + transid);
 				throw new RuntimeException("putRow on invalid Transaction State :" + transid);
 			}
 			else
-			{			
-				tableString = new StringBuilder(Bytes.toString(value));
-				tableString.append(",");
-                tableString.append(tableName);
+			{	
+				tableString = new StringBuilder();
+				if(value != null && value.length > 0)
+				{
+					tableString.append(Bytes.toString(value));
+					tableString.append(",");
+				}
+				tableString.append(tableName);
+				
 				p.add(TDDL_FAMILY, TDDL_DROP, Bytes.toBytes(tableString.toString()));
 			}
 			
@@ -250,7 +270,8 @@ public class TmDDL {
    
    public void putRow(final long transid, final String state) throws Exception {
       long threadId = Thread.currentThread().getId();
-      if (LOG.isTraceEnabled()) LOG.trace("putRow State start in thread " + threadId);
+      if (LOG.isTraceEnabled()) LOG.trace("TmDDL putRow start in thread " + threadId + "TransID" + transid);
+      LOG.error("TmDDL putRow start in thread " + threadId + "TransID" + transid);
       
       Put p = new Put(Bytes.toBytes(transid));
       p.add(TDDL_FAMILY, TDDL_STATE, Bytes.toBytes(state));
@@ -277,34 +298,46 @@ public class TmDDL {
    
    
     public void getRow(final long lvTransid, StringBuilder state, ArrayList<String> createList, ArrayList<String> dropList) throws IOException {
-      if (LOG.isTraceEnabled()) LOG.trace("getRow start");
+      long threadId = Thread.currentThread().getId();
+      if (LOG.isTraceEnabled()) LOG.trace("TmDDL getRow start, TransID" + lvTransid);
+      LOG.error("TmDDL getRow start, Thread ID" + threadId + "TransID" + lvTransid);
 	  String recordString = null;
 	  StringTokenizer st = null;
 	  byte [] value = null;
       try {
-         String transidString = new String(String.valueOf(lvTransid));
-         Get g = new Get(Bytes.toBytes(lvTransid));
-            Result r = table.get(g);
-            value = r.getValue(TDDL_FAMILY, TDDL_CREATE);
-                        
-            recordString =  new String (Bytes.toString(value));
-            st = new StringTokenizer(recordString, ",");
-            
-            while (st.hasMoreElements()) 
-            {
-                createList.add(st.nextToken());
-            }
-			
-			value = r.getValue(TDDL_FAMILY, TDDL_DROP);
-			recordString =  new String (Bytes.toString(value));
-            st = new StringTokenizer(recordString, ",");
-            while (st.hasMoreElements()) 
-            {
-                dropList.add(st.nextToken());
-            }
-			
-			value = r.getValue(TDDL_FAMILY, TDDL_STATE);
-			state.append(Bytes.toString(value));
+		    String transidString = new String(String.valueOf(lvTransid));
+		    Get g = new Get(Bytes.toBytes(lvTransid));
+		    Result r = table.get(g);
+		    if(! r.isEmpty())
+		    {
+			    value = r.getValue(TDDL_FAMILY, TDDL_CREATE);
+			    if(value != null && value.length > 0)
+			    {
+			    	recordString =  new String (Bytes.toString(value));
+			    	st = new StringTokenizer(recordString, ",");
+			    	while (st.hasMoreElements()) 
+			    	{
+			    		createList.add(st.nextToken());
+			    	}
+			    }
+				
+				value = r.getValue(TDDL_FAMILY, TDDL_DROP);
+				if(value != null && value.length > 0)
+				{
+					recordString =  new String (Bytes.toString(value));
+					st = new StringTokenizer(recordString, ",");
+					while (st.hasMoreElements()) 
+					{
+						dropList.add(st.nextToken());
+					}
+				}
+				
+				value = r.getValue(TDDL_FAMILY, TDDL_STATE);
+				if(value != null && value.length > 0)
+				{
+					state.append(Bytes.toString(value));
+				}
+		    }
 			
                 
         }

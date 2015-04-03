@@ -80,17 +80,17 @@ class ExpHbaseInterface : public NABasicObject
 {
  public:
 
-  static ExpHbaseInterface* newInstance(CollHeap* heap, 
-                                        const char* server = NULL, 
-                                        const char *zkPort = NULL, 
-                                        int debugPort = 0, 
+  static ExpHbaseInterface* newInstance(CollHeap* heap,
+                                        const char* server = NULL,
+                                        const char *zkPort = NULL,
+                                        int debugPort = 0,
                                         int DebugTimeout = 0);
 
   virtual ~ExpHbaseInterface()
   {}
-  
+
   virtual Lng32 init(ExHbaseAccessStats *hbs) = 0;
-  
+
   virtual Lng32 cleanup() = 0;
   virtual Lng32 cleanupClient()
   { return 0;}
@@ -99,16 +99,17 @@ class ExpHbaseInterface : public NABasicObject
 
   virtual Lng32 create(HbaseStr &tblName,
 	               HBASE_NAMELIST& colFamNameList) = 0;
-  
+
   virtual Lng32 create(HbaseStr &tblName,
 		       NAText * hbaseCreateOptionsArray,
                        int numSplits, int keyLength,
-                       const char ** splitValues) =0;
+                       const char ** splitValues,
+					   NABoolean noXn) =0;
 
-  // During a drop of seabase table or index, the object is first removed from 
+  // During a drop of seabase table or index, the object is first removed from
   // seabase metadata. If that succeeds, the corresponding hbase object is dropped.
-  // if sync is TRUE, this drop of hbase table is done in another worker thread. 
-  // That speeds up the over all drop time. 
+  // if sync is TRUE, this drop of hbase table is done in another worker thread.
+  // That speeds up the over all drop time.
   // If a create of the same table comes in later and an error is returned
   // during create, we delay and retry for a fixed number of times since that table
   // may still be dropped by the worked thread.
@@ -130,15 +131,15 @@ class ExpHbaseInterface : public NABasicObject
 
   virtual Lng32 scanOpen(
 			 HbaseStr &tblName,
-			 const Text& startRow, 
-			 const Text& stopRow, 
+			 const Text& startRow,
+			 const Text& stopRow,
 			 const LIST(HbaseStr) & columns,
 			 const int64_t timestamp,
 			 const NABoolean readUncommitted,
 			 const NABoolean cacheBlocks,
 			 const Lng32 numCacheRows,
                          const NABoolean preFetch,
-			 const LIST(NAString) *inColNamesToFilter, 
+			 const LIST(NAString) *inColNamesToFilter,
 			 const LIST(NAString) *inCompareOpList,
 			 const LIST(NAString) *inColValuesToCompare,
 			 Float32 samplePercent = -1.0f,
@@ -159,10 +160,10 @@ class ExpHbaseInterface : public NABasicObject
 		     LIST(NAString) &col1ValueList, // output
 		     LIST(NAString) &col2ValueList, // output
 		     LIST(NAString) &col3ValueList); // output
-		     
+
   virtual Lng32 getRowOpen(
 		HbaseStr &tblName,
-		const HbaseStr &row, 
+		const HbaseStr &row,
 		const LIST(HbaseStr) & columns,
 		const int64_t timestamp) = 0;
 
@@ -173,12 +174,12 @@ class ExpHbaseInterface : public NABasicObject
 
  virtual Lng32 getRowsOpen(
 		HbaseStr &tblName,
-		const LIST(HbaseStr) & rows, 
+		const LIST(HbaseStr) & rows,
 		const LIST(HbaseStr) & columns,
 		const int64_t timestamp) = 0;
 
   virtual Lng32 nextRow() = 0;
-  
+
   virtual Lng32 nextCell(HbaseStr &rowId,
           HbaseStr &colFamName,
           HbaseStr &colName,
@@ -195,14 +196,14 @@ class ExpHbaseInterface : public NABasicObject
               char **outColName,
               short &colNameLen,
               Int64 &timestamp) = 0;
- 
+
   virtual Lng32 getNumCols(int &numCols) = 0;
- 
+
   virtual Lng32 getRowID(HbaseStr &rowID) = 0;
- 
+
   virtual Lng32 deleteRow(
 		  HbaseStr &tblName,
-		  HbaseStr& row, 
+		  HbaseStr& row,
 		  const LIST(HbaseStr) & columns,
 		  NABoolean noXn,
 		  const int64_t timestamp) = 0;
@@ -219,7 +220,7 @@ class ExpHbaseInterface : public NABasicObject
 
   virtual Lng32 checkAndDeleteRow(
 				  HbaseStr &tblName,
-				  HbaseStr& row, 
+				  HbaseStr& row,
 				  const Text& columnToCheck,
 				  const Text& colValToCheck,
                                   NABoolean noXn,
@@ -233,7 +234,7 @@ class ExpHbaseInterface : public NABasicObject
 
   virtual Lng32 insertRow(
 		  HbaseStr &tblName,
-		  HbaseStr& rowID, 
+		  HbaseStr& rowID,
 		  HbaseStr& row,
 		  NABoolean noXn,
 		  const int64_t timestamp) = 0;
@@ -246,15 +247,15 @@ class ExpHbaseInterface : public NABasicObject
 		  NABoolean noXn,
 		  const int64_t timestamp,
 		  NABoolean autoFlush = TRUE) = 0; // by default, flush rows after put
- 
+
  virtual Lng32 setWriteBufferSize(
                  HbaseStr &tblName,
                  Lng32 size)=0;
- 
+
  virtual Lng32 setWriteToWAL(
                  HbaseStr &tblName,
                  NABoolean v)=0;
- 
+
  virtual  Lng32 initHBLC(ExHbaseAccessStats* hbs = NULL)=0;
 
  virtual Lng32 initHFileParams(HbaseStr &tblName,
@@ -265,7 +266,7 @@ class ExpHbaseInterface : public NABasicObject
  virtual Lng32 addToHFile(short rowIDLen,
                           HbaseStr &rowIDs,
                           HbaseStr &rows) = 0;
- 
+
  virtual Lng32 closeHFile(HbaseStr &tblName) = 0;
 
  virtual Lng32 doBulkLoad(HbaseStr &tblName,
@@ -278,43 +279,43 @@ class ExpHbaseInterface : public NABasicObject
                           Text& location) = 0;
   virtual Lng32 checkAndInsertRow(
 				  HbaseStr &tblName,
-				  HbaseStr& rowID, 
+				  HbaseStr& rowID,
 				  HbaseStr& row,
                                   NABoolean noXn,
 				  const int64_t timestamp) = 0;
 
-  
+
   virtual Lng32 checkAndUpdateRow(
 				  HbaseStr &tblName,
-				  HbaseStr& rowID, 
+				  HbaseStr& rowID,
 				  HbaseStr& row,
 				  const Text& columnToCheck,
 				  const Text& colValToCheck,
-                                  NABoolean noXn,				
-                                 
+                                  NABoolean noXn,
+
 				  const int64_t timestamp);
 
- 
+
   virtual Lng32 getClose() = 0;
 
   virtual Lng32 coProcAggr(
 			 HbaseStr &tblName,
 			 Lng32 aggrType, // 0:count, 1:min, 2:max, 3:sum, 4:avg
-			 const Text& startRow, 
-			 const Text& stopRow, 
+			 const Text& startRow,
+			 const Text& stopRow,
 			 const Text &colFamily,
 			 const Text &colName,
 			 const NABoolean cacheBlocks,
 			 const Lng32 numCacheRows,
 			 Text &aggrVal); // returned value
- 
+
   virtual Lng32 grant(
-		      const Text& user, 
+		      const Text& user,
 		      const Text& tblName,
 		      const std::vector<Text> & actionCodes) = 0;
 
   virtual Lng32 revoke(
-		      const Text& user, 
+		      const Text& user,
 		      const Text& tblName,
 		      const std::vector<Text> & actionCodes) = 0;
 
@@ -333,7 +334,7 @@ class ExpHbaseInterface : public NABasicObject
   virtual Lng32 getBlockCacheFraction(float& frac) = 0;
 
 protected:
-  enum 
+  enum
     {
       MAX_SERVER_SIZE = 999,
       MAX_PORT_SIZE = 99
@@ -344,7 +345,7 @@ protected:
                     const char * zkPort = NULL,
                     int debugPort = 0,
                     int debugTimeout = 0);
-  
+
   CollHeap * heap_;
   ExHbaseAccessStats * hbs_;
   char server_[MAX_SERVER_SIZE+1];
@@ -363,11 +364,11 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
   ExpHbaseInterface_JNI(CollHeap* heap,
                         const char* server, bool useTRex,
                         const char *zkPort, int debugPort, int debugTimeout);
-  
+
   virtual ~ExpHbaseInterface_JNI();
-  
+
   virtual Lng32 init(ExHbaseAccessStats *hbs);
-  
+
   virtual Lng32 cleanup();
 
   virtual Lng32 cleanupClient();
@@ -380,7 +381,8 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
   virtual Lng32 create(HbaseStr &tblName,
 	               NAText* hbaseCreateOptionsArray,
                        int numSplits, int keyLength,
-                       const char ** splitValues);
+                       const char ** splitValues,
+					   NABoolean noXn);
 
   virtual Lng32 drop(HbaseStr &tblName, NABoolean async);
   virtual Lng32 dropAll(const char * pattern, NABoolean async);
@@ -398,15 +400,15 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 
   virtual Lng32 scanOpen(
 			 HbaseStr &tblName,
-			 const Text& startRow, 
-			 const Text& stopRow, 
+			 const Text& startRow,
+			 const Text& stopRow,
 			 const LIST(HbaseStr) & columns,
 			 const int64_t timestamp,
 			 const NABoolean readUncommitted,
 			 const NABoolean cacheBlocks,
 			 const Lng32 numCacheRows,
                          const NABoolean preFetch,
-			 const LIST(NAString) *inColNamesToFilter, 
+			 const LIST(NAString) *inColNamesToFilter,
 			 const LIST(NAString) *inCompareOpList,
 			 const LIST(NAString) *inColValuesToCompare,
 			 Float32 samplePercent = -1.0f,
@@ -420,10 +422,10 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 
   virtual Lng32 getRowOpen(
 		HbaseStr &tblName,
-		const HbaseStr &row, 
+		const HbaseStr &row,
 		const LIST(HbaseStr) & columns,
 		const int64_t timestamp);
- 
+
   // return 1 if row exists, 0 if does not exist. -ve num in case of error.
   virtual Lng32 rowExists(
 			  HbaseStr &tblName,
@@ -431,7 +433,7 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 
  virtual Lng32 getRowsOpen(
 		HbaseStr &tblName,
-		const LIST(HbaseStr) & rows, 
+		const LIST(HbaseStr) & rows,
 		const LIST(HbaseStr) & columns,
 		const int64_t timestamp);
 
@@ -460,7 +462,7 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 
   virtual Lng32 deleteRow(
 		  HbaseStr &tblName,
-		  HbaseStr &row, 
+		  HbaseStr &row,
 		  const LIST(HbaseStr) & columns,
 		  NABoolean noXn,
 		  const int64_t timestamp);
@@ -470,16 +472,16 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 		  HbaseStr &tblName,
                   short rowIDLen,
 		  HbaseStr &rowIDs,
-		  NABoolean noXn,		 		  
+		  NABoolean noXn,
 		  const int64_t timestamp);
 
 
   virtual Lng32 checkAndDeleteRow(
 				  HbaseStr &tblName,
-				  HbaseStr& row, 
+				  HbaseStr& row,
 				  const Text& columnToCheck,
 				  const Text& colValToCheck,
-                                  NABoolean noXn,     
+                                  NABoolean noXn,
 				  const int64_t timestamp);
 
 
@@ -489,7 +491,7 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 
   virtual Lng32 insertRow(
 		  HbaseStr &tblName,
-		  HbaseStr& rowID, 
+		  HbaseStr& rowID,
                   HbaseStr& row,
 		  NABoolean noXn,
 		  const int64_t timestamp);
@@ -502,11 +504,11 @@ class ExpHbaseInterface_JNI : public ExpHbaseInterface
 		  NABoolean noXn,
 		  const int64_t timestamp,
 		  NABoolean autoFlush = TRUE); // by default, flush rows after put
-  
+
   virtual Lng32 setWriteBufferSize(
                   HbaseStr &tblName,
                   Lng32 size);
-  
+
   virtual Lng32 setWriteToWAL(
                   HbaseStr &tblName,
                   NABoolean v);
@@ -528,13 +530,13 @@ virtual Lng32 initHFileParams(HbaseStr &tblName,
                           Text& tableName,
                           NABoolean quasiSecure,
                           NABoolean snapshot);
- 
+
  virtual Lng32 bulkLoadCleanup(HbaseStr &tblName,
                           Text& location);
 
   virtual Lng32 checkAndInsertRow(
 				  HbaseStr &tblName,
-				  HbaseStr& rowID, 
+				  HbaseStr& rowID,
 				  HbaseStr& row,
                                   NABoolean noXn,
 				  const int64_t timestamp);
@@ -543,11 +545,11 @@ virtual Lng32 initHFileParams(HbaseStr &tblName,
 
   virtual Lng32 checkAndUpdateRow(
 				  HbaseStr &tblName,
-				  HbaseStr& rowID, 
+				  HbaseStr& rowID,
 				  HbaseStr& row,
 				  const Text& columnToCheck,
 				  const Text& colValToCheck,
-                                  NABoolean noXn,			
+                                  NABoolean noXn,
 				  const int64_t timestamp);
 
 
@@ -555,23 +557,23 @@ virtual Lng32 initHFileParams(HbaseStr &tblName,
   virtual Lng32 coProcAggr(
 			 HbaseStr &tblName,
 			 Lng32 aggrType, // 0:count, 1:min, 2:max, 3:sum, 4:avg
-			 const Text& startRow, 
-			 const Text& stopRow, 
+			 const Text& startRow,
+			 const Text& stopRow,
 			 const Text &colFamily,
 			 const Text &colName,
 			 const NABoolean cacheBlocks,
 			 const Lng32 numCacheRows,
 			 Text &aggrVal); // returned value
- 
+
   virtual Lng32 getClose();
 
   virtual Lng32 grant(
-		      const Text& user, 
+		      const Text& user,
 		      const Text& tblName,
   		      const std::vector<Text> & actionCodes);
 
   virtual Lng32 revoke(
-		      const Text& user, 
+		      const Text& user,
 		      const Text& tblName,
   		      const std::vector<Text> & actionCodes);
 
