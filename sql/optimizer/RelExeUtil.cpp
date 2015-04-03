@@ -5401,7 +5401,6 @@ short ExeUtilHBaseBulkLoad::setOptions(NAList<ExeUtilHBaseBulkLoad::HBaseBulkLoa
         setTruncateTable(TRUE);
       }
       break;
-
       case INDEX_TABLE_ONLY_:
       {
         if (getIndexTableOnly())
@@ -5483,6 +5482,18 @@ short ExeUtilHBaseBulkLoad::setOptions(NAList<ExeUtilHBaseBulkLoad::HBaseBulkLoa
         setUpsertUsingLoad(TRUE);
       }
       break;
+      case UPDATE_STATS_:
+      {
+        if (getUpdateStats())
+        {
+          //4488 bulk load option $0~String0 cannot be specified more than once.
+          *da << DgSqlCode(-4488)
+                  << DgString0("UPDATE STATISTICS");
+          return 1;
+        }
+        setUpdateStats(TRUE);
+      }
+      break;
       default:
       {
         CMPASSERT(0);
@@ -5491,6 +5502,14 @@ short ExeUtilHBaseBulkLoad::setOptions(NAList<ExeUtilHBaseBulkLoad::HBaseBulkLoa
 
     }
   }
+
+  // Update stats not allowed with upsert load.
+  if (getUpdateStats() && getUpsertUsingLoad())
+    {
+      // 4492 BULK LOAD option UPDATE STATISTICS cannot be used with UPSERT USING LOAD option.
+      *da << DgSqlCode(-4492);
+      return 1;
+    }
 
   if (getIndexTableOnly())
   {
