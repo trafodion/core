@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Suresh Subbiah <suresh.subbiah@hp.com>
+Code-Review+2: Cliff Gray <cliff.gray@hp.com>
+Workflow+1: Cliff Gray <cliff.gray@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Sat, 04 Apr 2015 17:35:14 +0000
+Reviewed-on: https://review.trafodion.org/1450
+Project: trafodion/core
+Branch: refs/heads/master
