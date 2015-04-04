@@ -34,12 +34,15 @@
 #endif
 
 extern __thread JNIEnv *jenv_;
+extern __thread NAString *tsRecentJMFromJNI;
+
 
 // This structure defines the information needed for each java method used.
 struct JavaMethodInit {
-    std::string   jm_name;       // The method name.
-    std::string   jm_signature;  // The method signature.
-    jmethodID     methodID;      // The JNI methodID
+    const char *jm_name;       // The method name.
+    const char *jm_signature;  // The method signature.
+    jmethodID   methodID;      // The JNI methodID
+    NAString   *jm_full_name;
   };
 
 typedef enum {

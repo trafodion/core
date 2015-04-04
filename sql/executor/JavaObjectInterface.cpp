@@ -33,6 +33,7 @@
 
 JavaVM* JavaObjectInterface::jvm_  = NULL;
 __thread JNIEnv* jenv_ = NULL;
+__thread NAString *tsRecentJMFromJNI = NULL;
 jclass JavaObjectInterface::gThrowableClass = NULL;
 jclass JavaObjectInterface::gStackTraceClass = NULL;
 jmethodID JavaObjectInterface::gGetStackTraceMethodID = NULL;
@@ -346,13 +347,16 @@ JOI_RetCode JavaObjectInterface::init(char *className,
     {
       for (int i=0; i<howManyMethods; i++)
       {
+        JavaMethods[i].jm_full_name = new (heap_) NAString(className, heap_);
+        JavaMethods[i].jm_full_name->append('.', 1);
+        JavaMethods[i].jm_full_name->append(JavaMethods[i].jm_name);
         JavaMethods[i].methodID = jenv_->GetMethodID(javaClass, 
-                                                     JavaMethods[i].jm_name.data(), 
-                                                     JavaMethods[i].jm_signature.data());
+                                                     JavaMethods[i].jm_name, 
+                                                     JavaMethods[i].jm_signature);
         if (JavaMethods[i].methodID == 0 || jenv_->ExceptionCheck())
         { 
           getExceptionDetails();
-          QRLogger::log(CAT_SQL_HDFS_JNI_TOP, LL_ERROR, "Error in GetMethod(%s).", JavaMethods[i].jm_name.data());
+          QRLogger::log(CAT_SQL_HDFS_JNI_TOP, LL_ERROR, "Error in GetMethod(%s).", JavaMethods[i].jm_name);
           return JOI_ERROR_GETMETHOD;
         }      
         //else
