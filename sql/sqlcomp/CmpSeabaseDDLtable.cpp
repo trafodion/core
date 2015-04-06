@@ -1805,6 +1805,10 @@ void CmpSeabaseDDL::createSeabaseTable(
 
       if (rc == -2) // cleanup before returning error..
         {
+          //if DDL_TRANSACTIONS is ON, no need of additional cleanup. 
+          if(CmpCommon::getDefault(DDL_TRANSACTIONS) == DF_ON)
+              return;
+          
           ComObjectName tableName(createTableNode->getTableName());
           ComAnsiNamePart currCatAnsiName(currCatName);
           ComAnsiNamePart currSchAnsiName(currSchName);
@@ -2187,6 +2191,10 @@ void CmpSeabaseDDL::createSeabaseTableCompound(
 
   if (NOT createTableNode->isVolatile())
     {
+      //if DDL_TRANSACTIONS is ON, no need of additional cleanup. 
+      if(CmpCommon::getDefault(DDL_TRANSACTIONS) == DF_ON)
+        return;
+    
       cleanupObjectAfterError(cliInterface, 
                               catalogNamePart, schemaNamePart, objectNamePart,
                               COM_BASE_TABLE_OBJECT);
@@ -3090,6 +3098,10 @@ void CmpSeabaseDDL::dropSeabaseTable(
 
       if (rc == -2) // cleanup before returning error..
         {
+          //if DDL_TRANSACTIONS is ON, no need of additional cleanup. 
+          if(CmpCommon::getDefault(DDL_TRANSACTIONS) == DF_ON)
+              return;
+          
           ComObjectName tableName(dropTableNode->getTableName());
           ComAnsiNamePart currCatAnsiName(currCatName);
           ComAnsiNamePart currSchAnsiName(currSchName);

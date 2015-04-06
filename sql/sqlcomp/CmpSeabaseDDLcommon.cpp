@@ -2134,9 +2134,13 @@ short CmpSeabaseDDL::createHbaseTable(ExpHbaseInterface *ehi,
       if (hbaseCreateOptionsArray[HBASE_NAME].empty())
         hbaseCreateOptionsArray[HBASE_NAME] = SEABASE_DEFAULT_COL_FAMILY;
 
+      NABoolean noXn =
+                (CmpCommon::getDefault(DDL_TRANSACTIONS) == DF_OFF) ?  true : false;
+                
       retcode = ehi->create(*table, hbaseCreateOptionsArray,
                             numSplits, keyLength,
-                            (const char **)encodedKeysBuffer);
+                            (const char **)encodedKeysBuffer,
+                            noXn);
     }
   else
     {
