@@ -1088,6 +1088,61 @@ public class TransactionManager {
         }
         if(commitError != 0)
            return commitError;
+           
+        //Before replying prepare success, check for DDL transaction.
+        //If prepare already has errors (commitError != 0), an abort is automatically
+        //triggered by TM which would take care of ddl abort.
+        //if prepare is success upto this point, DDL operation needs to check if any 
+        //drop table requests were recorded as part of phase 0. If any drop table 
+        //requests is recorded, then those tables need to disabled as part of prepare.
+        //TODO: Retry logic.
+        if(transactionState.hasDDLTx())
+        {
+            //if tables were created, then nothing else needs to be done.
+            //if tables were recorded dropped, then they need to be disabled.
+            //Disabled tables will ultimately be deleted in commit phase.
+            ArrayList<String> createList = new ArrayList<String>(); //This list is ignored.
+            ArrayList<String> dropList = new ArrayList<String>();
+            StringBuilder state = new StringBuilder ();
+            try {
+                tmDDL.getRow(transactionState.getTransactionId(), state, createList, dropList);
+            }
+            catch(Exception e){
+                LOG.error("exception in doPrepare getRow: " + e);
+                if(LOG.isTraceEnabled()) LOG.trace("exception in doPrepare getRow: txID: " + transactionState.getTransactionId());
+                state.append("INVALID"); //to avoid processing further down this path.
+                commitError = TransactionalReturn.COMMIT_UNSUCCESSFUL;
+            }
+
+            //Return if error at this point.
+            if(commitError != 0)
+                return commitError;
+
+            if(state.toString().equals("VALID") && dropList.size() > 0)
+            {
+                Iterator<String> di = dropList.iterator();
+                while (di.hasNext()) 
+                {
+                try {
+                        //physical drop of table from hbase.
+                        disableTable(transactionState, di.next());
+                    }
+                    catch(Exception e){
+                        if(LOG.isTraceEnabled()) LOG.trace("exception in doPrepare disableTable: txID: " + transactionState.getTransactionId());
+                        LOG.error("exception in doCommit, Step : DeleteTable: " + e);
+                        
+                        //Any error at this point should be considered prepareCommit as unsuccessfully. 
+                        //Retry logic can be added only if it is retryable error: TODO.
+                        commitError = TransactionalReturn.COMMIT_UNSUCCESSFUL;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if(commitError != 0)
+           return commitError;
+           
         return allReadOnly ? TransactionalReturn.COMMIT_OK_READ_ONLY:
                              TransactionalReturn.COMMIT_OK;
     }
@@ -1432,7 +1487,7 @@ public class TransactionManager {
         //Followed by physical drop of this table in commit phase.
         try {
             // add drop record to TmDDL.
-            //tmDDL.putRow( transactionState.getTransactionId(), "DROP", tblName);
+            tmDDL.putRow( transactionState.getTransactionId(), "DROP", tblName);
 
             // Set transaction state object as participating in ddl transaction.
             transactionState.setDDLTx(true);
@@ -1483,6 +1538,24 @@ public class TransactionManager {
             LOG.error("enableTable error: " + sw.toString());
         }
 	}
+    
+    //Called only by DoPrepare.
+	public void disableTable(final TransactionState transactionState, String tblName)
+            throws MasterNotRunningException, IOException {
+        if (LOG.isTraceEnabled()) LOG.trace("disableTable ENTRY, transactionState: " + transactionState);
+
+        try {
+            hbadmin.disableTable(tblName);
+        }
+        catch (Exception e) {
+            if (LOG.isTraceEnabled()) LOG.trace("TransactionManager: disableTable exception " + e);
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            LOG.error("disableTable error: " + sw.toString());
+        }
+	}
+
 	
     /**
      * @param hostnamePort
