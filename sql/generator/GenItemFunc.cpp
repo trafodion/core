@@ -1358,7 +1358,8 @@ short CompEncode::codeGen(Generator * generator)
     //
     if (NOT regularNullability_)
       {
-	GenAssert(function_clause->getOperand(1)->getStorageLength() 
+	GenAssert(function_clause->getOperand(1)->getLength() +
+                  function_clause->getOperand(1)->getNullIndicatorLength()
 		  <= function_clause->getOperand(0)->getLength(),
 		  "Not enough storage allocated for encode");
       }
