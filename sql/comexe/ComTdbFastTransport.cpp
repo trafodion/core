@@ -65,6 +65,7 @@ ComTdbFastExtract::ComTdbFastExtract(
                      Space *space,
                      unsigned short childDataTuppIndex,
                      unsigned short cnvChildDataTuppIndex,
+                     ULng32 childDataRowLen,
                      Int64 hdfBuffSize,
                      Int16 replication
 
@@ -93,7 +94,8 @@ ComTdbFastExtract::ComTdbFastExtract(
   hiveTableName_(hiveTableName),
   hdfsIOBufferSize_(hdfBuffSize),
   hdfsReplication_(replication),
-  ioTimeout_(ioTimeout)
+  ioTimeout_(ioTimeout),
+  childDataRowLen_(childDataRowLen)
 {
 
 }

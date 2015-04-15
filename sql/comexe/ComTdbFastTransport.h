@@ -105,6 +105,7 @@ public:
     Space *space,
     unsigned short childDataTuppIndex,
     unsigned short cnvChildDataTuppIndex,
+    ULng32 cnvChildDataRowLen,
     Int64 hdfBuffSize,
     Int16 replication
     );
@@ -392,6 +393,11 @@ public:
   {
     hdfsReplication_ = hdfsReplication;
   }
+  UInt32 getChildDataRowLen() const
+  {
+    return childDataRowLen_;
+  }
+
 
 protected:
   NABasicPtr   targetName_;                                  // 00 - 07
@@ -416,9 +422,10 @@ protected:
   Int64        hdfsIOBufferSize_;                            // 112 - 120
   NABasicPtr   hdfsHostName_  ;                              // 121 - 127
   UInt16       ioTimeout_;                                   // 128 - 129
+  UInt32       childDataRowLen_;
   
   // Make sure class size is a multiple of 8
-  char fillerComTdbFastTransport_[14];                       // 130 -143
+  char fillerComTdbFastTransport_[10];                       // 130 -143
 
 };
 

@@ -405,6 +405,7 @@ static short ft_codegen(Generator *generator,
     space,
     childDataTuppIndex,
     cnvChildDataTuppIndex,
+    childDataRowLen,
     hdfsBufSize,
     replication
     );
