@@ -213,6 +213,9 @@ public class SQLMXConnection extends PreparedStatementManager implements
 				// commit the Transaction
 				cs = this.createStatement();
 				cs.execute("commit");
+                        } catch (SQLException se) {
+                           if (se.getErrorCode()  != -8605)
+                              throw se;
 			} finally {
 				setTxid_(0);
 				if(cs != null ){
@@ -1342,6 +1345,9 @@ public class SQLMXConnection extends PreparedStatementManager implements
 				// commit the Transaction
 				cs = this.createStatement();
 				cs.execute("rollback");
+                        } catch (SQLException se) {
+                          if (se.getErrorCode() != -8609)
+                             throw se;
 			} finally {
 				if(cs != null){
 					try{cs.close();}catch(Exception ee){}
