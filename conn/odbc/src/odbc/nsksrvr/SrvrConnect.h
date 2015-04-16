@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1998-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1998-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -92,6 +92,8 @@ enum E_GetSQLInfoType {
 #define CmdDll "libzcmd.so"
 
 #define HPDCI_APPLICATION	"HPDCI"
+const int MIN_TIMER=1;
+
 
 bool ChkDsExists(char* dsname,char* PrimaryCatalog, int& retcode);
 bool CheckUserPerm(char* PrimaryCatalog,long& uid);
@@ -343,5 +345,7 @@ bool isInfoDisk(char*& sqlString, const IDL_char *stmtLabel, short& error, char 
 bool checkSyntaxInfoDisk(char* sqlString, char *diskName);
 
 void __cdecl StatisticsTimerExpired(CEE_tag_def timer_tag);
+void __cdecl QueryTimerExpired(CEE_tag_def timer_tag);
+
 void SyncPublicationThread();
 #endif
