@@ -186,7 +186,7 @@ extern void sendAggrStats(pub_struct_type pub_type, std::tr1::shared_ptr<SESSION
 //extern void sendSessionEnd(pSESSION_END pSession_info);
 extern void sendSessionEnd(std::tr1::shared_ptr<SESSION_END> pSession_info);
 extern void sendQueryStats(pub_struct_type pub_type, std::tr1::shared_ptr<STATEMENT_QUERYEXECUTION> pQuery_info);
-CEE_handle_def StatisticsTimerHandle;
+CEE_handle_def StatisticsTimerHandle,QueryTimerHandle;
 SRVR_STMT_HDL * pQueryStmt = NULL;
 
 typedef struct _REPOS_STATS
@@ -3680,8 +3680,7 @@ odbc_SQLSvc_InitializeDialogue_ame_(
 	{
 		resStatSession->init();
 		resStatSession->start(&setinit);
-
-		if (srvrGlobal->m_bStatisticsEnabled)
+		if ((srvrGlobal->m_bStatisticsEnabled)&&(srvrGlobal->m_statisticsPubType==STATISTICS_AGGREGATED))
 		{
 			if (CEE_HANDLE_IS_NIL(&StatisticsTimerHandle) == IDL_FALSE)
 			{
@@ -3999,6 +3998,11 @@ void __cdecl SRVR::SrvrSessionCleanup(void)
 			CEE_TIMER_DESTROY(&StatisticsTimerHandle);
 			CEE_HANDLE_SET_NIL(&StatisticsTimerHandle);
 		}
+		if (CEE_HANDLE_IS_NIL(&QueryTimerHandle) == IDL_FALSE)
+		{
+			CEE_TIMER_DESTROY(&QueryTimerHandle);
+			CEE_HANDLE_SET_NIL(&QueryTimerHandle);			
+		}	
 	}
 
 	//end rs
@@ -9340,6 +9344,17 @@ short DO_WouldLikeToExecute(
 
 	pQueryStmt = pSrvrStmt;
 	pSrvrStmt->m_bDoneWouldLikeToExecute = true;
+	
+	if ((srvrGlobal->m_bStatisticsEnabled)&&(srvrGlobal->m_statisticsPubType==STATISTICS_AGGREGATED))
+	{
+		if (CEE_HANDLE_IS_NIL(&QueryTimerHandle) == IDL_FALSE)
+		{
+			CEE_TIMER_DESTROY(&QueryTimerHandle);
+			CEE_HANDLE_SET_NIL(&QueryTimerHandle);		
+		}
+		int querytimer=max(MIN_TIMER,srvrGlobal->m_iQueryPubThreshold);	
+		CEE_TIMER_CREATE2(querytimer, 0, QueryTimerExpired, (CEE_tag_def)NULL, &QueryTimerHandle, srvrGlobal->receiveThrId);
+	}		
 	return 0;
 }
 
@@ -9451,23 +9466,26 @@ void sendQueryStats(pub_struct_type pub_type, std::tr1::shared_ptr<STATEMENT_QUE
 
 void __cdecl StatisticsTimerExpired(CEE_tag_def timer_tag)
 {
-	long long timestamp = JULIANTIMESTAMP();
-	//static long long check_session_interval = timestamp;
-
 	if( resStatSession != NULL
 		&& srvrGlobal->m_statisticsPubType == STATISTICS_AGGREGATED )
-		//&& timestamp - check_session_interval >= aggrInterval * 1000000LL)
 	{
 		resStatSession->update();
 	}
-
-	if(resStatStatement != NULL
-		&& srvrGlobal->m_statisticsPubType != STATISTICS_SESSION
-		&& !resStatStatement->pubStarted
-		&& !resStatStatement->queryFinished
-		&& resStatStatement->wouldLikeToStart_ts > 0
-		&& pQueryStmt != NULL
-		&& timestamp - resStatStatement->wouldLikeToStart_ts >= srvrGlobal->m_iQueryPubThreshold * 1000000LL)
+}
+void __cdecl QueryTimerExpired(CEE_tag_def timer_tag)
+{	
+	if (CEE_HANDLE_IS_NIL(&QueryTimerHandle) == IDL_FALSE)
+	{
+		CEE_TIMER_DESTROY(&QueryTimerHandle);
+		CEE_HANDLE_SET_NIL(&QueryTimerHandle);		
+	}	
+		
+	if (srvrGlobal->m_statisticsPubType==STATISTICS_AGGREGATED
+			&& resStatStatement != NULL
+			&& !resStatStatement->queryFinished
+			&& !resStatStatement->pubStarted
+			&& resStatStatement->wouldLikeToStart_ts > 0
+			&& pQueryStmt!= NULL)			
 	{
 		resStatStatement->SendQueryStats(true, pQueryStmt);
 	}
