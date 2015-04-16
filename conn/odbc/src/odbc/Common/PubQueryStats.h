@@ -37,8 +37,7 @@ enum pub_struct_type
 enum statistics_type
 {
 	STATISTICS_AGGREGATED = 0,
-	STATISTICS_SESSION,
-	STATISTICS_QUERY,
+	STATISTICS_SESSION	
 };
 
 typedef struct _SESSION_END

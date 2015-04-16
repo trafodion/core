@@ -1300,8 +1300,8 @@ BOOL getInitParamSrvr(int argc, char *argv[], SRVR_INIT_PARAM_Def &initParam, ch
 			{
 				if( getNumberTemp( argv[count], number ) == TRUE )
 				{
-					if(number > 0)
-						queryPubThreshold = number;
+					if(number >=0)
+						queryPubThreshold = number;					
 				}
 				else
 				{

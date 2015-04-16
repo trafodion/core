@@ -92,6 +92,8 @@ enum E_GetSQLInfoType {
 #define CmdDll "libzcmd.so"
 
 #define HPDCI_APPLICATION	"HPDCI"
+const int MIN_TIMER=1;
+
 
 bool ChkDsExists(char* dsname,char* PrimaryCatalog, int& retcode);
 bool CheckUserPerm(char* PrimaryCatalog,long& uid);
@@ -343,5 +345,7 @@ bool isInfoDisk(char*& sqlString, const IDL_char *stmtLabel, short& error, char 
 bool checkSyntaxInfoDisk(char* sqlString, char *diskName);
 
 void __cdecl StatisticsTimerExpired(CEE_tag_def timer_tag);
+void __cdecl QueryTimerExpired(CEE_tag_def timer_tag);
+
 void SyncPublicationThread();
 #endif
