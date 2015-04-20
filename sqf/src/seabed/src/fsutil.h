@@ -23,11 +23,12 @@
 
 #include "fsi.h"
 
-extern FS_Io_Type *FS_util_io_tag_alloc(FS_Fd_Type      *pp_fd,
-                                        int              pv_io_type,
-                                        SB_Tag_Type      pv_tag_user,
-                                        SB_Transid_Type  pv_transid,
-                                        char            *pp_buffer);
+extern FS_Io_Type *FS_util_io_tag_alloc(FS_Fd_Type       *pp_fd,
+                                        int               pv_io_type,
+                                        SB_Tag_Type       pv_tag_user,
+                                        SB_Transid_Type   pv_transid,
+                                        SB_Transseq_Type  pv_startid,
+                                        char             *pp_buffer);
 extern FS_Io_Type *FS_util_io_tag_alloc_nowait_open(FS_Fd_Type *pp_fd,
                                                     int         pv_msgid);
 extern void        FS_util_io_tag_free(FS_Fd_Type *pp_fd,

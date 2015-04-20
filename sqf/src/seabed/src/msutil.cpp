@@ -119,6 +119,14 @@ void msg_util_format_transid(char            *pp_buf,
 }
 
 //
+// Purpose: format trans-seq
+//
+void msg_util_format_transseq(char             *pp_buf,
+                              SB_Transseq_Type  pv_transseq) {
+    sprintf(pp_buf, "%ld", pv_transseq);
+}
+
+//
 // Purpose: get msg type
 //
 const char *msg_util_get_msg_type(MSGTYPE pv_msg_type) {
