@@ -43,6 +43,7 @@
   #define PFSZ  "%u"
   #define PFSZX "%x"
 #endif
+typedef long SB_Transseq_Type;
 typedef struct SB_Transid_Type {
     SB_Int64_Type id[4];
 } SB_Transid_Type;

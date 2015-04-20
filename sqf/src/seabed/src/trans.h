@@ -46,4 +46,13 @@
   idin.id[3] = val; \
 }
 
+#define TRANSSEQ_COPY(dest,src) { \
+  dest = src; \
+}
+#define TRANSSEQ_SET_VALUE(idin,val) { \
+  idin = val; \
+}
+#define TRANSSEQ_SET_NULL(id) TRANSSEQ_SET_VALUE(id, 0)
+
+
 #endif // !__SB_TRANS_H_

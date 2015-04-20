@@ -116,6 +116,10 @@ long util_cpu_timer_wait(int ms) {
     return us;
 }
 
+void util_format_startid(char *buf, SB_Transseq_Type startid) {
+    sprintf(buf, "%ld", startid);
+}
+
 void util_format_transid(char *buf, SB_Transid_Type transid) {
     sprintf(buf, PF64 "." PF64 "." PF64 "." PF64,
             transid.id[0], transid.id[1], transid.id[2], transid.id[3]);
