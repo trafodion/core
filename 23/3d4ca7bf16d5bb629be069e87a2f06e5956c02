@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Hans Zeller <hans.zeller@hp.com>
+Code-Review+2: Roberta Marton <roberta.marton@hp.com>
+Workflow+1: Roberta Marton <roberta.marton@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 21 Apr 2015 18:02:36 +0000
+Reviewed-on: https://review.trafodion.org/1541
+Project: trafodion/core
+Branch: refs/heads/master
