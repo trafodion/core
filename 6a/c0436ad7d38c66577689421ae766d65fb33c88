@@ -1,0 +1,12 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Chris Sheedy <chris.sheedy@hp.com>
+Code-Review+2: John de Roo <john.deroo@hp.com>
+Workflow+1: John de Roo <john.deroo@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Sean Broeder <sean.broeder@hp.com>
+Code-Review+1: Sandhya Sundaresan <sandhya.sundaresan@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Wed, 22 Apr 2015 02:03:45 +0000
+Reviewed-on: https://review.trafodion.org/1537
+Project: trafodion/core
+Branch: refs/heads/master
