@@ -227,7 +227,7 @@ public class HBaseClient {
             for (int i = 0; i < colFamNameList.length ; i++) {
 		String  colFam = (String)colFamNameList[i];
                 HColumnDescriptor colDesc = new HColumnDescriptor(colFam);
-                colDesc.setMaxVersions(1);
+                colDesc.setMaxVersions(DtmConst.MAX_VERSION * 2);
                 desc.addFamily(colDesc);
             }
             HColumnDescriptor metaColDesc = new HColumnDescriptor(DtmConst.TRANSACTION_META_FAMILY);
@@ -258,7 +258,7 @@ public class HBaseClient {
                 switch (i) {
                 case HBASE_MAX_VERSIONS:
                     if (tableOption.isEmpty())
-                        colDesc.setMaxVersions(1);
+                        colDesc.setMaxVersions(DtmConst.MAX_VERSION * 2);
                     else 
                         colDesc.setMaxVersions
                             (Integer.parseInt(tableOption));
