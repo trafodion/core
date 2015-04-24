@@ -1523,14 +1523,23 @@ public class TransactionManager {
         if (LOG.isTraceEnabled()) LOG.trace("registerRegion EXIT");
     }
 
-    public void createTable(final TransactionState transactionState, HTableDescriptor desc)
+    public void createTable(final TransactionState transactionState, HTableDescriptor desc, Object[]  beginEndKeys)
             throws MasterNotRunningException, IOException {
         if (LOG.isTraceEnabled()) LOG.trace("createTable ENTRY, transactionState: " + transactionState);
 
         try {
-            hbadmin.createTable(desc);
-            hbadmin.close();
-
+            if (beginEndKeys != null && beginEndKeys.length > 0) {
+               byte[][] keys = new byte[beginEndKeys.length][];
+               for (int i = 0; i < beginEndKeys.length; i++){
+                  keys[i] = (byte[])beginEndKeys[i];
+                  if (LOG.isTraceEnabled()) LOG.trace("createTable with key #" + i + "value" + keys[i] + ") called.");
+               }
+               hbadmin.createTable(desc, keys);
+            }
+            else {
+               hbadmin.createTable(desc);
+               hbadmin.close();
+            }
             // Set transaction state object as participating in ddl transaction
             transactionState.setDDLTx(true);
 			
