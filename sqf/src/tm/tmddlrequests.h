@@ -18,10 +18,10 @@ JNIEXPORT void JNICALL Java_org_apache_hadoop_hbase_client_transactional_RMInter
 /*
  * Class:     org_apache_hadoop_hbase_client_transactional_RMInterface
  * Method:    createTableReq
- * Signature: ([B[[BJ[B)V
+ * Signature: ([B[[BIIJ[B)V
  */
 JNIEXPORT void JNICALL Java_org_apache_hadoop_hbase_client_transactional_RMInterface_createTableReq
-  (JNIEnv *, jobject, jbyteArray, jobjectArray, jlong, jbyteArray);
+  (JNIEnv *, jobject, jbyteArray, jobjectArray, jint, jint, jlong, jbyteArray);
 
 /*
  * Class:     org_apache_hadoop_hbase_client_transactional_RMInterface
