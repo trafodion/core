@@ -1,0 +1,11 @@
+Verified+2: Trafodion Jenkins
+Code-Review+1: Chris Sheedy <chris.sheedy@hp.com>
+Code-Review+2: Hans Zeller <hans.zeller@hp.com>
+Workflow+1: Hans Zeller <hans.zeller@hp.com>
+Code-Review+2: Cliff Gray <cliff.gray@hp.com>
+Code-Review+2: Roberta Marton <roberta.marton@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 28 Apr 2015 20:37:58 +0000
+Reviewed-on: https://review.trafodion.org/1587
+Project: trafodion/core
+Branch: refs/heads/master
