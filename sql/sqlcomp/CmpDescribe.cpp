@@ -1200,7 +1200,12 @@ short sendAllControls(NABoolean copyCQS,
       // and send the CQDs that were entered by user and were not 'reset reset'
       for (i = 0; i < cdb->getCQDList().entries(); i++)
         {
-          ControlQueryDefault * cqd = cdb->getCQDList()[i];
+          // should always use index 0 here if we are in the same
+          // CmpContext (where prevContext is null) because when the cqd
+          // statement is executed by exeImmedOneStmt() the same cqd
+          // would be removed and added again to the end of the list,
+          // thus the first one is alway the next.
+          ControlQueryDefault * cqd = cdb->getCQDList()[prevContext? i: 0];
           NAString quotedString;
           ToQuotedString (quotedString, cqd->getValue());
 

@@ -381,6 +381,11 @@ public :
   ARRAY(const char *) *getHosts() { return &hosts_; }
 #endif // NA_CMPDLL
 
+  // used by sendAllControlsAndFlags() and restoreAllControlsAndFlags()
+  Int32 getCntlCount() { return allControlCount_; }
+  void  incCntlCount() { allControlCount_ ++; }
+  void  dcrCntlCount() { allControlCount_ --; }
+
   NABoolean getParserResetIsNeeded() { return parserResetIsNeeded_ ; }
   void      setParserResetIsNeeded( NABoolean resetIsNeeded )
                                   { parserResetIsNeeded_ = resetIsNeeded ; }
@@ -588,6 +593,11 @@ private:
   CmpContextInfo::CmpContextClassType ciClass_;
 
   CollationDBList *CDBList_;
+
+  // count how many cqds have been sent by
+  // CmpSeabaseDDL::sendAllControlsAndFlags(), so that we don't send
+  // them again, see that method for more info.
+  Int32 allControlCount_;
   
 }; // end of CmpContext 
 #pragma warn(1506)  // warning elimination 
