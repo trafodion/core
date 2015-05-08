@@ -540,4 +540,46 @@ public class SsccTransactionState extends TransactionState{
         System.arraycopy(byte_2, 0, byte_3, byte_1.length, byte_2.length);
         return byte_3;
     }
+    
+    /**
+		 * before put ,check whether there has delete previous. if true remove the del
+		 */
+		public void removeDelBeforePut(Put put, boolean stateless) {
+			if(LOG.isTraceEnabled())
+				LOG.info("removeDelBeforePut, del list size : "+delRows.size());
+			byte[] putRow = put.getRow();
+			long putTimeStamp = startId_;
+			
+			
+			outer : for (Delete delete : delRows) {
+				byte[] delRow = delete.getRow();
+				long delTimeStamp = delete.getTimeStamp();
+				if(LOG.isTraceEnabled()){
+					LOG.info("putRow : "+Bytes.toString(putRow)+" , timeStamp : "+putTimeStamp);
+					LOG.info("delRow : "+Bytes.toString(delRow)+" , timeStamp : "+delTimeStamp);
+				}
+				if (!Arrays.equals(putRow, delRow) || putTimeStamp != delTimeStamp) {
+					continue;
+				}
+				for (List<Cell> delCells : delete.getFamilyCellMap().values()) {
+					for (List<Cell> putCells : put.getFamilyCellMap().values()) {
+						for (Cell putCell : putCells) {
+							KeyValue kv = new KeyValue(CellUtil.cloneRow(putCell), CellUtil.cloneFamily(putCell),
+									CellUtil.cloneQualifier(putCell), startId_, KeyValue.Type.Delete);
+							if(LOG.isTraceEnabled()){
+								LOG.info("kv  :  "+kv);
+								for (Cell cell : delCells) {
+									LOG.info("delcell : "+cell);
+								}
+							}
+							if (delCells.remove(kv)) {
+								if(LOG.isTraceEnabled())
+									LOG.info("del success");
+								break outer;
+							}
+						}
+					}
+				}
+			}
+		}
 }

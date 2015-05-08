@@ -1897,6 +1897,9 @@ CoprocessorService, Coprocessor {
     if (LOG.isTraceEnabled()) LOG.trace("Enter SsccRegionEndpoint coprocessor: put, txid " + transactionId + "stateless: " + stateless);
     SsccTransactionState state = this.beginTransIfNotExist(transactionId);
     long startId =  state.getStartId(); //use local transaction ID as timestamp for this new cell
+    
+    // check whether has del before
+		state.removeDelBeforePut(put, stateless);
 
     /*need to change the timestamp, but HBase API does not support
       At this point, the solution is to create a new Put object
@@ -2076,7 +2079,7 @@ CoprocessorService, Coprocessor {
             cv = byteMerger(cv,qualifier);
             cv = byteMerger(cv,"|".getBytes());
             byte[] currentCollist =  state.getColList(rowkey);
-            newDelete.deleteColumns(family,qualifier,startId);  //NOTE: HBase 1.0 this API will change ...
+            newDelete.deleteColumn(family,qualifier,startId);  //NOTE: HBase 1.0 this API will change ...
             //here use deleteColumns with timestamp, so it will delete all history version of this row
             //but the real delete is not done at this point, but when doCommit
             //Only when it goes to doCommit(), it is safe to delete all versions
