@@ -2983,14 +2983,15 @@ public class SQLMXDatabaseMetaData extends SQLMXHandle implements
 					throw Messages.createSQLException(connection_.locale_,
 							"invalid_connection", null);
 				if (catalog == null)
-					catalogNm = connection_.catalog_;
+					catalogNm = connection_.getCatalog();
 				else
 					catalogNm = catalog;
 
 				if (schemaPattern == null)
-					schemaNm = connection_.schema_;
+					schemaNm = connection_.getSchema();
 				else
 					schemaNm = schemaPattern;
+
 				if (tableNamePattern == null)
 					tableNm = "%";
 				else
