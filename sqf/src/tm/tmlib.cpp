@@ -535,6 +535,28 @@ short CREATETABLE(char *pa_tbldesc, int pv_tbldesc_length, char *pv_tblname, cha
 }
 
 // -------------------------------------------------------------------
+// REGTRUNCATEONABORT
+//
+// Purpose: send REGTRUNCATEONABORT message to the TM
+// Params: pa_tabledesc, pv_tabledesc_length, pv_tblname, transid
+// -------------------------------------------------------------------
+short REGTRUNCATEONABORT(char *pv_tblname, int pv_tblname_len, long pv_transid)
+{
+    short lv_error = FEOK;
+    if (gp_trans_thr == NULL)
+       gp_trans_thr = new TMLIB_ThreadTxn_Object();
+
+    TM_Transaction *lp_trans = gp_trans_thr->get_current();
+
+    TMlibTrace(("TMLIB_TRACE : REGTRUNCATEONABORT ENTRY: tablename: %s, transid: %ld\n", pv_tblname, pv_transid), 1);
+
+    lv_error = lp_trans->reg_truncateonabort(pv_tblname, pv_tblname_len);
+
+    return lv_error;
+}
+
+
+// -------------------------------------------------------------------
 // DROPTABLE
 //
 // Purpose: send DROPTABLE message to TM

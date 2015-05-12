@@ -444,6 +444,15 @@ public class HBaseClient {
         return true;
     }
 
+    public boolean registerTruncateOnAbort(String tblName, long transID)
+        throws MasterNotRunningException, IOException {
+
+        if(transID != 0) {
+            table.truncateTableOnAbort(tblName, transID);
+        }
+        return true;
+    }
+
     public boolean drop(String tblName, long transID)
              throws MasterNotRunningException, IOException {
             if (logger.isDebugEnabled()) logger.debug("HBaseClient.drop(" + tblName + ") called.");
