@@ -96,3 +96,26 @@ JNIEXPORT void JNICALL Java_org_apache_hadoop_hbase_client_transactional_RMInter
 
 }
 
+/*
+ * Class:     org_apache_hadoop_hbase_client_transactional_RMInterface
+ * Method:    truncateOnAbortReq
+ * Signature: ([BJ)V
+ */
+JNIEXPORT void JNICALL Java_org_apache_hadoop_hbase_client_transactional_RMInterface_truncateOnAbortReq
+  (JNIEnv *pp_env, jobject pv_object, jbyteArray pv_tblname, jlong pv_transid) {
+ 
+   short lv_ret;
+   char la_tblname[TM_MAX_DDLREQUEST_STRING];
+
+   int lv_tblname_len = pp_env->GetArrayLength(pv_tblname);
+   memset(la_tblname, 0, lv_tblname_len < TM_MAX_DDLREQUEST_STRING ? lv_tblname_len : TM_MAX_DDLREQUEST_STRING);
+   jbyte *lp_tblname = pp_env->GetByteArrayElements(pv_tblname, 0);
+   memcpy(la_tblname, lp_tblname, lv_tblname_len < TM_MAX_DDLREQUEST_STRING ? lv_tblname_len : TM_MAX_DDLREQUEST_STRING -1 );
+
+   long lv_transid = (long) pv_transid;
+
+   lv_ret = REGTRUNCATEONABORT(la_tblname, lv_tblname_len, lv_transid);
+   pp_env->ReleaseByteArrayElements(pv_tblname, lp_tblname, 0);
+
+   cout << "truncate on abort JAVATOCPP" << endl;
+}
