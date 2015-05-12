@@ -20,3 +20,7 @@
 date
 rm -f core.* > /dev/null 2>&1
 sqipcrm
+if [ ! -d ../../../logs ]; then
+	# if TRACE_REDIRECTION is on
+	mkdir ../../../logs
+fi
