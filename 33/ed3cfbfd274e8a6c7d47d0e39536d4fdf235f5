@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: John de Roo <john.deroo@hp.com>
+Workflow+1: John de Roo <john.deroo@hp.com>
+Code-Review+1: Shang-Sheng Tung <shang-sheng.tung@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Tue, 12 May 2015 08:47:28 +0000
+Reviewed-on: https://review.trafodion.org/1645
+Project: trafodion/core
+Branch: refs/heads/master
