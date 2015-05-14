@@ -785,6 +785,8 @@ public:
     , HANDLE_ERROR
     , DONE
     , ALL_DONE
+    , DONE_WITH_ERROR
+
   } step_;
 
   //  const char * insRowId_;
@@ -847,6 +849,7 @@ class ExHbaseAccessBulkLoadPrepSQTcb: public ExHbaseAccessUpsertVsbbSQTcb
     virtual ~ExHbaseAccessBulkLoadPrepSQTcb();
 
     virtual ExWorkProcRetcode work();
+    //void logError(char * data, ULng32 bytesToWrite);
 
   protected:
     virtual hdfsFS getHdfs() const
@@ -862,15 +865,26 @@ class ExHbaseAccessBulkLoadPrepSQTcb: public ExHbaseAccessUpsertVsbbSQTcb
    private:
     void getHiveCreateTableDDL(NAString& hiveSampleTblNm, NAString& ddlText);
 
+    short createLoggingRow( UInt16 tuppIndex,  char * tuppRow, char * targetRow, int &targetRowLen);
+    NABoolean logErrorCount()
+     {
+       return hbaseAccessTdb().getContinueOnError();
+     }
     NABoolean hFileParamsInitialized_;  ////temporary-- need better mechanism later
     Text   familyLocation_;
     Text   importLocation_;
     Text   hFileName_;
 
-    //Queue * sortedListOfColNames_;
+    char loggingPath_[1000];
+    //char loggingFileName_[500];
+    NABoolean LoggingFileCreated_ ;
+    char loggingErrorMsg_[1000];
+    ComCondition * lastErrorCnd_;
     std::vector<UInt32> posVec_;
 
     char * prevRowId_;
+    char * loggingRow_;
+
 
     // HDFS file system and output file ptrs used for ustat sample table.
     hdfsFS hdfs_;

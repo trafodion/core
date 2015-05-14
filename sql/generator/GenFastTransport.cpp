@@ -114,7 +114,8 @@ static ItemExpr *CreateCastExpr(ItemExpr &source, const NAType &target,
   return result;
 }
 
-static int CreateAllCharsExpr(const NAType &formalType,
+//static
+int CreateAllCharsExpr(const NAType &formalType,
                                ItemExpr &actualValue,
                                CmpContext *cmpContext,
                                ItemExpr *&newExpr)

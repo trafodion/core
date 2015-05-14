@@ -30,6 +30,8 @@ import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.Logger;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -54,26 +56,24 @@ import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.SnapshotDescriptio
 import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.SnapshotDescription.Type;
 import org.apache.hadoop.hbase.snapshot.RestoreSnapshotException;
 import org.apache.hadoop.hbase.io.hfile.CacheConfig;
-//import org.apache.hadoop.hbase.io.hfile.Compression;
 import org.apache.hadoop.hbase.io.hfile.HFile;
 import org.apache.hadoop.hbase.io.hfile.HFileContext;
 import org.apache.hadoop.hbase.io.hfile.HFileContextBuilder;
 import org.apache.hadoop.hbase.io.compress.*;
-//import org.apache.hadoop.hbase.io.compress.Compression;
-//import org.apache.hadoop.hbase.io.hfile.Compression;
-//import org.apache.hadoop.hbase.io.hfile.Compression.Algorithm;
 import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding;
 import org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles;
 import org.apache.hadoop.hbase.regionserver.BloomType; 
-//import org.apache.hadoop.hbase.regionserver.StoreFile.BloomType ;
-//import org.apache.hadoop.hbase.client.Durability;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.trafodion.sql.HBaseAccess.HTableClient;
 //import org.trafodion.sql.HBaseAccess.HBaseClient;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.io.compress.CodecPool;
+import org.apache.hadoop.io.compress.Compressor;
+import org.apache.hadoop.io.compress.GzipCodec;
+import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.hbase.TableName;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -106,6 +106,7 @@ public class HBulkLoadClient
   String compression = COMPRESSION;
   int blockSize = BLOCKSIZE;
   DataBlockEncoding dataBlockEncoding = DataBlockEncoding.NONE;
+  FSDataOutputStream fsOut = null;
 
   public HBulkLoadClient()
   {
@@ -522,4 +523,90 @@ public class HBulkLoadClient
 }
 
 
+  ///////////////////   
+  boolean hdfsCreateFile(String fname) throws IOException
+  {
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.hdfsCreateFile() - started" );
+    Path filePath = new Path(fname);
+    FileSystem fs = FileSystem.get(filePath.toUri(),config);
+    fsOut = fs.create(filePath, true);
+    
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.hdfsCreateFile() - file created" );
+
+    return true;
+  }
+  
+  boolean hdfsWrite(byte[] buff, long len) throws Exception
+  {
+
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.hdfsWrite() - started" );
+    fsOut.write(buff);
+    fsOut.flush();
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.hdfsWrite() - bytes written and flushed:" + len  );
+    
+    return true;
+  }
+  
+  boolean hdfsClose() throws IOException
+  {
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.hdfsClose() - started" );
+    fsOut.close();
+    return true;
+  }
+
+  public boolean hdfsCleanPath(String pathStr) throws IOException
+  {
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.hdfsCleanPath() - start");
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.hdfsCleanPath() - path: " + pathStr );
+    
+    Path path = new Path(pathStr );
+    path  = path.makeQualified(path.toUri(), null);
+    FileSystem srcFs = FileSystem.get(path.toUri(),config);
+  
+    Path[] files = FileUtil.stat2Paths(srcFs.listStatus(path));
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.hdfsCleanPath() - delete files" );
+    for (Path f : files){
+        srcFs.delete(f, false);
+    }
+    return true;
+  }
+
+  public boolean  createCounterTable(String tabName,  String famName) throws IOException, MasterNotRunningException
+  {
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.createCounterTable() - start");
+    
+    //change to create if it does not exist
+    TableName tn =  TableName.valueOf (tabName);
+    
+    HTableDescriptor desc = new HTableDescriptor(tn);
+    HColumnDescriptor colDesc = new HColumnDescriptor(famName);
+    colDesc.setMaxVersions(1);
+    desc.addFamily(colDesc);
+    HBaseAdmin admin = new HBaseAdmin(config);
+    admin.createTable(desc);
+    admin.close();
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.createCounterTable() - end");
+    return true;
+  }
+  
+  public long incrCounter(String tabName, String rowId, String famName, String qualName, long incrVal) throws Exception
+  {
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.incrCounter() - start");
+
+    HTable myHTable = new HTable(config, tabName);
+    long count = myHTable.incrementColumnValue(Bytes.toBytes(rowId), Bytes.toBytes(famName), Bytes.toBytes(qualName), incrVal);
+    myHTable.close();
+    return count;
+  }
+  
+  public boolean dropCounterTable(String tblName) 
+      throws MasterNotRunningException, IOException 
+  {
+    if (logger.isDebugEnabled()) logger.debug("HBulkLoadClient.dropCounterTable(" + tblName + ") called.");
+    HBaseAdmin admin = new HBaseAdmin(config);
+    admin.disableTable(tblName);
+    admin.deleteTable(tblName);
+    admin.close();
+    return true;
+  }
 }
