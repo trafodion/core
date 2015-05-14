@@ -1088,6 +1088,114 @@ Lng32 ExpHbaseInterface_JNI::initHFileParams(HbaseStr &tblName,
    else
      return -HBASE_CLEANUP_HFILE_ERROR;
  }
+ ///////////////////
+
+ //////////////////////////////////////////////////////////////////////////////
+ //
+ //////////////////////////////////////////////////////////////////////////////
+ Lng32 ExpHbaseInterface_JNI::hdfsCreateFile(const char* path)
+ {
+   if (hblc_ == NULL) {
+      retCode_ = initHBLC();
+      if (retCode_ != HBLC_OK)
+         return -HBASE_ACCESS_ERROR;
+   }
+
+    retCode_ = hblc_->hdfsCreateFile( path);
+
+    if (retCode_ == HBLC_OK)
+      return HBASE_ACCESS_SUCCESS;
+    else
+      return -HBLC_ERROR_HDFS_CREATE_EXCEPTION;
+ }
+
+ Lng32  ExpHbaseInterface_JNI::incrCounter( const char * tabName, const char * rowId,
+                             const char * famName, const char * qualName ,
+                             Int64 incr, Int64 & count)
+ {
+    if (hblc_ == NULL) {
+      retCode_ = initHBLC();
+      if (retCode_ != HBLC_OK)
+         return -HBASE_ACCESS_ERROR;
+    }
+    retCode_ = hblc_->incrCounter( tabName, rowId, famName, qualName , incr, count);
+
+    if (retCode_ == HBLC_OK)
+      return HBASE_ACCESS_SUCCESS;
+    else
+      return -HBLC_ERROR_HDFS_CREATE_EXCEPTION;
+ }
+
+ Lng32  ExpHbaseInterface_JNI::createCounterTable( const char * tabName,  const char * famName)
+ {
+   if (hblc_ == NULL) {
+      retCode_ = initHBLC();
+      if (retCode_ != HBLC_OK)
+         return -HBASE_ACCESS_ERROR;
+   }
+
+    retCode_ = hblc_->createCounterTable( tabName, famName);
+
+    if (retCode_ == HBLC_OK)
+      return HBASE_ACCESS_SUCCESS;
+    else
+      return -HBLC_ERROR_CREATE_COUNTER_EXCEPTION;
+ }
+ //////////////////////////////////////////////////////////////////////////////
+ //
+ //////////////////////////////////////////////////////////////////////////////
+ Lng32 ExpHbaseInterface_JNI::hdfsWrite(const char* data, Int64 len)
+ {
+   if (hblc_ == NULL) {
+      retCode_ = initHBLC();
+      if (retCode_ != HBLC_OK)
+         return -HBASE_ACCESS_ERROR;
+   }
+
+   retCode_ = hblc_->hdfsWrite( data, len);
+
+   if (retCode_ == HBLC_OK)
+      return HBLC_OK;
+    else
+      return -HBLC_ERROR_HDFS_WRITE_EXCEPTION;
+ }
+
+ //////////////////////////////////////////////////////////////////////////////
+ //
+ //////////////////////////////////////////////////////////////////////////////
+ Lng32 ExpHbaseInterface_JNI::hdfsClose()
+ {
+   if (hblc_ == NULL) {
+      retCode_ = initHBLC();
+      if (retCode_ != HBLC_OK)
+         return -HBASE_ACCESS_ERROR;
+   }
+
+   retCode_ = hblc_->hdfsClose();
+
+    if (retCode_ == HBLC_OK)
+      return HBLC_OK;
+    else
+      return -HBLC_ERROR_HDFS_CLOSE_EXCEPTION;
+ }
+
+ Lng32 ExpHbaseInterface_JNI::hdfsCleanPath( const std::string& path)
+ {
+   if (hblc_ == NULL) {
+      retCode_ = initHBLC();
+      if (retCode_ != HBLC_OK)
+         return -HBASE_ACCESS_ERROR;
+   }
+
+   retCode_ = hblc_->hdfsCleanPath(path);
+
+   if (retCode_ == HBLC_OK)
+      return HBLC_OK;
+    else
+      return -HBLC_ERROR_HDFS_CLOSE_EXCEPTION;
+ }
+
+
 //----------------------------------------------------------------------------
 // Avoid messing up the class data members (like htc_)
 Lng32 ExpHbaseInterface_JNI::rowExists(

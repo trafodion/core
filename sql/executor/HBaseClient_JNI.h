@@ -720,6 +720,17 @@ typedef enum {
  ,HBLC_ERROR_BULKLOAD_CLEANUP_EXCEPTION
  ,HBLC_ERROR_INIT_HBLC_PARAM
  ,HBLC_ERROR_INIT_HBLC_EXCEPTION
+ ,HBLC_ERROR_HDFS_CREATE_PARAM
+ ,HBLC_ERROR_HDFS_CREATE_EXCEPTION
+ ,HBLC_ERROR_HDFS_WRITE_PARAM
+ ,HBLC_ERROR_HDFS_WRITE_EXCEPTION
+ ,HBLC_ERROR_HDFS_CLOSE_EXCEPTION
+ ,HBLC_ERROR_HDFS_CLEAN_PATH_PARAM
+ ,HBLC_ERROR_HDFS_CLEAN_PATH_EXCEPTION
+ ,HBLC_ERROR_CREATE_COUNTER_PARAM
+ ,HBLC_ERROR_CREATE_COUNTER_EXCEPTION
+ ,HBLC_ERROR_INCR_COUNTER_PARAM
+ ,HBLC_ERROR_INCR_COUNTER_EXCEPTION
  ,HBLC_LAST
 } HBLC_RetCode;
 
@@ -750,7 +761,12 @@ public:
   HBLC_RetCode doBulkLoad(const HbaseStr &tblName, const Text& location, const Text& tableName, NABoolean quasiSecure, NABoolean snapshot);
 
   HBLC_RetCode  bulkLoadCleanup(const HbaseStr &tblName, const Text& location);
-
+  HBLC_RetCode hdfsCreateFile(const char* path);
+  HBLC_RetCode hdfsWrite(const char* data, Int64 len);
+  HBLC_RetCode hdfsClose();
+  HBLC_RetCode hdfsCleanPath( const std::string& path);
+  HBLC_RetCode incrCounter( const char * tabName, const char * rowId, const char * famName, const char * qualName , Int64 incr, Int64 & count);
+  HBLC_RetCode createCounterTable( const char * tabName,  const char * famName);
   // Get the error description.
   virtual char* getErrorText(HBLC_RetCode errEnum);
 
@@ -767,6 +783,12 @@ private:
    ,JM_DO_BULK_LOAD
    ,JM_BULK_LOAD_CLEANUP
    ,JM_ADD_TO_HFILE_DB
+   ,JM_HDFS_CREATE_FILE
+   ,JM_HDFS_WRITE
+   ,JM_HDFS_CLOSE
+   ,JM_HDFS_CLEAN_PATH
+   ,JM_CREATE_COUNTER_TABLE  //not sure if needed or not
+   ,JM_INCR_COUNTER
    ,JM_LAST
   };
   static jclass          javaClass_;
