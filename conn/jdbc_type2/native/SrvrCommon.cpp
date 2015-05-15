@@ -148,6 +148,7 @@ int initSqlCore(int argc, char *argv[])
 	gDescItems[14].item_id = SQLDESC_HEADING;
 	gDescItems[14].string_val = ColumnHeading;
 	gDescItems[14].num_val_or_len = MAX_ANSI_NAME_LEN+1;
+	gDescItems[15].item_id = SQLDESC_VC_IND_LENGTH;
 
 /*
 	// Seaquest related - Linux port

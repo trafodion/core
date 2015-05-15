@@ -1,7 +1,7 @@
 /**************************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1998-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1998-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ struct SRVR_SESSION_HDL {
 #define TRANSACTION_EXCEPTION	7
 
 // Following are the global variables
-#define				NO_OF_DESC_ITEMS		15
+#define				NO_OF_DESC_ITEMS		16
 
 extern SRVR_GLOBAL_Def		*srvrGlobal;
 //extern ODBCMXEventMsg		*srvrEventLogger;
