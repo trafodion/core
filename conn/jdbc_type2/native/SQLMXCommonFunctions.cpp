@@ -3282,7 +3282,8 @@ func_exit:
 			if (FSDataType != 151)
 			{
 				strDataPtr = (char *)SQLValue->dataValue._buffer + sizeof(short);
-				DataLen = *(short *)SQLValue->dataValue._buffer;
+				bool shortLength = SQLDataLen < 0xFFFF;
+				DataLen = shortLength ? *(short *)SQLValue->dataValue._buffer : *(int *)SQLValue->dataValue._buffer;
 				DEBUG_OUT(DEBUG_LEVEL_DATA|DEBUG_LEVEL_UNICODE,("varchar with length = %ld", DataLen));
 				usejchar = TRUE;
 			}
