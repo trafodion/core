@@ -3,6 +3,7 @@ package org.apache.hadoop.hbase.coprocessor.transactional;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+
 public class SsccTableClient9 {
 	// ------ for concurrent ------
 	protected final Log log = LogFactory.getLog(getClass());

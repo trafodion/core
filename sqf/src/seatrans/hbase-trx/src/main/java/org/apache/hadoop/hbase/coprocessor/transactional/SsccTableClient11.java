@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+
 public class SsccTableClient11 {
 	// ------ for concurrent ------
 	private static CountDownLatch cdl = new CountDownLatch(2);
