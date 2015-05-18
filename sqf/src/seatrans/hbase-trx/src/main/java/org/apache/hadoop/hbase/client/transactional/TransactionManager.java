@@ -40,6 +40,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.MasterNotRunningException;
+import org.apache.hadoop.hbase.TableNotFoundException;
+import org.apache.hadoop.hbase.TableNotEnabledException;
+import org.apache.hadoop.hbase.TableNotDisabledException;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HRegionInfo;
@@ -267,7 +270,7 @@ public class TransactionManager {
                   throw new Exception(msg);
                }
                if(result.size() != 1) {
-                  LOG.error("doCommitX, received incorrect result size: " + result.size());
+                  LOG.error("doCommitX, received incorrect result size: " + result.size() + " txid: " + transactionId);
                   refresh = true;
                   retry = true;
                }
@@ -383,7 +386,7 @@ public class TransactionManager {
                   throw new Exception(msg);
                }
                if(result.size() != 1) {
-                  LOG.error("doCommitX, received incorrect result size: " + result.size());
+                  LOG.error("doCommitX, received incorrect result size: " + result.size() + " txid: " + transactionId);
                   refresh = true;
                   retry = true;
                }
@@ -1606,7 +1609,6 @@ public class TransactionManager {
         //if prepare is success upto this point, DDL operation needs to check if any 
         //drop table requests were recorded as part of phase 0. If any drop table 
         //requests is recorded, then those tables need to disabled as part of prepare.
-        //TODO: Retry logic.
         if(transactionState.hasDDLTx())
         {
             //if tables were created, then nothing else needs to be done.
@@ -1643,7 +1645,7 @@ public class TransactionManager {
                         if(LOG.isTraceEnabled()) LOG.trace("exception in doPrepare disableTable: txID: " + transactionState.getTransactionId());
                         LOG.error("exception in doCommit, Step : DeleteTable: " + e);
                         
-                        //Any error at this point should be considered prepareCommit as unsuccessfully. 
+                        //Any error at this point should be considered prepareCommit as unsuccessful. 
                         //Retry logic can be added only if it is retryable error: TODO.
                         commitError = TransactionalReturn.COMMIT_UNSUCCESSFUL;
                         break;
@@ -1667,7 +1669,8 @@ public class TransactionManager {
      * @throws IOException
      * @throws CommitUnsuccessfulException
      */
-    public void tryCommit(final TransactionState transactionState) throws CommitUnsuccessfulException, IOException {
+    public void tryCommit(final TransactionState transactionState) 
+        throws CommitUnsuccessfulException, UnsuccessfulDDLException, IOException {
         long startTime = EnvironmentEdgeManager.currentTimeMillis();
         if (LOG.isTraceEnabled()) LOG.trace("Attempting to commit transaction: " + transactionState.toString());
         int status = prepareCommit(transactionState);
@@ -1732,7 +1735,8 @@ public class TransactionManager {
      * @param transactionState
      * @throws CommitUnsuccessfulException
      */
-    public void doCommit(final TransactionState transactionState) throws CommitUnsuccessfulException {
+    public void doCommit(final TransactionState transactionState) 
+        throws CommitUnsuccessfulException, UnsuccessfulDDLException {
        if (LOG.isTraceEnabled()) LOG.trace("doCommit [" + transactionState.getTransactionId() +
                       "] ignoreUnknownTransactionException not supplied");
        doCommit(transactionState, false);
@@ -1745,7 +1749,8 @@ public class TransactionManager {
      * @param ignoreUnknownTransactionException
      * @throws CommitUnsuccessfulException
      */
-    public void doCommit(final TransactionState transactionState, final boolean ignoreUnknownTransactionException) throws CommitUnsuccessfulException {
+    public void doCommit(final TransactionState transactionState, final boolean ignoreUnknownTransactionException) 
+                    throws CommitUnsuccessfulException, UnsuccessfulDDLException {
         int loopCount = 0;
         if (batchRegionServer && (TRANSACTION_ALGORITHM == AlgorithmType.MVCC)) {
           try {
@@ -1853,70 +1858,159 @@ public class TransactionManager {
          */
       }
 
-        //if DDL is involved with this transaction, need to unwind it.
+        //if DDL is involved with this transaction, need to complete it.
         if(transactionState.hasDDLTx())
         {
-
             //First wait for commit requests sent to all regions is received back.
         	//This TM thread gets SUSPENDED until all commit threads complete!!!
         	try{
         		transactionState.completeRequest();
         	}
         	catch(Exception e){
-        		LOG.error("exception in doCommit completeRequest: " + e);
-        		if(LOG.isTraceEnabled()) LOG.trace("Exception in doCommit completeRequest: txID: " + transactionState.getTransactionId());
+        		LOG.error("Exception in doCommit completeRequest. txID: " + transactionState.getTransactionId() + "Exception: " + e);
         		//return; //Do not return here. This thread should continue servicing DDL operations.
         	}
-        	//if tables were created, then nothing else needs to be done.
-        	//if tables were recorded dropped, then they need to be physically dropped.
-        	//Tables recorded dropped would already be disabled as part of prepare commit.
-            //If tables were recorded truncate, nothing to be done during doCommit phase.
-        	ArrayList<String> createList = new ArrayList<String>(); //This list is ignored.
-        	ArrayList<String> dropList = new ArrayList<String>();
-            ArrayList<String> truncateList = new ArrayList<String>();
-        	StringBuilder state = new StringBuilder ();
-        	try {
-        		tmDDL.getRow(transactionState.getTransactionId(), state, createList, dropList, truncateList);
-        	}
-        	catch(Exception e){
-        		LOG.error("exception in doCommit getRow: " + e);
-        		if(LOG.isTraceEnabled()) LOG.trace("exception in doCommit getRow: txID: " + transactionState.getTransactionId());
-        		state.append("INVALID"); //to avoid processing further down this path.
-        	}
 
-
-        	if(state.toString().equals("VALID") && dropList.size() > 0)
-        	{
-        		Iterator<String> di = dropList.iterator();
-        		while (di.hasNext()) 
-        		{
-        			try {
-        				//physical drop of table from hbase.
-        				deleteTable(transactionState, di.next(), false);
-        			}
-        			catch(Exception e){
-        				if(LOG.isTraceEnabled()) LOG.trace("exception in doCommit deleteTable: txID: " + transactionState.getTransactionId());
-        				LOG.error("exception in doCommit, Step : DeleteTable: " + e);
-        				//return; //Do not return, continue to deleteTable remaining tables. 
-        				//TODO: Retry logic will be added to retry in case of exceptions.
-        				//TODO: Inspite of retry, if exceptions are encountered, these tables
-        				//will be recorded  and not forgotten. House keepong thread will attempt retry.
-        			}
-        		}
-        	}
-
-        	//update TDDL post operation
-        	try{
-        		tmDDL.putRow(transactionState.getTransactionId(), "INVALID");
-        		//TODO: In the case of any failure scenarios, Tddl entry will  
-        		//not be forgotten.
-        	}
-        	catch(Exception e)
-        	{
-        		LOG.error("exception in doCommit() putRow: " + e);
-        	}
+            try{
+                doCommitDDL(transactionState);
+            
+            } catch (Exception e) {
+                LOG.error("FATAL Exception calling doCommitDDL for transaction: " + transactionState.getTransactionId() + "Exception: "  + e);
+                throw new UnsuccessfulDDLException(e);
+            }
         }
     }
+    
+    public void doCommitDDL(final TransactionState transactionState) throws UnsuccessfulDDLException 
+    {
+    
+        //if tables were created, then nothing else needs to be done.
+        //if tables were recorded dropped, then they need to be physically dropped.
+        //Tables recorded dropped would already be disabled as part of prepare commit.
+        ArrayList<String> createList = new ArrayList<String>(); //This list is ignored.
+        ArrayList<String> dropList = new ArrayList<String>();
+        ArrayList<String> truncateList = new ArrayList<String>(); //This list is ignored.
+        StringBuilder state = new StringBuilder ();
+        boolean retry = true;
+        int retryCount = 0;
+        int retrySleep = TM_SLEEP;
+        do
+        {
+            try {
+                tmDDL.getRow(transactionState.getTransactionId(), state, createList, dropList, truncateList);
+                retry = false;
+            }
+            catch(Exception e){
+                LOG.error("Fatal Exception in doCommitDDL, Step: getRow. txID: " + transactionState.getTransactionId() + "Exception: " + e);
+                
+                if(retryCount == RETRY_ATTEMPTS)
+                {
+                    LOG.error("Fatal Exception in doCommitDDL, Step: getRow. Raising CommitUnsuccessfulException txID: " + transactionState.getTransactionId() + "Exception: " + e);
+                   
+                   //if tmDDL is unreachable at this point, it is fatal. 
+                    throw new UnsuccessfulDDLException(e);
+                }
+                
+                retryCount++;
+                if (retryCount < RETRY_ATTEMPTS) 
+                {
+                    try {
+                        Thread.sleep(retrySleep);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                    retrySleep += TM_SLEEP_INCR;
+                }
+            }
+        } while (retryCount < RETRY_ATTEMPTS && retry == true);
+
+        if(state.toString().equals("VALID") && dropList.size() > 0)
+        {
+            Iterator<String> di = dropList.iterator();
+            while (di.hasNext()) 
+            {
+                retryCount = 0;
+                retrySleep = TM_SLEEP;
+                retry = true;
+                String tblName = di.next();
+                do
+                {
+                    try {
+                        //physical drop of table from hbase.
+                        deleteTable(transactionState, tblName);
+                        retry = false;
+                    }
+                    catch(TableNotFoundException t){
+                        //Check for TableNotFoundException, if that is the case, no further 
+                        //processing needed. This is not an error. Possible we are retrying the entire set of DDL changes
+                        //because this transaction was pinned for some reason. 
+                        if(LOG.isTraceEnabled()) LOG.trace(" TableNotFoundException exception in doCommitDDL deleteTable, Continuing: txID: " + transactionState.getTransactionId());
+                        retry = false;
+                    }
+                    catch(Exception e){
+                        LOG.error("Fatal exception in doCommitDDL, Step : DeleteTable: TxID:" + transactionState.getTransactionId() + "Exception: " + e);
+                        
+                        if(retryCount == RETRY_ATTEMPTS)
+                        {
+                            LOG.error("Fatal Exception in doCommitDDL, Step: DeleteTable. Raising CommitUnsuccessfulException TxID:" + transactionState.getTransactionId() );
+                            
+                            //Throw this exception after all retry attempts.
+                            //Throwing a new exception gets out of the loop.
+                            throw new UnsuccessfulDDLException(e);
+                        }
+                        
+                        retryCount++;
+                        if (retryCount < RETRY_ATTEMPTS) 
+                        {
+                            try {
+                                Thread.sleep(retrySleep);
+                            } catch(InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+                            retrySleep += TM_SLEEP_INCR;
+                        }
+                    }
+                }while (retryCount < RETRY_ATTEMPTS && retry == true);
+            }//while
+    }
+
+    //update TDDL post operation, delete the transaction from TmDDL.
+    retryCount = 0;
+    retrySleep = TM_SLEEP;
+    retry = true;
+    do
+    {
+        try{
+            tmDDL.deleteRow(transactionState.getTransactionId());
+            retry = false;
+        }
+        catch(Exception e)
+        {
+            LOG.error("Fatal Exception in doCommitDDL, Step: deleteRow. txID: " + transactionState.getTransactionId() + "Exception: " + e);
+            
+            if(retryCount == RETRY_ATTEMPTS)
+            {
+                LOG.error("Fatal Exception in doCommitDDL, Step: deleteRow. Raising CommitUnsuccessfulException. txID: " + transactionState.getTransactionId());
+                
+                //Throw this exception after all retry attempts.
+                //Throwing a new exception gets out of the loop.
+                throw new UnsuccessfulDDLException(e);
+            }
+            
+            retryCount++;
+            if (retryCount < RETRY_ATTEMPTS) 
+            {
+                try {
+                    Thread.sleep(retrySleep);
+                } catch(InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+                retrySleep += TM_SLEEP_INCR;
+            }
+        }
+    }while (retryCount < RETRY_ATTEMPTS && retry == true);
+}
+    
 
     /**
      * Abort a s transaction.
@@ -1924,7 +2018,7 @@ public class TransactionManager {
      * @param transactionState
      * @throws IOException
      */
-    public void abort(final TransactionState transactionState) throws IOException {
+    public void abort(final TransactionState transactionState) throws IOException, UnsuccessfulDDLException {
       if(LOG.isTraceEnabled()) LOG.trace("Abort -- ENTRY txID: " + transactionState.getTransactionId());
     	int loopCount = 0;
            
@@ -2029,101 +2123,247 @@ public class TransactionManager {
 				transactionState.completeRequest();
 			}
 			catch(Exception e){
-				LOG.error("exception in abort completeRequest: " + e);
-				if(LOG.isTraceEnabled()) LOG.trace("Exception in abort completeRequest: txID: " + transactionState.getTransactionId());
+				LOG.error("Exception in abort() completeRequest. txID: " + transactionState.getTransactionId() + "Exception: " + e);
 				//return; //Do not return here. This thread should continue servicing DDL operations.
 			}
-			
-			//if tables were created, then they need to be dropped.
-			ArrayList<String> createList = new ArrayList<String>();
-			ArrayList<String> dropList = new ArrayList<String>();
-            ArrayList<String> truncateList = new ArrayList<String>();
-			StringBuilder state = new StringBuilder ();
-			try {
-				tmDDL.getRow(transactionState.getTransactionId(), state, createList, dropList, truncateList);
+
+            try{
+				abortDDL(transactionState);
 			}
 			catch(Exception e){
-				LOG.error("exception in abort getRow: " + e);
-				if(LOG.isTraceEnabled()) LOG.trace("exception in abort getRow: txID: " + transactionState.getTransactionId());
-				state.append("INVALID"); //to avoid processing further down this path.
+				LOG.error("FATAL Exception calling abortDDL for transaction: " + transactionState.getTransactionId() + "Exception: "  + e);
+				throw new UnsuccessfulDDLException(e);
 			}
-
-
-            // if tables were recorded to be truncated on an upsert using load,
-            // then they will be truncated on an abort transaction
-            if(state.toString().equals("VALID") && truncateList.size() > 0)
-            {
-                if(LOG.isTraceEnabled()) LOG.trace("truncateList -- ENTRY txID: " + transactionState.getTransactionId());
-
-                Iterator<String> ci = truncateList.iterator();
-                while (ci.hasNext())
-                {
-                    try {
-                        truncateTable(transactionState, ci.next());
-                    }
-                    catch(Exception e){
-                        String msg = "ERROR in abort, phase: truncateTable";
-                        LOG.error(msg + " : " + e);
-                        if(LOG.isTraceEnabled()) LOG.trace("exception in abort, phase:truncateTable: txID: " + transactionState.getTransactionId());
-                        throw new IOException(msg);
-                    }
-                }
-            }
-			
-			if(state.toString().equals("VALID") && createList.size() > 0)
-			{
-				Iterator<String> ci = createList.iterator();
-				while (ci.hasNext()) 
-				{
-					try {
-						deleteTable(transactionState, ci.next(), true);
-					}
-					catch(Exception e){
-						LOG.error("exception in abort, phase: dropTable: " + e);
-						if(LOG.isTraceEnabled()) LOG.trace("exception in abort, phase:dropTable: txID: " + transactionState.getTransactionId());
-						//return; //Do not return, continue to drop remaining tables.
-						//TODO: Retry logic will be added to retry in case of exceptions.
-        				//TODO: Inspite of retry, if exceptions are encountered, these tables
-        				//will be recorded  and not forgotten. House keeping thread will attempt retry.
-						
-					}
-				}
-			}
-			
-			//if tables were recorded dropped, then they need to be reinstated,
-			//depending on the state of the transaction. The table recorded as dropped in phase 0,
-			//will be disabled as part of prepareCommit and physically dropped as part of doCommit.
-			if(state.toString().equals("VALID") && dropList.size() > 0 /*TODO: && transactionState.phase1 */)
-			{
-				Iterator<String> di = dropList.iterator();
-				while (di.hasNext()) 
-				{
-					try {
-						   enableTable(transactionState, di.next());
-					}
-					catch(Exception e){
-						LOG.error("exception in abort, phase: EnableTable: " + e);
-						if(LOG.isTraceEnabled()) LOG.trace("exception in abort dropTable: txID: " + transactionState.getTransactionId());
-						//return; //Do not return, continue to Enable remaining tables.
-						//TODO: Retry logic will be added to retry in case of exceptions.
-        				//TODO: Inspite of retry, if exceptions are encountered, these tables
-        				//will be recorded  and not forgotten. House keeping thread will attempt retry.
-					}
-				}
-			}
-
-			//update TDDL post operation
-			try{
-				tmDDL.putRow(transactionState.getTransactionId(), "INVALID");
-			}
-			catch(Exception e)
-			{
-				LOG.error("exception in abort() putRow: " + e);
-			}
-		}
+        }
 		
         if(LOG.isTraceEnabled()) LOG.trace("Abort -- EXIT txID: " + transactionState.getTransactionId());
         
+    }
+    
+    void abortDDL(final TransactionState transactionState) throws UnsuccessfulDDLException 
+    {
+        //if tables were created, then they need to be dropped.
+        ArrayList<String> createList = new ArrayList<String>();
+        ArrayList<String> dropList = new ArrayList<String>();
+        ArrayList<String> truncateList = new ArrayList<String>();
+        StringBuilder state = new StringBuilder ();
+        boolean retry = true;
+        int retryCount = 0;
+        int retrySleep = TM_SLEEP;
+        
+        do
+        {
+            try {
+                tmDDL.getRow(transactionState.getTransactionId(), state, createList, dropList, truncateList);
+                retry = false;
+            }
+            catch(Exception e){
+                LOG.error("Fatal Exception in abortDDL, Step: getRow. txID: " + transactionState.getTransactionId() + "Exception: " + e);
+                
+                if(retryCount == RETRY_ATTEMPTS)
+                {
+                    LOG.error("Fatal Exception in abortDDL, Step: getRow. Raising UnsuccessfulDDLException txID: " + transactionState.getTransactionId() + "Exception: " + e);
+                   
+                   //if tmDDL is unreachable at this point, it is fatal. 
+                    throw new UnsuccessfulDDLException(e);
+                }
+                
+                retryCount++;
+                if (retryCount < RETRY_ATTEMPTS) 
+                {
+                    try {
+                        Thread.sleep(retrySleep);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                    retrySleep += TM_SLEEP_INCR;
+                }
+            }
+        }while (retryCount < RETRY_ATTEMPTS && retry == true);
+        
+        // if tables were recorded to be truncated on an upsert using load,
+        // then they will be truncated on an abort transaction
+        if(state.toString().equals("VALID") && truncateList.size() > 0)
+        {
+            if(LOG.isTraceEnabled()) LOG.trace("truncateList -- ENTRY txID: " + transactionState.getTransactionId());
+
+            Iterator<String> ci = truncateList.iterator();
+            while (ci.hasNext())
+            {
+                retryCount = 0;
+                retrySleep = TM_SLEEP;
+                retry = true;
+                String tblName = ci.next();
+                do
+                {
+                    try {
+                        truncateTable(transactionState, tblName);
+                        retry = false;
+                    }
+                    catch(Exception e){
+                        LOG.error("Fatal exception in abortDDL, Step : truncateTable: TxID:" + transactionState.getTransactionId() + "Exception: " + e);
+                        
+                        if(retryCount == RETRY_ATTEMPTS)
+                        {
+                            LOG.error("Fatal Exception in abortDDL, Step: truncateTable. Raising UnsuccessfulDDLException TxID:" + transactionState.getTransactionId() );
+                            
+                            //Throw this exception after all retry attempts.
+                            //Throwing a new exception gets out of the loop.
+                            throw new UnsuccessfulDDLException(e);
+                        }
+                        
+                        retryCount++;
+                        if (retryCount < RETRY_ATTEMPTS) 
+                        {
+                            try {
+                                Thread.sleep(retrySleep);
+                            } catch(InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+                            retrySleep += TM_SLEEP_INCR;
+                        }
+                    }
+                }while(retryCount < RETRY_ATTEMPTS && retry == true);
+            }//while
+        }
+            
+        if(state.toString().equals("VALID") && createList.size() > 0)
+        {
+            Iterator<String> ci = createList.iterator();
+            while (ci.hasNext()) 
+            {
+                retryCount = 0;
+                retrySleep = TM_SLEEP;
+                retry = true;
+                String tblName = ci.next();
+                do
+                {
+                    try {
+                        deleteTable(transactionState, tblName);
+                        retry = false;
+                    }
+                    catch(TableNotFoundException t){
+                        //Check for TableNotFoundException, if that is the case, no further 
+                        //processing needed. This is not an error. Possible we are retrying the entire set of DDL changes
+                        //because this transaction is being redriven for some reason. 
+                        if(LOG.isTraceEnabled()) LOG.trace(" TableNotFoundException exception in abortDDL deleteTable, Continuing: txID: " + transactionState.getTransactionId());
+                        retry = false;
+                    }
+                    catch(Exception e){
+                        LOG.error("Fatal exception in abortDDL, Step : DeleteTable: TxID:" + transactionState.getTransactionId() + "Exception: " + e);
+                        
+                        if(retryCount == RETRY_ATTEMPTS)
+                        {
+                            LOG.error("Fatal Exception in abortDDL, Step: DeleteTable. Raising UnsuccessfulDDLException TxID:" + transactionState.getTransactionId() );
+                            
+                            //Throw this exception after all retry attempts.
+                            //Throwing a new exception gets out of the loop.
+                            throw new UnsuccessfulDDLException(e);
+                        }
+                        
+                        retryCount++;
+                        if (retryCount < RETRY_ATTEMPTS) 
+                        {
+                            try {
+                                Thread.sleep(retrySleep);
+                            } catch(InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+                            retrySleep += TM_SLEEP_INCR;
+                        }
+                        
+                    }
+                }while(retryCount < RETRY_ATTEMPTS && retry == true);
+            }//while
+        }
+        
+        //if tables were recorded dropped, then they need to be reinstated,
+        //depending on the state of the transaction. The table recorded as dropped in phase 0,
+        //will be disabled as part of prepareCommit and physically dropped as part of doCommit.
+        if(state.toString().equals("VALID") && dropList.size() > 0)
+        {
+            Iterator<String> di = dropList.iterator();
+            while (di.hasNext()) 
+            {
+                retryCount = 0;
+                retrySleep = TM_SLEEP;
+                retry = true;
+                String tblName = di.next();
+                do
+                {
+                    try {
+                           enableTable(transactionState, tblName);
+                           retry = false;
+                    }
+                    catch(TableNotDisabledException t){
+                        //Check for TableNotDisabledException, if that is the case, no further 
+                        //processing needed. This is not an error. Possible we are retrying the entire set of DDL changes
+                        //because this transaction is being redriven for some reason. 
+                        if(LOG.isTraceEnabled()) LOG.trace(" TableNotDisabledException exception in abortDDL enableTable, Continuing: txID: " + transactionState.getTransactionId());
+                        retry = false;
+                    }
+                    catch(Exception e){
+                        LOG.error("Fatal exception in abortDDL, Step : enableTable: TxID:" + transactionState.getTransactionId() + "Exception: " + e);
+                        if(retryCount == RETRY_ATTEMPTS)
+                        {
+                            LOG.error("Fatal Exception in doCommitDDL, Step: DeleteTable. Raising UnsuccessfulDDLException TxID:" + transactionState.getTransactionId() );
+                            
+                            //Throw this exception after all retry attempts.
+                            //Throwing a new exception gets out of the loop.
+                            throw new UnsuccessfulDDLException(e);
+                        }
+                        
+                        retryCount++;
+                        if (retryCount < RETRY_ATTEMPTS) 
+                        {
+                            try {
+                                Thread.sleep(retrySleep);
+                            } catch(InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+                            retrySleep += TM_SLEEP_INCR;
+                        }
+                    }
+                }while(retryCount < RETRY_ATTEMPTS && retry == true);
+            }//while
+        }
+  
+        //update TDDL post operation, delete the transaction from TmDDL
+        retryCount = 0;
+        retrySleep = TM_SLEEP;
+        retry = true;
+        do
+        {
+            try{
+                tmDDL.deleteRow(transactionState.getTransactionId());
+                retry = false;
+            }
+            catch(Exception e)
+            {
+                LOG.error("Fatal Exception in abortDDL, Step: deleteRow. txID: " + transactionState.getTransactionId() + "Exception: " + e);
+                
+                if(retryCount == RETRY_ATTEMPTS)
+                {
+                    LOG.error("Fatal Exception in abortDDL, Step: deleteRow. Raising UnsuccessfulDDLException. txID: " + transactionState.getTransactionId());
+                    
+                    //Throw this exception after all retry attempts.
+                    //Throwing a new exception gets out of the loop.
+                    throw new UnsuccessfulDDLException(e);
+                }
+                
+                retryCount++;
+                if (retryCount < RETRY_ATTEMPTS) 
+                {
+                    try {
+                        Thread.sleep(retrySleep);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                    retrySleep += TM_SLEEP_INCR;
+                }
+                
+            }
+        }while(retryCount < RETRY_ATTEMPTS && retry == true);
     }
 
     public synchronized JtaXAResource getXAResource() {
@@ -2142,8 +2382,8 @@ public class TransactionManager {
     }
 
     public void createTable(final TransactionState transactionState, HTableDescriptor desc, Object[]  beginEndKeys)
-            throws MasterNotRunningException, IOException {
-        if (LOG.isTraceEnabled()) LOG.trace("createTable ENTRY, transactionState: " + transactionState);
+            throws Exception{
+        if (LOG.isTraceEnabled()) LOG.trace("createTable ENTRY, transactionState: " + transactionState.getTransactionId());
 
         try {
             if (beginEndKeys != null && beginEndKeys.length > 0) {
@@ -2166,42 +2406,34 @@ public class TransactionManager {
 			tmDDL.putRow( transactionState.getTransactionId(), "CREATE", desc.getNameAsString());
         }
         catch (Exception e) {
-            if (LOG.isTraceEnabled()) LOG.trace("TransactionManager: createTable exception " + e);
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            LOG.error("createTable error: " + sw.toString());
+            LOG.error("createTable Exception TxId: " + transactionState.getTransactionId() + "Exception: " + e);
+            throw e;
         }
 
     }
 
     public void registerTruncateOnAbort(final TransactionState transactionState, String tblName)
-            throws MasterNotRunningException, Exception {
-        if (LOG.isTraceEnabled()) LOG.trace("registerTruncateOnAbort ENTRY, tableName: " + tblName);
+            throws Exception {
+        if (LOG.isTraceEnabled()) LOG.trace("registerTruncateOnAbort ENTRY, TxID " + transactionState.getTransactionId() + 
+            " tableName: " + tblName);
 
         // register the truncate on abort to TmDDL
         try {
-            // Set transaction state object as participating in ddl transaction.
-            transactionState.setDDLTx(true);
-
             // add truncate record to TmDDL
             tmDDL.putRow(transactionState.getTransactionId(), "TRUNCATE", tblName);
+            
+            // Set transaction state object as participating in ddl transaction.
+            transactionState.setDDLTx(true);
         }
         catch (Exception e) {
-            if (LOG.isTraceEnabled()) LOG.trace("TransactionManager: registerTruncateOnAbort exception " + e);
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            String msg = "registerTruncateOnAbort error for table: " + tblName;
-            LOG.error(msg + sw.toString());
-            throw new Exception(msg);
+            LOG.error("registerTruncateOnAbort Exception Txid:" + transactionState.getTransactionId() +"TableName: " + tblName + "Exception:" + e);
+            throw e;
         }
     }
 
     public void dropTable(final TransactionState transactionState, String tblName)
-            throws MasterNotRunningException, Exception {
-
-        if (LOG.isTraceEnabled()) LOG.trace("dropTable ENTRY, tableName: " + tblName);
+            throws Exception{
+        if (LOG.isTraceEnabled()) LOG.trace("dropTable ENTRY, TxId: " + transactionState.getTransactionId() + "TableName: " + tblName);
 
         //Record this drop table request in TmDDL.
         //Note that physical disable of this table happens in prepare phase.
@@ -2214,58 +2446,54 @@ public class TransactionManager {
             transactionState.setDDLTx(true);
         }
         catch (Exception e) {
-            if (LOG.isTraceEnabled()) LOG.trace("TransactionManager: dropTable exception " + e);
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            String msg = "dropTable error for table: " + tblName;
-            LOG.error(msg + ":" + sw.toString());
-            throw new Exception(msg);
+            LOG.error("dropTable Exception TxId: " + transactionState.getTransactionId() + "TableName:" + tblName + "Exception: " + e);
+            throw e;
         }
     }
 	
 	//Called only by Abort or Commit processing.
-	public void deleteTable(final TransactionState transactionState, final String tblName, final boolean alsoDisable )
-            throws MasterNotRunningException, IOException, Exception{
-        if (LOG.isTraceEnabled()) LOG.trace("deleteTable ENTRY, transactionState: " + transactionState + 
-            "table: " + tblName);
-
-        try {
-			if(alsoDisable)
-			{
-				hbadmin.disableTable(tblName);
-			}
+	public void deleteTable(final TransactionState transactionState, final String tblName)
+            throws Exception{
+        if (LOG.isTraceEnabled()) LOG.trace("deleteTable ENTRY, TxId: " + transactionState.getTransactionId() + "tableName" + tblName);
+        try{
+            disableTable(transactionState, tblName);
+		}
+        catch (TableNotEnabledException e) {
+            //If table is not enabled, no need to throw exception. Continue.
+            if (LOG.isTraceEnabled()) LOG.trace("deleteTable , TableNotEnabledException, Step: disableTable, TxId: " +
+                transactionState.getTransactionId() + "TableName" + tblName + "Exception: " + e);
+        }
+        catch (Exception e) {
+            LOG.error("deleteTable Exception TxId: " + transactionState.getTransactionId() + "TableName" + tblName + "Exception: " + e);
+            throw e;
+        }
+        
+        try{
 			hbadmin.deleteTable(tblName);
         }
         catch (Exception e) {
-            if (LOG.isTraceEnabled()) LOG.trace("TransactionManager: deleteTable exception " + e);
-            String msg = "ERROR deleteTable exception: while calling hadmin deleteTable method for table: " + tblName;
-            LOG.error(msg + ":" + e);
-            throw new Exception(msg);
+            LOG.error("deleteTable Exception TxId: " + transactionState.getTransactionId() + "TableName" + tblName  + "Exception: " + e);
+            throw e;
         }
 	}
 	
 	//Called only by Abort processing.
 	public void enableTable(final TransactionState transactionState, String tblName)
-            throws MasterNotRunningException, IOException, Exception{
-        if (LOG.isTraceEnabled()) LOG.trace("enableTable ENTRY, transactionState: " + transactionState +
-            "table: " + tblName);
-
+            throws Exception{
+        if (LOG.isTraceEnabled()) LOG.trace("enableTable ENTRY, TxID: " + transactionState.getTransactionId() + "tableName" + tblName);
         try {
             hbadmin.enableTable(tblName);
         }
         catch (Exception e) {
-            if (LOG.isTraceEnabled()) LOG.trace("TransactionManager: enableTable exception " + e);
-            String msg = "ERROR enableTable exception: while calling hadmin enableTable method for table: " + tblName;
-            LOG.error(msg + ":" + e);
-            throw new Exception(msg);
+            LOG.error("enableTable Exception TxId: " + transactionState.getTransactionId() + "TableName" + tblName + "Exception: " + e);
+            throw e;
         }
 	}
 
     // Called only by Abort processing to delete data from a table
     public void truncateTable(final TransactionState transactionState, String tblName)
-            throws MasterNotRunningException, IOException, Exception{
-        if (LOG.isTraceEnabled()) LOG.trace("truncateTable ENTRY, transactionState: " + transactionState +
+            throws Exception{
+        if (LOG.isTraceEnabled()) LOG.trace("truncateTable ENTRY, TxID: " + transactionState.getTransactionId() +
             "table: " + tblName);
 
         try {
@@ -2280,27 +2508,21 @@ public class TransactionManager {
             hbadmin.close();
         }
         catch (Exception e) {
-            if (LOG.isTraceEnabled()) LOG.trace("TransactionManager: truncateTable exception " + e);
-            String msg = "ERROR truncateTable exception: while calling hadmin truncateTable method for table: " + tblName;
-            LOG.error(msg + ":" + e);
-            throw new Exception(msg);
+            LOG.error("truncateTable Exception TxId: " + transactionState.getTransactionId() + "TableName" + tblName+  "Exception: " + e);
+            throw e;
         }
     }
 
     //Called only by DoPrepare.
 	public void disableTable(final TransactionState transactionState, String tblName)
-            throws MasterNotRunningException, IOException, Exception{
-        if (LOG.isTraceEnabled()) LOG.trace("disableTable ENTRY, transactionState: " + transactionState +
-            "table: " + tblName);
-
+            throws Exception{
+        if (LOG.isTraceEnabled()) LOG.trace("disableTable ENTRY, TxID: " + transactionState.getTransactionId() + "tableName" + tblName);
         try {
             hbadmin.disableTable(tblName);
         }
         catch (Exception e) {
-            if (LOG.isTraceEnabled()) LOG.trace("TransactionManager: disableTable exception " + e);
-            String msg = "ERROR disableTable exception: while calling hadmin disableTable method for table: " + tblName;
-            LOG.error(msg + ":" + e);
-            throw new Exception(msg);
+            LOG.error("disableTable Exception TxId: " + transactionState.getTransactionId() + "TableName" + tblName + "Exception: " + e);
+            throw e;
         }
 	}
 

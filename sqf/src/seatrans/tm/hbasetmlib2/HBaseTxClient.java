@@ -42,6 +42,7 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.transactional.TransactionManager;
 import org.apache.hadoop.hbase.client.transactional.TransactionState;
 import org.apache.hadoop.hbase.client.transactional.CommitUnsuccessfulException;
+import org.apache.hadoop.hbase.client.transactional.UnsuccessfulDDLException;
 import org.apache.hadoop.hbase.client.transactional.UnknownTransactionException;
 import org.apache.hadoop.hbase.client.transactional.HBaseBackedTransactionLogger;
 import org.apache.hadoop.hbase.client.transactional.TransactionRegionLocation;
@@ -293,6 +294,10 @@ public class HBaseTxClient {
       if (LOG.isTraceEnabled()) LOG.trace("Exit init()");
       return true;
    }
+   
+   public TmDDL getTmDDL() {
+        return tmDDL;
+   }
 
    public void nodeDown(int nodeID) throws IOException {
        if(LOG.isTraceEnabled()) LOG.trace("nodeDown -- ENTRY node ID: " + nodeID);
@@ -398,6 +403,23 @@ public class HBaseTxClient {
           LOG.error("Returning from HBaseTxClient:abortTransaction, txid: " + transactionID + " retval: EXCEPTION");
           return TransReturnCode.RET_EXCEPTION.getShort();
       }
+      catch (UnsuccessfulDDLException ddle) {
+          LOG.error("FATAL DDL Exception from HBaseTxClient:abort, WAITING INDEFINETLY !! retval: " + TransReturnCode.RET_EXCEPTION.toString() + " UnsuccessfulDDLException" + " txid: " + transactionID);
+          
+          //Reaching here means several attempts to perform the DDL operation has failed in abort phase.
+          //Generally if only DML operation is involved, returning error causes TM to call completeRequest()
+          //which causes a hang(abort work is outstanding forever) due to doAbortX thread holding the 
+          //commitSendLock (since doAbortX raised an exception and exited without clearing the commitSendLock count).
+          //In the case of DDL exception, no doAbortX thread is involved and commitSendLock is not held. Hence to mimic
+          //the same hang behaviour, the current worker thread will be put to wait indefinitely for user intervention.
+          //Long Term solution to this behaviour is currently TODO.
+          Object commitDDLLock = new Object();
+          synchronized(commitDDLLock)
+          {
+            commitDDLLock.wait();
+          }
+          return TransReturnCode.RET_EXCEPTION.getShort();
+      }
       if (useTlog && useForgotten) {
          if (forceForgotten) {
             tLog.putSingleRecord(transactionID, "FORGOTTEN", null, true);
@@ -487,6 +509,23 @@ public class HBaseTxClient {
           LOG.error("Returning from HBaseTxClient:doCommit, retval: " + TransReturnCode.RET_EXCEPTION.toString() + " IOException" + " txid: " + transactionId);
           return TransReturnCode.RET_EXCEPTION.getShort();
        }
+       catch (UnsuccessfulDDLException ddle) {
+          LOG.error("FATAL DDL Exception from HBaseTxClient:doCommit, WAITING INDEFINETLY !! retval: " + TransReturnCode.RET_EXCEPTION.toString() + " UnsuccessfulDDLException" + " txid: " + transactionId);
+          
+          //Reaching here means several attempts to perform the DDL operation has failed in commit phase.
+          //Generally if only DML operation is involved, returning error causes TM to call completeRequest()
+          //which causes a hang(commit work is outstanding forever) due to doCommitX thread holding the 
+          //commitSendLock (since doCommitX raised an exception and exited without clearing the commitSendLock count).
+          //In the case of DDL exception, no doCommitX thread is involved and commitSendLock is not held. Hence to mimic
+          //the same hang behaviour, the current worker thread will be put to wait indefinitely for user intervention.
+          //Long Term solution to this behaviour is currently TODO.
+          Object commitDDLLock = new Object();
+          synchronized(commitDDLLock)
+          {
+            commitDDLLock.wait();
+          }
+          return TransReturnCode.RET_EXCEPTION.getShort();
+       }
        if (useTlog && useForgotten) {
           if (forceForgotten) {
              tLog.putSingleRecord(transactionId, "FORGOTTEN", null, true);
@@ -513,6 +552,9 @@ public class HBaseTxClient {
        }
 
        try {
+       
+       if (LOG.isTraceEnabled()) LOG.trace("TEMP completeRequest Calling CompleteRequest() Txid :" + transactionId);
+
           ts.completeRequest();
        } catch(Exception e) {
           LOG.error("Returning from HBaseTxClient:completeRequest, ts.completeRequest: EXCEPTION" + " txid: " + transactionId);
@@ -544,6 +586,9 @@ public class HBaseTxClient {
          if (LOG.isDebugEnabled()) LOG.debug("tryCommit commit failed and was aborted. Commit error " + 
                    commitErr + ", Abort error " + abortErr);
        }
+       
+       if (LOG.isTraceEnabled()) LOG.trace("TEMP tryCommit Calling CompleteRequest() Txid :" + transactionId);
+       
        err = completeRequest(transactionId);
        if (err != TransReturnCode.RET_OK.getShort()) 
          if (LOG.isDebugEnabled()) LOG.debug("tryCommit completeRequest failed with error " + err);
@@ -982,6 +1027,20 @@ public class HBaseTxClient {
                                       TransactionState ts = transactionStates.get(txid);
                                       if (ts == null) {
                                          ts = new TransactionState(txid);
+                                         
+                                         //Identify if DDL is part of this transaction and valid
+                                         if(hbtx.useDDLTrans){
+                                            TmDDL tmDDL = hbtx.getTmDDL();
+                                            StringBuilder state = new StringBuilder ();
+                                            try {
+                                                tmDDL.getState(txid,state);
+                                            }
+                                            catch(Exception egetState){
+                                                LOG.error("TRAF RCOV THREAD:Error calling TmDDL getState." + egetState);
+                                            }
+                                            if(state.toString().equals("VALID"))
+                                               ts.setDDLTx(true);  
+                                         }
                                       }
                                       try {
                                          this.addRegionToTS(hostnamePort, regionBytes, ts);
@@ -1021,7 +1080,22 @@ public class HBaseTxClient {
                                         txnManager.abort(ts);
                                     }
 
-                                } catch (Exception e) {
+                                }catch (UnsuccessfulDDLException ddle) {
+                                    LOG.error("UnsuccessfulDDLException encountered by Recovery Thread. Registering for retry. txID: " + txID + "Exception " + ddle);
+                                    ddle.printStackTrace();
+                                    
+                                    //Note that there may not be anymore redrive triggers from region server point of view for DDL operation.
+                                    //Register this DDL transaction for subsequent redrive from Audit Control Event.
+                                    //TODO: Launch a new Redrive Thread out of auditControlPoint().
+                                    TmDDL tmDDL = hbtx.getTmDDL();
+                                    try {
+                                        tmDDL.setState(txID,"REDRIVE");
+                                    }
+                                    catch(Exception e){
+                                         LOG.error("TRAF RCOV THREAD:Error calling TmDDL putRow Redrive" + e);
+                                    }
+                                }
+                                catch (Exception e) {
                                     LOG.error("Unable to get audit record for tx: " + txID + ", audit is throwing exception.");
                                     e.printStackTrace();
                                 }
