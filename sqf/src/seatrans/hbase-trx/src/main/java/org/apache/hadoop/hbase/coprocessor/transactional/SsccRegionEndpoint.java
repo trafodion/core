@@ -750,7 +750,7 @@ CoprocessorService, Coprocessor {
            Put verPut = new Put(dKey, commitId);
            verPut.add(DtmConst.TRANSACTION_META_FAMILY , SsccConst.VERSION_COL,SsccConst.generateVersionValue(startId,true));
            m_Region.put(verPut);
-           m_Region.delete(d);
+//           m_Region.delete(d);
          }
          //DO a batch mutation
          //Mutation[] m = (Mutation[])mutList.toArray();
@@ -1751,6 +1751,7 @@ CoprocessorService, Coprocessor {
       //statusGet.setTimeStamp(startId);
       statusGet.addColumn(DtmConst.TRANSACTION_META_FAMILY,SsccConst.STATUS_COL);
       statusGet.setMaxVersions(DtmConst.MAX_VERSION);
+      statusGet.setTimeRange(0, startId + 1);
       Result statusResult = m_Region.get(statusGet);
 
       //get the versionList
@@ -1758,6 +1759,7 @@ CoprocessorService, Coprocessor {
       //verGet.setTimeStamp(startId);
       verGet.addColumn(DtmConst.TRANSACTION_META_FAMILY,SsccConst.VERSION_COL);
       verGet.setMaxVersions(DtmConst.MAX_VERSION);
+      verGet.setTimeRange(0, startId + 1);
       Result verResult = m_Region.get(verGet);
 
       //get the colList
@@ -1765,6 +1767,7 @@ CoprocessorService, Coprocessor {
       //colGet.setTimeStamp(startId);
       colGet.addColumn(DtmConst.TRANSACTION_META_FAMILY,SsccConst.COLUMNS_COL);
       colGet.setMaxVersions(DtmConst.MAX_VERSION);
+      colGet.setTimeRange(0, startId + 1);
       Result colResult = m_Region.get(colGet);
 
       /* go through all the versions and find out correct one */
