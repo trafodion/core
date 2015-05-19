@@ -1888,11 +1888,14 @@ public class SQLMXConnection extends PreparedStatementManager implements
 							|| System.getProperty("cqdDoomUserTxn", "OFF")
 									.equalsIgnoreCase("ON");
 					// MFC added two more parameters
+
 					connectInit(server_, getDialogueId_(), catalog_, schema_,
 							mploc_, isReadOnly_, autoCommit_,
 							mapTxnIsolation(transactionIsolation_),
 							loginTimeout_, queryTimeout_, enableMFC_,
-							compiledModuleLocation_, blnCQD);
+							compiledModuleLocation_, blnCQD,
+							statisticsIntervalTime_, statisticsLimitTime_, statisticsType_, programStatisticsEnabled_, statisticsSqlPlanEnabled_
+							);
 
 					if (iso88591EncodingOverride_ != null)
 						setCharsetEncodingOverride(server_, getDialogueId_(),
@@ -2851,7 +2854,8 @@ public class SQLMXConnection extends PreparedStatementManager implements
 			String catalog, String schema, String mploc, boolean isReadOnly, boolean autoCommit,
 			int transactionIsolation, int loginTimeout, int queryTimeout,
 			String modulecaching, String compiledmodulelocation,
-			boolean blnDoomUsrTxn) throws SQLException;
+			boolean blnDoomUsrTxn,
+		    int statisticsIntervalTime_, int statisticsLimitTime_, String statisticsType_, String programStatisticsEnabled_, String statisticsSqlPlanEnabled_) throws SQLException;
 
 	private native void connectReuse(String server, long dialogueId,
 			int conResetValue, String catalog, String schema, String mploc,
@@ -2976,6 +2980,13 @@ public class SQLMXConnection extends PreparedStatementManager implements
 		contBatchOnError_ = info.getContBatchOnError();
 		iso88591EncodingOverride_ = info.getIso88591EncodingOverride();
 
+		//Publishing
+	    statisticsIntervalTime_ = info.getStatisticsIntervalTime();
+	    statisticsLimitTime_ = info.getStatisticsLimitTime();
+	    statisticsType_ = info.getStatisticsType();
+	    programStatisticsEnabled_ = info.getProgramStatisticsEnabled();
+	    statisticsSqlPlanEnabled_ = info.getStatisticsSqlPlanEnabled();
+	    
 		dsCatalog_ = catalog_;
 		dsSchema_ = schema_;
 		dsMploc_ = mploc_;
@@ -2983,7 +2994,6 @@ public class SQLMXConnection extends PreparedStatementManager implements
 		dsTransactionMode_ = transactionMode_;
 		dsIso88591EncodingOverride_ = iso88591EncodingOverride_;
 		dsContBatchOnError_ = contBatchOnErrorval_;// RFE: Batch update
-
 
 		// The enableLog_ flag is used to log SQL STMTIDs and their SQL strings
 		// if the
@@ -3086,7 +3096,12 @@ public class SQLMXConnection extends PreparedStatementManager implements
 	int lClosestmtCount=0;
 	int pStmtCount=0;
 
-
+    //Publishing
+    int statisticsIntervalTime_;
+    int statisticsLimitTime_;
+    String statisticsType_;
+    String programStatisticsEnabled_;
+    String statisticsSqlPlanEnabled_;
 
 	boolean byteSwap_;
 	private int txid_;

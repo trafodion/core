@@ -377,8 +377,10 @@ JNIEXPORT jint JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_beginTransacti
 JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_connectInit
 (JNIEnv *jenv, jobject jobj, jstring server, jlong dialogueId, jstring catalog,
  jstring schema, jstring mploc, jboolean isReadOnly, jboolean autoCommit, jint transactionIsolation,
- jint loginTimeout, jint queryTimeout, jstring modulecaching, jstring compiledmodulelocation, jboolean blnDoomUsrTxn)
+ jint loginTimeout, jint queryTimeout, jstring modulecaching, jstring compiledmodulelocation, jboolean blnDoomUsrTxn,
+ jint statisticsIntervalTime, jint statisticsLimitTime, jstring statisticsType, jstring programStatisticsEnabled, jstring statisticsSqlPlanEnabled)
 {
+
 	FUNCTION_ENTRY("Java_org_trafodion_jdbc_t2_SQLMXConnection_connectInit",("..."));
 	DEBUG_OUT(DEBUG_LEVEL_ENTRY,("  jenv=0x%08x, server=%s, dialogueId=0x%08x",
 		jenv,
@@ -396,6 +398,13 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_connectInit
 	DEBUG_OUT(DEBUG_LEVEL_ENTRY,("  loginTimeout=%ld, queryTimeout=%ld",
 		loginTimeout,
 		queryTimeout));
+    DEBUG_OUT(DEBUG_LEVEL_ENTRY,("  statisticsIntervalTime=%ld, statisticsLimitTime=%ld, statisticsType=%s, programStatisticsEnabled=%s, statisticsSqlPlanEnabled=%s",
+        statisticsIntervalTime,
+        statisticsLimitTime
+        DebugJString(jenv,statisticsType),
+        DebugJString(jenv,programStatisticsEnabled),
+        DebugJString(jenv,statisticsSqlPlanEnabled)
+        ));
 
 	//MFC - new properties
 	DEBUG_OUT(DEBUG_LEVEL_ENTRY,("  MFC modulecaching=%s",
@@ -403,7 +412,7 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_connectInit
 	DEBUG_OUT(DEBUG_LEVEL_ENTRY,("  MFC compiledmodulelocation=%s",
 		DebugJString(jenv,compiledmodulelocation)));
 
-	const char  *nCatalog;
+    const char  *nCatalog;
 	const char  *nSchema;
 	const char  *nMploc;
 	jthrowable	  exception;
@@ -411,6 +420,11 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_connectInit
 	// MFC - new properties
 	const char *nModuleCaching;
 	const char *nCompiledModuleLocation;
+
+	// PUBLISHING
+    const char *nStatisticsType;
+    const char *nProgramStatisticsEnabled;
+    const char *nStatisticsSqlPlanEnabled;
 
 	jclass jcls = JNI_GetObjectClass(jenv,jobj);
 
@@ -451,12 +465,14 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_connectInit
 		0,
 		NULL,
 		&sqlWarning);
+
 	if (setConnectException.exception_nr != CEE_SUCCESS)
 	{
 		throwSetConnectionException(jenv, &setConnectException);
 		FUNCTION_RETURN_VOID(("SET_JDBC_PROCESS - setConnectException.exception_nr(%s) is not CEE_SUCCESS",
 			CliDebugSqlError(setConnectException.exception_nr)));
 	}
+
 
 #if 0 /* NOT NEEDED with improvements to Native Expressions code */
 	// new code begin: to disable native code for multi-threading
@@ -662,19 +678,38 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_connectInit
 		odbc_SQLSvc_SetConnectionOption_sme_(NULL, NULL,&setConnectException,dialogueId,
 			SET_SESSION_INTERNAL_IO,0,NULL,
 			&sqlWarning);
-		
+
 		if (setConnectException.exception_nr != CEE_SUCCESS)
-			
+
 		{
 			throwSetConnectionException(jenv, &setConnectException);
 			FUNCTION_RETURN_VOID(("Set Session internal_format_io failure setConnectException.exception_nr(%s) is not CEE_SUCCESS",
 				CliDebugSqlError(setConnectException.exception_nr)));
-			
+
 		}
-		
+
 	}
 
-	FUNCTION_RETURN_VOID((NULL));
+    printf("Native statisticsIntervalTime :%ld\n", statisticsIntervalTime);
+    printf("Native statisticsLimitTime :%ld\n", statisticsLimitTime);
+
+    if (statisticsType){
+        nStatisticsType = JNI_GetStringUTFChars(jenv,statisticsType, NULL);
+        printf("Native statisticsType :%s\n", nStatisticsType);
+        JNI_ReleaseStringUTFChars(jenv,statisticsType, nStatisticsType);
+    }
+    if (programStatisticsEnabled){
+        nProgramStatisticsEnabled = JNI_GetStringUTFChars(jenv,programStatisticsEnabled, NULL);
+        printf("Native programStatisticsEnabled :%s\n", nProgramStatisticsEnabled);
+        JNI_ReleaseStringUTFChars(jenv,programStatisticsEnabled, nProgramStatisticsEnabled);
+    }
+    if (statisticsSqlPlanEnabled){
+        nStatisticsSqlPlanEnabled = JNI_GetStringUTFChars(jenv,statisticsSqlPlanEnabled, NULL);
+        printf("Native statisticsSqlPlanEnabled :%s\n", nStatisticsSqlPlanEnabled);
+        JNI_ReleaseStringUTFChars(jenv,statisticsSqlPlanEnabled, nStatisticsSqlPlanEnabled);
+    }
+
+    FUNCTION_RETURN_VOID((NULL));
 }
 
 JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_connectReuse
@@ -1012,7 +1047,7 @@ JNIEXPORT void JNICALL Java_org_trafodion_jdbc_t2_SQLMXConnection_setCharsetEnco
 		FUNCTION_RETURN_VOID((NULL));
 }
 
-//Sol. 10-100618-1186 
+//Sol. 10-100618-1186
 /*
  * Class:     org_trafodion_jdbc_t2_SQLMXConnection
  * Method:    clearSetOfCQDs
