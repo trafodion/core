@@ -34,6 +34,8 @@
 
 // See general strategy notes preceding FetchHistogram implementation below.
 
+#define   SQLPARSERGLOBALS_FLAGS   // must precede all #include's
+#include "SqlParserGlobalsCmn.h"
 
 #define HS_FILE "hs_read"
 
@@ -1340,6 +1342,11 @@ Lng32 readHistograms(HSTableDef *tabDef
       NAString histogramsName = histogramTableName; // It points to Histogram or Histints table name. soln#:10-030910-9505 
       histogramRowCount = -1;
 
+      // set parserflag to avoid privilege checks
+      ULng32 savedParserFlags = 0;
+      SQL_EXEC_GetParserFlagsForExSqlComp_Internal(savedParserFlags);
+      SQL_EXEC_SetParserFlagsForExSqlComp_Internal(INTERNAL_QUERY_FROM_EXEUTIL);
+      
       // save the statement heap from the current context so it can be used to allocate memory
       // for the cursor attributes
       NAHeap *curStmtHeap = STMTHEAP;
@@ -1399,6 +1406,7 @@ Lng32 readHistograms(HSTableDef *tabDef
            if (switched == TRUE)
                SQL_EXEC_SWITCH_BACK_COMPILER();
         }
+      SQL_EXEC_ResetParserFlagsForExSqlComp_Internal(savedParserFlags);
     }
     return 0;
 }
