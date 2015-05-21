@@ -815,6 +815,14 @@ class InterfaceStatement {
 	// -------------------------------------------------------------
 	//TODO: this whole function needs to be rewritten
 	short getSqlStmtType(String str) {
+		str=str.trim();
+		boolean starChars=str.startsWith("/*");
+		boolean ctnChars=str.contains("*/");
+		if (starChars==true && ctnChars==true) {
+			int frtLoc=str.indexOf("*/");
+			str=str.substring(frtLoc+2);
+		}
+
 		// 7708
 		stmtIsLock = false;
 
