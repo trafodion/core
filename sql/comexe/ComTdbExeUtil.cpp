@@ -2601,9 +2601,10 @@ Lng32 ComTdbExeUtilHBaseBulkLoad::unpack(void * base, void * reallocator)
 }
 void ComTdbExeUtilHBaseBulkLoad::displayContents(Space * space,ULng32 flag)
 {
-  ComTdb::displayContents(space,flag & 0xFFFFFFFE);
+  ComTdb::displayContents(space,flags_ & 0xFFFFFFFE);
+  char buf[1000];
 
-  if(flag & 0x00000008)
+  if(flag  & 0x00000008)
     {
       char buf[1000];
       str_sprintf(buf, "\nFor ComTdbExeUtilHbaseLoad :");
@@ -2633,6 +2634,21 @@ void ComTdbExeUtilHBaseBulkLoad::displayContents(Space * space,ULng32 flag)
 
 
     }
+  
+  if (flags_ & LOG_ERROR_ROWS) {
+     if (loggingLocation_) {
+        str_sprintf(buf, "Logging location = %s ", loggingLocation_.getPointer()); 
+       space->allocateAndCopyToAlignedSpace(buf, str_len(buf), sizeof(short));
+     }
+  }
+  if (maxErrorRows_ > 0) {
+     str_sprintf(buf, "Max Error Rows = %d", maxErrorRows_);
+     space->allocateAndCopyToAlignedSpace(buf, str_len(buf), sizeof(short));
+     if (errCountTable_) {
+        str_sprintf(buf, "Error Counter Table Name = %s ", errCountTable_.getPointer()); 
+        space->allocateAndCopyToAlignedSpace(buf, str_len(buf), sizeof(short));
+     }
+  }
 
   if (flag & 0x00000001)
     {
