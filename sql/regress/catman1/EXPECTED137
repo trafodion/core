@@ -1,7 +1,4 @@
 >>obey TEST137(set_up);
->>initialize authorization;
-
---- SQL operation complete.
 >>prepare get_roles from
 +>select substring (auth_db_name,1,20) as role_name
 +>from "_MD_".AUTHS
@@ -1362,13 +1359,6 @@ CREATE COMPONENT PRIVILEGE USE_ALTERNATE_SCHEMA AS 'UA' ON SQL_OPERATIONS
 >>-- user8 (fails)
 >>sh sh runmxci.ksh -i "TEST137(user8_cc)" -u sql_user8;
 >>
->>-- reset state
->>grant component privilege create_catalog on sql_operations to public;
-
---- SQL operation complete.
->>grant component privilege create_schema on sql_operations to public;
-
---- SQL operation complete.
 >>showddl component sql_operations;
 
 REGISTER COMPONENT SQL_OPERATIONS SYSTEM DETAIL 'Component for SQL operations';
@@ -1519,9 +1509,6 @@ CREATE COMPONENT PRIVILEGE CREATE_ROUTINE_ACTION AS 'CA' ON SQL_OPERATIONS
 
 CREATE COMPONENT PRIVILEGE CREATE_CATALOG AS 'CC' ON SQL_OPERATIONS SYSTEM
   DETAIL 'Allow grantee to create catalogs';
-
- GRANT COMPONENT PRIVILEGE CREATE_CATALOG
- ON SQL_OPERATIONS TO PUBLIC;
 
 --  GRANT COMPONENT PRIVILEGE CREATE_CATALOG
  ON SQL_OPERATIONS TO DB__ROOT
@@ -2028,16 +2015,10 @@ drop component privilege lib_view_benefactors cascade;
 >>drop role library_ckout_clerks;
 
 --- SQL operation complete.
->>initialize authorization,drop;
-
---- SQL operation complete.
 >>
 >>
 >>-- run tests for revoke.
 >>obey TEST137(revoke_comp_privs_setup);
->>initialize authorization;
-
---- SQL operation complete.
 >>cqd SHOWDDL_DISPLAY_PRIVILEGE_GRANTS 'ON';
 
 --- SQL operation complete.
