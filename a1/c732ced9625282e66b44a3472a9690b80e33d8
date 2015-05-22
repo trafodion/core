@@ -1,0 +1,10 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: Dave Birdsall <dave.birdsall@hp.com>
+Code-Review+2: Suresh Subbiah <suresh.subbiah@hp.com>
+Workflow+1: Suresh Subbiah <suresh.subbiah@hp.com>
+Workflow+1: Selvaganesan Govindarajan <selva.ganesan@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Fri, 22 May 2015 22:25:19 +0000
+Reviewed-on: https://review.trafodion.org/1691
+Project: trafodion/core
+Branch: refs/heads/master
