@@ -1341,6 +1341,7 @@ static void enableMakeQuotedStringISO88591Mechanism()
 %token <tokval> TOK_RANGE               /* Tandem extension non-reserved word*/
 %token <tokval> TOK_RANGE_N             /* TD extension that HP wants to ignore */
 %token <tokval> TOK_RANGELOG			/* MV */
+%token <tokval> TOK_REBUILD
 %token <tokval> TOK_REFERENCES
 %token <tokval> TOK_REGISTER            /* Tandem extension */
 %token <tokval> TOK_UNREGISTER          /* Tandem extension */
@@ -2788,7 +2789,7 @@ static void enableMakeQuotedStringISO88591Mechanism()
 %type <hBaseBulkLoadOption>      hbb_truncate_option
 %type <hBaseBulkLoadOption>      hbb_update_stats_option
 %type <hBaseBulkLoadOption>      hbb_no_duplicate_check
-%type <hBaseBulkLoadOption>      hbb_no_populate_indexes
+%type <hBaseBulkLoadOption>      hbb_rebuild_indexes
 %type <hBaseBulkLoadOption>      hbb_constraints
 %type <hBaseBulkLoadOption>      hbb_no_output
 %type <hBaseBulkLoadOption>      hbb_continue_on_error
@@ -17437,7 +17438,7 @@ hbbload_option :  hbb_no_recovery_option
                 | hbb_log_error_rows
                 | hbb_no_duplicate_check
                 | hbb_no_output
-                | hbb_no_populate_indexes
+                | hbb_rebuild_indexes
                 | hbb_constraints
                 | hbb_index_table_only
                 | hbb_upsert_using_load
@@ -17533,11 +17534,11 @@ hbb_no_output :  TOK_NO TOK_OUTPUT
                                            NULL);
                       $$ = op;
                     }                     
-hbb_no_populate_indexes   : TOK_NO TOK_POPULATE TOK_INDEXES
+hbb_rebuild_indexes   : TOK_REBUILD TOK_INDEXES
                     { //INDEXES
                       ExeUtilHBaseBulkLoad::HBaseBulkLoadOption*op = 
                               new (PARSERHEAP ()) ExeUtilHBaseBulkLoad::HBaseBulkLoadOption
-                                          (ExeUtilHBaseBulkLoad::NO_POPULATE_INDEXES_,
+                                          (ExeUtilHBaseBulkLoad::REBUILD_INDEXES_,
                                            0, 
                                            NULL);
                       $$ = op;
@@ -32634,6 +32635,7 @@ nonreserved_word :      TOK_ABORT
                       | TOK_RATE 
                       | TOK_REAL_IEEE
                       | TOK_REAL_TANDEM
+                      | TOK_REBUILD
                       | TOK_RECOMPUTE // MV 
                       | TOK_RECORD_SEPARATOR
                       | TOK_RECOVER

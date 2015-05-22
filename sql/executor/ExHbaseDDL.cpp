@@ -316,8 +316,10 @@ ExWorkProcRetcode ExHbaseAccessBulkLoadTaskTcb::work()
 {
   short retcode = 0;
   short rc = 0;
-
-  ExMasterStmtGlobals *g = getGlobals()->castToExExeStmtGlobals()->castToExMasterStmtGlobals();
+  Queue * indexList = NULL;
+  char * indexName ;
+  NABoolean cleanupAfterComplete;
+  Text tabName;
 
   // if no parent request, return
   if (qparent_.down->isEmpty())
@@ -338,18 +340,38 @@ ExWorkProcRetcode ExHbaseAccessBulkLoadTaskTcb::work()
           break;
         }
 
-        table_.val = hbaseAccessTdb().getTableName();
-        table_.len = strlen(hbaseAccessTdb().getTableName());
+        indexList = hbaseAccessTdb().listOfIndexes();
+        if (!indexList) {
+          if (setupError(-1, "listOfIndexes is empty"))
+            {
+              step_ = HANDLE_ERROR_AND_CLOSE;
+              break;
+            }
+        }
+          
+        indexList->position();
+        indexName = NULL;
+        cleanupAfterComplete = FALSE;
+        step_ = GET_NAME;
+      }
+      break;
 
+      case GET_NAME:
+      {
+        char * indexName = (char*)indexList->getNext();
+        table_.val = indexName;
+        table_.len = strlen(indexName);
         hBulkLoadPrepPath_ = std::string(((ExHbaseAccessTdb&) hbaseAccessTdb()).getLoadPrepLocation())
-            + ((ExHbaseAccessTdb&) hbaseAccessTdb()).getTableName();
+          + indexName ;
+        tabName = indexName;
 
-        if (((ExHbaseAccessTdb&) hbaseAccessTdb()).getIsTrafLoadCleanup())
+        if (((ExHbaseAccessTdb&) hbaseAccessTdb()).getIsTrafLoadCleanup() || cleanupAfterComplete )
           step_ = LOAD_CLEANUP;
         else
           step_ = COMPLETE_LOAD;
       }
-        break;
+      break;
+
       case LOAD_CLEANUP:
       {
         //cleanup
@@ -360,13 +382,15 @@ ExWorkProcRetcode ExHbaseAccessBulkLoadTaskTcb::work()
           step_ = HANDLE_ERROR_AND_CLOSE;
           break;
         }
-        step_ = LOAD_CLOSE;
+        if (!indexList->atEnd())
+          step_ = GET_NAME;
+        else
+          step_ = LOAD_CLOSE;
       }
         break;
 
       case COMPLETE_LOAD:
       {
-        Text tabName = ((ExHbaseAccessTdb&) hbaseAccessTdb()).getTableName();
         retcode = ehi_->doBulkLoad(table_,
                                    hBulkLoadPrepPath_,
                                    tabName,
@@ -381,11 +405,19 @@ ExWorkProcRetcode ExHbaseAccessBulkLoadTaskTcb::work()
 
         if (((ExHbaseAccessTdb&) hbaseAccessTdb()).getIsTrafLoadKeepHFiles())
         {
-          step_ = LOAD_CLOSE;
+          if (!indexList->atEnd())
+            step_ = GET_NAME;
+          else
+            step_ = LOAD_CLOSE;
           break;
         }
-
-        step_ = LOAD_CLEANUP;
+        if (!indexList->atEnd())
+          step_ = GET_NAME;
+        else {
+          indexList->position();
+          cleanupAfterComplete = TRUE;
+          step_ = GET_NAME;
+        }
       }
         break;
 

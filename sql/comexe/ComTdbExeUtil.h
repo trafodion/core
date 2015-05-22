@@ -3212,9 +3212,9 @@ public:
     {(v ? flags_ |= NO_DUPLICATES : flags_ &= ~NO_DUPLICATES); };
   NABoolean getNoDuplicates() { return (flags_ & NO_DUPLICATES) != 0; };
 
-  void setIndexes(NABoolean v)
-    {(v ? flags_ |= INDEXES : flags_ &= ~INDEXES); };
-  NABoolean getIndexes() { return (flags_ & INDEXES) != 0; };
+  void setRebuildIndexes(NABoolean v)
+    {(v ? flags_ |= REBUILD_INDEXES : flags_ &= ~REBUILD_INDEXES); };
+  NABoolean getRebuildIndexes() { return (flags_ & REBUILD_INDEXES) != 0; };
 
   void setConstraints(NABoolean v)
     {(v ? flags_ |= CONSTRAINTS : flags_ &= ~CONSTRAINTS); };
@@ -3259,7 +3259,7 @@ private:
     LOG_ERROR_ROWS   = 0x0020,
     SECURE           = 0x0040,
     NO_DUPLICATES    = 0x0080,
-    INDEXES          = 0x0100,
+    REBUILD_INDEXES  = 0x0100,
     CONSTRAINTS      = 0x0200,
     NO_OUTPUT        = 0x0400,
     INDEX_TABLE_ONLY = 0x0800,

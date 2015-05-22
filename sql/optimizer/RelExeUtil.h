@@ -2158,7 +2158,7 @@ public:
     LOG_ERROR_ROWS_,
     STOP_AFTER_N_ERROR_ROWS_,
     NO_DUPLICATE_CHECK_,
-    NO_POPULATE_INDEXES_,
+    REBUILD_INDEXES_,
     CONSTRAINTS_,
     NO_OUTPUT_,
     INDEX_TABLE_ONLY_,
@@ -2197,7 +2197,7 @@ public:
     continueOnError_(FALSE),
     logErrorRows_(FALSE),
     noDuplicates_(TRUE),
-    indexes_(TRUE),
+    rebuildIndexes_(FALSE),
     constraints_(FALSE),
     noOutput_(FALSE),
     indexTableOnly_(FALSE),
@@ -2285,14 +2285,14 @@ public:
    constraints_ = constraints;
   }
 
-  NABoolean getIndexes() const
+  NABoolean getRebuildIndexes() const
   {
-   return indexes_;
+   return rebuildIndexes_;
   }
 
-  void setIndexes(NABoolean indexes)
+  void setRebuildIndexes(NABoolean indexes)
   {
-   indexes_ = indexes;
+   rebuildIndexes_ = indexes;
   }
 
   NABoolean getNoOutput() const
@@ -2362,7 +2362,7 @@ private:
   NABoolean continueOnError_;
   NABoolean logErrorRows_;
   NABoolean noDuplicates_;
-  NABoolean indexes_;
+  NABoolean rebuildIndexes_;
   NABoolean constraints_;
   NABoolean noOutput_;
   //target table is index table
@@ -2403,6 +2403,8 @@ public:
   {
 
   };
+
+  virtual RelExpr * bindNode(BindWA *bindWA);
 
   virtual const NAString getText() const;
 

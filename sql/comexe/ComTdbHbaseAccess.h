@@ -557,6 +557,9 @@ public:
   Queue* listOfUpdatedColNames() { return listOfUpDeldColNames_; }
   Queue* listOfDeletedColNames() { return listOfUpDeldColNames_; }
   Queue* listOfMergedColNames() { return listOfMergedColNames_; }
+  Queue* listOfIndexes() { return listOfIndexes_; }
+
+  void setListOfIndexes(Queue* val) {listOfIndexes_ = val; }
 
   // overloading listOfUpdatedColNames and listOfMergedColNames...for now.
   Queue* listOfHbaseFilterColNames() { return listOfUpDeldColNames_; }
@@ -870,9 +873,9 @@ public:
   ExExprPtr keyColValExpr_;
   ExExprPtr hbaseFilterExpr_;
 
-  ExCriDescPtr workCriDesc_;                                 // 40 - 47
+  ExCriDescPtr workCriDesc_;      
 
-  NABasicPtr tableName_;                                     // 144 - 151
+  NABasicPtr tableName_;           
 
   QueuePtr colFamNameList_;
 
@@ -881,9 +884,10 @@ public:
   QueuePtr listOfFetchedColNames_;
   QueuePtr listOfUpDeldColNames_;
   QueuePtr listOfMergedColNames_;
+  QueuePtr listOfIndexes_; // used by bulk load
 
   // information about key ranges
-  keyRangeGenPtr keyInfo_;                                            // 08-15
+  keyRangeGenPtr keyInfo_;                             
 
   NABasicPtr keyColName_;
 
@@ -907,7 +911,8 @@ public:
   HbaseSnapshotScanAttributesPtr hbaseSnapshotScanAttributes_;
   UInt32 maxErrorRows_;
   UInt16 hbaseRowsetVsbbSize_; 
-  char fillers[10];
+
+  char fillers[6];
 };
 
 class ComTdbHbaseCoProcAccess : public ComTdbHbaseAccess

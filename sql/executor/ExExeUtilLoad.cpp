@@ -1251,7 +1251,7 @@ short ExExeUtilHBaseBulkLoadTcb::work()
       else
       {
         step_ = PREPARATION_;
-        if (hblTdb().getIndexes())
+        if (hblTdb().getRebuildIndexes())
           step_ = DISABLE_INDEXES_;
       }
     }
@@ -1262,14 +1262,19 @@ short ExExeUtilHBaseBulkLoadTcb::work()
       if (setStartStatusMsgAndMoveToUpQueue(" CLEANUP", &rc))
         return rc;
 
-      //Cleanup files
-      char * clnpQuery =
-          new(getMyHeap()) char[strlen("LOAD CLEANUP FOR TABLE  ; ") +
-                                strlen(hblTdb().getTableName()) +
-                                100];
-      strcpy(clnpQuery, "LOAD CLEANUP FOR TABLE  ");
-      strcat(clnpQuery, hblTdb().getTableName());
-      strcat(clnpQuery, ";");
+        //Cleanup files
+        char * clnpQuery =
+          new(getMyHeap()) char[strlen("LOAD CLEANUP FOR TABLE ; ") +
+                               strlen(hblTdb().getTableName()) +
+                               100];
+       
+        strcpy(clnpQuery, "LOAD CLEANUP FOR TABLE ");
+        if (hblTdb().getIndexTableOnly())
+          strcat(clnpQuery, "TABLE(INDEX_TABLE ");
+        strcat(clnpQuery, hblTdb().getTableName());
+        if (hblTdb().getIndexTableOnly())
+          strcat(clnpQuery, ")");
+        strcat(clnpQuery, ";");
 
       cliRC = cliInterface()->executeImmediate(clnpQuery, NULL,NULL,TRUE,NULL,TRUE);
 
@@ -1284,7 +1289,7 @@ short ExExeUtilHBaseBulkLoadTcb::work()
 
       step_ = PREPARATION_;
 
-      if (hblTdb().getIndexes())
+      if (hblTdb().getRebuildIndexes())
         step_ = DISABLE_INDEXES_;
 
       setEndStatusMsg(" CLEANUP");
@@ -1413,8 +1418,8 @@ short ExExeUtilHBaseBulkLoadTcb::work()
 
           step_ = LOAD_END_;
 
-        if (hblTdb().getIndexes())
-          step_ = POPULATE_INDEXES_;
+          if (hblTdb().getRebuildIndexes())
+            step_ = POPULATE_INDEXES_;
 
         sprintf(statusMsgBuf_,"       Rows Processed: %ld %c",rowsAffected_, '\n' );
         int len = strlen(statusMsgBuf_);
@@ -1455,11 +1460,15 @@ short ExExeUtilHBaseBulkLoadTcb::work()
       //complete load query
       char * clQuery =
           new(getMyHeap()) char[strlen("LOAD COMPLETE FOR TABLE  ; ") +
-                                strlen(hblTdb().getTableName()) +
-                                100];
-      strcpy(clQuery, "LOAD COMPLETE FOR TABLE  ");
-      strcat(clQuery, hblTdb().getTableName());
-      strcat(clQuery, ";");
+                               strlen(hblTdb().getTableName()) +
+                               100];
+        strcpy(clQuery, "LOAD COMPLETE FOR TABLE  ");
+        if (hblTdb().getIndexTableOnly())
+          strcat(clQuery, "TABLE(INDEX_TABLE ");
+        strcat(clQuery, hblTdb().getTableName());
+        if (hblTdb().getIndexTableOnly())
+          strcat(clQuery, ")");
+        strcat(clQuery, ";");
 
       cliRC = cliInterface()->executeImmediate(clQuery, NULL,NULL,TRUE,NULL,TRUE);
 
@@ -1469,7 +1478,6 @@ short ExExeUtilHBaseBulkLoadTcb::work()
       if (cliRC < 0)
       {
         rowsAffected_ = 0;
-
         cliInterface()->retrieveSQLDiagnostics(getDiagsArea());
         step_ = LOAD_END_ERROR_;
         break;
@@ -1481,12 +1489,12 @@ short ExExeUtilHBaseBulkLoadTcb::work()
         break;
       }
 
-      if (hblTdb().getIndexes())
+      if (hblTdb().getRebuildIndexes())
         step_ = POPULATE_INDEXES_;
-        else if (hblTdb().getUpdateStats())
-          step_ = UPDATE_STATS_;
-        else
-          step_ = LOAD_END_;
+      else if (hblTdb().getUpdateStats())
+        step_ = UPDATE_STATS_;
+      else
+        step_ = LOAD_END_;
 
       setEndStatusMsg(" COMPLETION", 0, TRUE);
     }

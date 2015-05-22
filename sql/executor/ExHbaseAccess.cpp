@@ -733,7 +733,7 @@ short ExHbaseAccessTcb::handleDone(ExWorkProcRetcode &rc, Int64 rowsAffected)
         castToExExeStmtGlobals()->castToExMasterStmtGlobals();
       if (g)
         {
-          g->setRowsAffected(g->getRowsAffected() + matches_);
+          g->setRowsAffected(g->getRowsAffected() + rowsAffected);
         }
       else
         {
