@@ -3329,7 +3329,8 @@ XDDkwd__(SUBQUERY_UNNESTING,			"ON"),
   //location for temporary links and files produced by snapshot scan
   DD_____(TRAF_TABLE_SNAPSHOT_SCAN_TMP_LOCATION,       "/bulkload/"),
 
-
+  // DTM Transaction Type: MVCC, SSCC
+  XDDkwd__(TRAF_TRANS_TYPE,                            "MVCC"),
 
   DDkwd__(TRAF_UNLOAD_BYPASS_LIBHDFS,                  "ON"),
   DD_____(TRAF_UNLOAD_DEF_DELIMITER,                   "|" ),
@@ -3843,6 +3844,11 @@ void NADefaults::initCurrentDefaultsWithDefaultDefaults()
   // set the default value of hbase_catalog to the hbase_system_catalog
   currentDefaults_[HBASE_CATALOG] = HBASE_SYSTEM_CATALOG;
   currentDefaults_[SEABASE_CATALOG] = TRAFODION_SYSCAT_LIT;
+
+  // Test for TM_USE_SSCC from ms.env
+  char * ev = getenv("TM_USE_SSCC");
+  if (!ev || ev[0] == '1')
+    currentDefaults_[TRAF_TRANS_TYPE] = "SSCC";
 
 // Begin: Temporary workaround for SQL build regressions to pass
   NABoolean resetNeoDefaults = FALSE;
@@ -4660,6 +4666,7 @@ void NADefaults::readFromSQLTables(Provenance overwriteIfNotYet, Int32 errOrWarn
             (overwriteIfNotYet, errOrWarn, this);
           
           // set authorization state
+
           NABoolean checkAllPrivTables = FALSE;
           errNum = cmpSBD.isPrivMgrMetadataInitialized(this,checkAllPrivTables);
           CmpCommon::context()->setAuthorizationState(errNum);
@@ -6205,6 +6212,7 @@ const char *NADefaults::keywords_[DF_lastToken] = {
   "MINIMUM",
   "MMAP",
   "MULTI_NODE",
+  "MVCC",
   "NONE",
   "NSK",
   "OFF",
@@ -6234,6 +6242,7 @@ const char *NADefaults::keywords_[DF_lastToken] = {
   "SOFTWARE",
   "SOURCE",
   "SQLMP",
+  "SSCC",
   "SSD",
   "STOP",
   "SUFFIX",
@@ -6841,6 +6850,11 @@ DefaultToken NADefaults::token(Int32 attrEnum,
       if (tok  == DF_NONE || tok == DF_SUFFIX || tok == DF_LATEST)
         isValid = TRUE;
     break;
+    case TRAF_TRANS_TYPE:
+      if (tok  == DF_MVCC || tok == DF_SSCC)
+        isValid = TRUE;
+    break;
+
     // Nothing needs to be added here for ON/OFF/SYSTEM keywords --
     // instead, add to DEFAULT_ALLOWS_SEPARATE_SYSTEM code in the ctor.
 

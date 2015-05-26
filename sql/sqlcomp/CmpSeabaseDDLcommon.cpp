@@ -2363,6 +2363,10 @@ short CmpSeabaseDDL::createHbaseTable(ExpHbaseInterface *ehi,
         }
     }
 
+  NABoolean isMVCC = true;
+  if (CmpCommon::getDefault(TRAF_TRANS_TYPE) == DF_SSCC)
+    isMVCC = false;
+
   if (hbaseCreateOptions || (numSplits > 0) )
     {
       if (hbaseCreateOptionsArray[HBASE_NAME].empty())
@@ -2374,11 +2378,12 @@ short CmpSeabaseDDL::createHbaseTable(ExpHbaseInterface *ehi,
       retcode = ehi->create(*table, hbaseCreateOptionsArray,
                             numSplits, keyLength,
                             (const char **)encodedKeysBuffer,
-                            noXn);
+                            noXn,
+                            isMVCC);
     }
   else
     {
-      retcode = ehi->create(*table, colFamList);
+      retcode = ehi->create(*table, colFamList, isMVCC);
     }
 
   if (retcode < 0)
