@@ -2370,15 +2370,20 @@ short CmpSeabaseDDL::createHbaseTable(ExpHbaseInterface *ehi,
 
       NABoolean noXn =
                 (CmpCommon::getDefault(DDL_TRANSACTIONS) == DF_OFF) ?  true : false;
+
+  NABoolean isMVCC = true;
+  if (CmpCommon::getDefault(TRAF_TRANS_TYPE) == DF_SSCC)
+    isMVCC = false;
                 
       retcode = ehi->create(*table, hbaseCreateOptionsArray,
                             numSplits, keyLength,
                             (const char **)encodedKeysBuffer,
-                            noXn);
+                            noXn,
+                            isMVCC);
     }
   else
     {
-      retcode = ehi->create(*table, colFamList);
+      retcode = ehi->create(*table, colFamList, isMVCC);
     }
 
   if (retcode < 0)
