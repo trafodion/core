@@ -1,6 +1,6 @@
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 2006-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 2006-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -1001,6 +1001,9 @@ void TM_TX_Info::process_eventQ()
 /*	 if (! lp_msg->replyPending()) {
 	   delete lp_msg;
 	 } */
+         break;
+      case TM_MSG_TYPE_DDLREQUEST:
+         lv_exit = req_ddloperation(lp_msg);
          break;
       case TM_MSG_TYPE_JOINTRANSACTION:
          // These aren't queued, so we should never hit this
