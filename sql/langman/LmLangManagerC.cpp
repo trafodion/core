@@ -254,9 +254,9 @@ LmResult LmLanguageManagerC::getRoutine(
 
 LmResult LmLanguageManagerC::getObjRoutine(
      const char            *serializedInvocationInfo,
-     int                    invocationInfoLen,
+     int                    serializedInvocationInfoLen,
      const char            *serializedPlanInfo,
-     int                    planInfoLen,
+     int                    serializedPlanInfoLen,
      ComRoutineLanguage     language,
      ComRoutineParamStyle   paramStyle,
      const char            *externalName,
@@ -298,19 +298,19 @@ LmResult LmLanguageManagerC::getObjRoutine(
 
   try
     {
-      if (invocationInfoLen > 0)
+      if (serializedInvocationInfoLen > 0)
         {
           // unpack invocation and plan infos
           invocationInfo = new tmudr::UDRInvocationInfo;
           invocationInfo->deserializeObj(serializedInvocationInfo,
-                                         invocationInfoLen);
+                                         serializedInvocationInfoLen);
         }
 
-      if (planInfoLen > 0)
+      if (serializedPlanInfoLen > 0)
         {
           planInfo = new tmudr::UDRPlanInfo(invocationInfo, 0);
           planInfo->deserializeObj(serializedPlanInfo,
-                                   planInfoLen);
+                                   serializedPlanInfoLen);
         }
 
       tmudr::CreateInterfaceObjectFunc fPtr =
@@ -416,13 +416,22 @@ LmResult LmLanguageManagerC::putRoutine(
       routineC->setFinalCall();
       result = routineC->invokeRoutine(NULL, NULL, diagsArea);
     }
+  else if (routine->getLanguage() == COM_LANGUAGE_CPP)
+    {
+      LmRoutineCppObj *routineCpp = (LmRoutineCppObj *) routine;
+
+      // C++ routines deallocate the interface objects, which will
+      // call user code, and therefore could raise an exception.
+      // Call the dealloc method before calling the destructor,
+      // so that we can handle any errors or exceptions.
+      routineCpp->dealloc(diagsArea);
+    }
+
+  delete routine;
 
   // De-ref the container.
   if (routine->container())
     contManager_->putContainer(routine->container());
-  
-  // De-allocate the handle.
-  delete routine;
 
   return result;
 }

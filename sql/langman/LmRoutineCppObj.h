@@ -115,6 +115,7 @@ protected:
     ComDiagsArea *diagsArea);
 
   virtual ~LmRoutineCppObj();
+  void dealloc(ComDiagsArea *diagsArea);
 
  private:
 
