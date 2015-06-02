@@ -22,10 +22,24 @@
 #ifndef _CORECOMMON_DEFINED
 #define _CORECOMMON_DEFINED
 
+// T2_REPO
+//typedef long int64;
+//typedef char BOOL;
+
+extern "C" {
+   void TIME( short * a );
+}
+//
+
 #include <set>
 #include <string>
 #include <cstring>
 #include "tip.h"
+
+// +++ T2_REPO
+#include <PubQueryStats.h>
+#include <platform_ndcs.h>
+//
 
 #define MAX_STMT_LABEL_LEN		512
 #define MAX_CURSOR_NAME_LEN		512
@@ -39,7 +53,66 @@
 #define MAX_MODULE_NAME_LEN		368 //(128+128+128+2)
 
 
+// +++ T2_REPO
+#define MAX_COMPUTERNAME_LENGTH 	15
+#define MAX_USERNAME_LEN			128
+#define MAX_SQL_IDENTIFIER_LEN  	512
+#define MAX_APPLICATIONID_LENGTH 	128
+#define MAX_DSOURCE_NAME			512
+#define	MAX_IP_ADDRESS_LEN			128
+#define MAX_ROLE_LEN				128
+#define MAX_COMPUTER_NAME_LEN		16*4 //limited in ODBC driver
+#define MAX_APPLICATION_NAME_LEN	128*4 //limited in ODBC driver
 
+#define MAX_QUERY_NAME_LEN			160
+#define MAX_QUERY_ID_LEN			160
+#define RMS_STORE_SQL_SOURCE_LEN	254
+#define MAX_TXN_STR_LEN				64
+#define SUB_QRY_TYPE_LEN 			36
+#define PAR_SYS_NAME_LEN			128
+#define MAX_RULE_NAME_LEN			24*4
+
+#ifndef MAX_SESSION_ID_LEN			// This should be available in sqlcli.h
+  #define MAX_SESSION_ID_LEN	104 // 103 + null terminator.
+#endif
+
+#define SESSION_ID_LEN			MAX_SESSION_ID_LEN
+#define STATISTICS_INTERVAL			60
+#define STATISTICS_LIMIT			60
+
+// statement statistics values ranges from 0x00000256 thru 0x00032768
+#define STMTSTAT_NONE				0	// during construct and destruct time
+#define STMTSTAT_SQL				256
+#define STMTSTAT_PREPARE			512
+#define STMTSTAT_EXECUTE			1024
+#define STMTSTAT_EXECDIRECT			2048
+#define STMTSTAT_FETCH				4096
+#define STMTSTAT_CLOSE				8192
+
+//-------------------------- NDCS SUBSTATE ---------------------------
+typedef enum _NDCS_SUBSTATE
+{
+	NDCS_INIT = 0,
+	NDCS_DLG_INIT,
+	NDCS_CONN_IDLE,
+	NDCS_DLG_TERM,
+	NDCS_DLG_BREAK,
+	NDCS_STOP_SRVR,
+	NDCS_RMS_ERROR,
+	NDCS_REPOS_IDLE,
+	NDCS_REPOS_INTERVAL,
+	NDCS_REPOS_PARTIAL,
+	NDCS_EXEC_INTERVAL,
+	NDCS_CONN_RULE_CHANGED,
+	NDCS_CLOSE,
+	NDCS_PREPARE,
+	NDCS_WMS_ERROR,
+	NDCS_QUERY_CANCELED,
+	NDCS_QUERY_REJECTED,
+//
+} NDCS_SUBSTATE;
+
+// T2_REPO
 
 #define EXTERNAL_STMT			0
 #define INTERNAL_STMT			1
@@ -166,6 +239,16 @@ typedef enum SRVR_STATE
 
 typedef struct _SRVR_GLOBAL_Def
 {
+	// +++ T2_REPO TODO - Temporarily assignment...needs to come from properties
+	_SRVR_GLOBAL_Def()
+	{
+		m_bStatisticsEnabled = true;
+		m_statisticsPubType = STATISTICS_AGGREGATED;
+		m_iAggrInterval = STATISTICS_INTERVAL;
+		m_iQueryPubThreshold = STATISTICS_LIMIT;
+		resourceStatistics = 0;
+	}
+
 	long				dialogueId;
 	char				userSID[MAX_TEXT_SID_LEN+1];// This points to the SID in which the server is running
 	// If this is same as the incoming SID do not flush the
@@ -191,6 +274,27 @@ typedef struct _SRVR_GLOBAL_Def
 	short				nowaitFilenum;
 	char				SystemCatalog[129]; // MX system catalog name
 	short 				boolFlgforInitialization; // Flag intorduced for Connect/disconnect imp.
+
+// +++ T2_REPO	
+	long			resourceStatistics;
+	bool 			m_bStatisticsEnabled;
+	statistics_type m_statisticsPubType;
+	int				m_iAggrInterval;
+	int				m_iQueryPubThreshold;
+	
+	// +++ T2_REPO	TODO - These need to be initialized
+	int		isoMapping;
+	long	process_id;
+	char	m_ProcName[MS_MON_MAX_PROCESS_NAME];	
+    int     receiveThrId;
+	int		m_NodeId;
+	char	IpAddress[MAX_IP_ADDRESS_LEN];
+	char	sessionId[SESSION_ID_LEN];
+	long	userID;
+	char	QSRoleName[MAX_ROLE_LEN + 1];
+	char	ClientComputerName[MAX_COMPUTER_NAME_LEN + 1];
+	char	ApplicationName[MAX_APPLICATION_NAME_LEN + 1];
+//
 } SRVR_GLOBAL_Def ;
 
 // These defines should be same as what is in DrvrSrvr.h of ODBC

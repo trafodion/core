@@ -281,4 +281,8 @@ extern short beginTransaction (long *transTag);
 extern short resumeTransaction (long transTag);
 extern short endTransaction (void);
 
+// +++ T2_REPO
+void getCurrentTime(char* timestamp);
+//
+
 #endif

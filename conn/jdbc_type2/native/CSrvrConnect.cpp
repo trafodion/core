@@ -44,6 +44,23 @@
 #include <ext/hash_map>
 using namespace std;
 
+// +++ T2_REPO
+#include <tr1/memory>
+#include <pthread.h>
+#include <PubQueryStats.h>
+
+typedef struct _REPOS_STATS
+{
+	std::tr1::shared_ptr<SESSION_END> m_pSessionStats;
+	std::tr1::shared_ptr<STATEMENT_QUERYEXECUTION> m_pQuery_stats;
+	std::tr1::shared_ptr<SESSION_AGGREGATION> m_pAggr_stats;
+	pub_struct_type m_pub_type;
+}REPOS_STATS, *pREPOS_STATS;
+
+extern void sendSessionEnd(std::tr1::shared_ptr<SESSION_END> pSession_info);
+extern void sendQueryStats(pub_struct_type pub_type, std::tr1::shared_ptr<STATEMENT_QUERYEXECUTION> pQuery_info);
+//
+
 SRVR_CONNECT_HDL::SRVR_CONNECT_HDL()
 {
 	FUNCTION_ENTRY("SRVR_CONNECT_HDL::SRVR_CONNECT_HDL",(NULL));
@@ -507,3 +524,39 @@ void SRVR_CONNECT_HDL::removeFromLoadedModuleSet(std::string strModuleName)
 		this->setOfLoadedModules.erase(strModuleName);
 	}
 }
+
+// +++ T2_REPO
+void sendSessionEnd(std::tr1::shared_ptr<SESSION_END> pSession_info)
+{
+	REPOS_STATS session_stats;
+	session_stats.m_pSessionStats = pSession_info;
+	session_stats.m_pub_type = PUB_TYPE_SESSION_END;
+	
+/* +++ T2_REPO ToDo
+	if (record_session_done)
+	{
+		//boost::thread thrd(&SessionWatchDog);
+		pthread_t thrd;
+		pthread_create(&thrd, NULL, SessionWatchDog, NULL);
+	}
+	repos_queue.push_task(session_stats);
+*/
+}
+
+void sendAggrStats(pub_struct_type pub_type, std::tr1::shared_ptr<SESSION_AGGREGATION> pAggr_info)
+{
+	REPOS_STATS aggr_stats;
+	aggr_stats.m_pAggr_stats = pAggr_info;
+	aggr_stats.m_pub_type = pub_type;
+	
+/* +++ T2_REPO ToDo
+	if (record_session_done)
+	{
+		//boost::thread thrd(&SessionWatchDog);
+		pthread_t thrd;
+		pthread_create(&thrd, NULL, SessionWatchDog, NULL);
+	}
+	repos_queue.push_task(aggr_stats);
+*/
+}
+// T2_REPO

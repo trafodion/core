@@ -122,6 +122,32 @@ public:
 	long					batchMaxRowsetSize;
 	long					inputDescParamOffset;
 	struct SQLCLI_QUAD_FIELDS *batchQuadField;
+
+	// +++ T2_REPO	
+	char					sqlUniqueQueryID[MAX_QUERY_NAME_LEN + 1];
+	SQL_QUERY_COST_INFO		cost_info;
+	SQL_QUERY_COMPILER_STATS_INFO comp_stats_info;
+	unsigned short	m_state;		//state + substate
+	int64			m_wait_time;	//in seconds
+	int64			m_hold_time;	//in seconds
+	int64			m_suspended_time;//in seconds
+	int64			m_exec_time;	//in seconds
+	int64			m_WMSstart_ts;	//timestamp
+	unsigned short	m_warnLevel;
+	int64			queryStartTime;
+	int64			queryEndTime;
+	int64			queryStartCpuTime;
+	int64			queryEndCpuTime;
+	Int32			sqlNewQueryType;
+	// Connection, Compilation, Execution rules
+	//
+	//
+	// rules - size is MAX_RULE_NAME_LEN + ':' + '99' or 'ALL' + '\0'
+	//
+	char m_con_rule_name[MAX_RULE_NAME_LEN + 1 + 3 + 1];
+	char m_cmp_rule_name[MAX_RULE_NAME_LEN + 1 + 3 + 1];
+	char m_exe_rule_name[MAX_RULE_NAME_LEN + 1 + 3 + 1];
+	// T2_REPO
 	
 #ifdef NSK_PLATFORM	
 	_TSLX_cond_t			cond; //changed by venu for TSLX
