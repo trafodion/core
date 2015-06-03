@@ -1,7 +1,7 @@
 #######################################################################
 # @@@ START COPYRIGHT @@@
 #
-# (C) Copyright 1995-2014 Hewlett-Packard Development Company, L.P.
+# (C) Copyright 1995-2015 Hewlett-Packard Development Company, L.P.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -176,6 +176,4 @@ DEFS += -D__EID
 CPPSRC += ComRowHidingPred.cpp ieeemath.cpp vers_libexeindp2.cpp
 DEFS += -D_IEEE_FLOAT -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
 
-LDFLAGS := -lsbms -lsbfs
-
-SRCPATH := exeindp2 comexe export common exp executor nskcre 
+SRCPATH := comexe export common exp executor
