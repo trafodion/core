@@ -871,7 +871,8 @@ public class HBaseTxClient {
       * Thread to gather recovery information for regions that need to be recovered
       */
      private static class RecoveryThread extends Thread{
-             final int SLEEP_DELAY = 10000; // Initially set to run every 10sec
+             final int SLEEP_DELAY = 1000; // Initially set to run every 1sec
+             private int sleepTimeInt = 0;
              private TmAuditTlog audit;
              private HBaseTmZK zookeeper;
              private TransactionManager txnManager;
@@ -913,6 +914,13 @@ public class HBaseTxClient {
                           this.txnManager = txnManager;
                           this.inDoubtList = new HashSet<Long> ();
                           this.tmID = zookeeper.getTMID();
+
+                          String sleepTime = System.getenv("TMRECOV_SLEEP");
+                          if (sleepTime != null) {
+                                this.sleepTimeInt = Integer.parseInt(sleepTime);
+                                if(LOG.isDebugEnabled()) LOG.debug("Recovery thread sleep set to: " +
+                                                                   this.sleepTimeInt + "ms");
+                          }
              }
 
              public void stopThread() {
@@ -958,10 +966,6 @@ public class HBaseTxClient {
 
             @Override
              public void run() {
-                int sleepTimeInt = 0;
-                String sleepTime = System.getenv("TMRECOV_SLEEP");
-                if (sleepTime != null)
-                    sleepTimeInt = Integer.parseInt(sleepTime);
 
                 while (this.continueThread) {
                     try {
