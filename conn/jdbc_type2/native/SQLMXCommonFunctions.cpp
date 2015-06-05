@@ -826,7 +826,7 @@ static Charset_def CHARSET_INFORMATION[] = {
 			desc,
 			offset));
 		unsigned long		index;
-		SQLItemDesc_def		*SQLDesc;
+		SQLItemDesc_def     *SQLDesc;
 		jstring				colName;
 		jstring				colLabel;
 		jstring				catalogName;
@@ -846,19 +846,19 @@ static Charset_def CHARSET_INFORMATION[] = {
 			SQLDesc = (SQLItemDesc_def *)desc->_buffer + index;
 			DEBUG_OUT(DEBUG_LEVEL_DATA,("Adding descriptor.  Column Name='%s' Column Heading='%s'",
 				DebugString(SQLDesc->colNm), DebugString(SQLDesc->colLabel)));
-			colName = jenv->NewStringUTF(SQLDesc->colNm);
-			catalogName = jenv->NewStringUTF(SQLDesc->catalogNm);
-			schemaName = jenv->NewStringUTF(SQLDesc->schemaNm);
-			tableName = jenv->NewStringUTF(SQLDesc->tableNm);
-			colLabel = jenv->NewStringUTF(SQLDesc->colLabel);
-			SQLMXDesc = jenv->NewObject(gJNICache.SQLMXDescClass, gJNICache.SQLMXDescConstructorId,
-				SQLDesc->dataType, SQLDesc->datetimeCode, SQLDesc->maxLen,
-				SQLDesc->precision, SQLDesc->scale, SQLDesc->nullInfo, colName, SQLDesc->signType,
-				SQLDesc->ODBCDataType, SQLDesc->ODBCPrecision, SQLDesc->SQLCharset,
-				SQLDesc->ODBCCharset, catalogName, schemaName, tableName, SQLDesc->fsDataType,
-				SQLDesc->intLeadPrec,
-				SQLDesc->paramMode,
-				colLabel);
+            colName = jenv->NewStringUTF(SQLDesc->ColumnName);
+            catalogName = jenv->NewStringUTF(SQLDesc->CatalogName);
+            schemaName = jenv->NewStringUTF(SQLDesc->SchemaName);
+            tableName = jenv->NewStringUTF(SQLDesc->TableName);
+            colLabel = jenv->NewStringUTF(SQLDesc->ColumnLabel);
+            SQLMXDesc = jenv->NewObject(gJNICache.SQLMXDescClass, gJNICache.SQLMXDescConstructorId,
+                    SQLDesc->dataType, SQLDesc->datetimeCode, SQLDesc->maxLen,
+                    SQLDesc->precision, SQLDesc->scale, SQLDesc->nullInfo, colName, SQLDesc->signType,
+                    SQLDesc->ODBCDataType, SQLDesc->ODBCPrecision, SQLDesc->SQLCharset,
+                    SQLDesc->ODBCCharset, catalogName, schemaName, tableName, SQLDesc->fsDataType,
+                    SQLDesc->intLeadPrec,
+                    SQLDesc->paramMode,
+                    colLabel);
 			JNI_SetObjectArrayElement(jenv,SQLMXDescArray, index-offset, SQLMXDesc);
 		}
 		FUNCTION_RETURN_PTR(SQLMXDescArray,("desc->_length = %ld",desc->_length));
@@ -2169,7 +2169,6 @@ func_exit:
 			txnMode,
 			catalogAPI));
 
-
 		ExceptionStruct					exception_;
 		SQLItemDescList_def				outputDesc;
 		ERROR_DESC_LIST_def				sqlWarning;
@@ -2910,6 +2909,10 @@ func_exit:
 			"(ISISSZLjava/lang/String;ZISIILjava/lang/String;Ljava/lang/String;Ljava/lang/String;IIILjava/lang/String;)V");
 		if (gJNICache.SQLMXDescConstructorId == NULL)
 			FUNCTION_RETURN_NUMERIC(FALSE,("FALSE - gJNICache.SQLMXDescConstructorId == NULL"));
+		gJNICache.SQLMXDescConstructorId2 = JNI_GetMethodID(jenv,SQLMXDescClass, "<init>",
+			"(IIIISISSZZIIIILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIII)V");
+		if (gJNICache.SQLMXDescConstructorId2 == NULL)
+			FUNCTION_RETURN_NUMERIC(FALSE,("FALSE - gJNICache.SQLMXDescConstructorId2 == NULL"));
 
 		// SQLMXPreparedStatement
 		jclass  SQLMXPreparedStatementClass = JNI_FindClass(jenv,"org/trafodion/jdbc/t2/SQLMXPreparedStatement");
@@ -2919,6 +2922,10 @@ func_exit:
 			"([Lorg/trafodion/jdbc/t2/SQLMXDesc;[Lorg/trafodion/jdbc/t2/SQLMXDesc;IIIJ)V");
 		if (gJNICache.prepareOutputsMethodId == NULL)
 			FUNCTION_RETURN_NUMERIC(FALSE,("FALSE - gJNICache.prepareOutputsMethodId == NULL"));
+		gJNICache.prepareOutputsMethodId2 = JNI_GetMethodID(jenv,SQLMXPreparedStatementClass, "setPrepareOutputs2",
+			"([Lorg/trafodion/jdbc/t2/SQLMXDesc;[Lorg/trafodion/jdbc/t2/SQLMXDesc;IIIIIIJ)V");
+		if (gJNICache.prepareOutputsMethodId2 == NULL)
+			FUNCTION_RETURN_NUMERIC(FALSE,("FALSE - gJNICache.prepareOutputsMethodId2 == NULL"));
 		gJNICache.executeOutputsMethodId = JNI_GetMethodID(jenv,SQLMXPreparedStatementClass, "setExecuteOutputs",
 			"([II[Lorg/trafodion/jdbc/t2/DataWrapper;II)V");
 		if (gJNICache.executeOutputsMethodId == NULL)

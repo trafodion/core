@@ -42,6 +42,7 @@ char *gJNILayerErrorMsgs[] =
 	"Data type not supported",
 	"Exceeded JVM allocated memory",
 	"Restricted data type  ",
+	"Invalid data buffer",
     NULL
 };
 
