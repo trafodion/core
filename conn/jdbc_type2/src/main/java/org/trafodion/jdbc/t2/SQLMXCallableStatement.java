@@ -1,6 +1,6 @@
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 2004-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 2004-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -1677,6 +1677,27 @@ public class SQLMXCallableStatement extends SQLMXPreparedStatement implements
 				debug[methodId_setExecuteCallOutputs].methodExit();
 		}
 	}
+
+	/*
+	void setExecuteCallOutputs(Object[] outputValues, short rowsAffected) throws SQLException {
+		if (connection_.props_.t4Logger_.isLoggable(Level.FINER) == true) {
+			Object p[] = T4LoggingUtilities.makeParams(connection_.props_, outputValues, rowsAffected);
+			connection_.props_.t4Logger_.logp(Level.FINER, "TrafT4CallableStatement", "setExecuteCallOutputs", "", p);
+		}
+		if (outputValues != null) {
+			for (int i = 0; i < outputValues.length; i++) {
+				if (outputValues[i] == null) {
+					inputDesc_[i].paramValue_ = null;
+				} else if (outputValues[i] instanceof byte[]) {
+					inputDesc_[i].paramValue_ = outputValues[i];
+				} else {
+					inputDesc_[i].paramValue_ = outputValues[i].toString();
+				}
+			}
+		}
+		returnResultSet_ = rowsAffected;
+	}
+	*/
 
 	// Constructors with access specifier as "default"
 	SQLMXCallableStatement(SQLMXConnection connection, String sql)

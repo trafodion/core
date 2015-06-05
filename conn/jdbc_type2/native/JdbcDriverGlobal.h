@@ -45,6 +45,7 @@ typedef enum JNILAYER_ERROR_CODES
 	DATATYPE_NOT_SUPPPORTED_ERROR,			// 29266
 	JVM_MEM_ALLOC_ERROR,				// 29267
 	RESTRICTED_DATATYPE_ERROR,              // 29268
+	INVALID_DATA_BUFFER_ERROR,               // 29269
     CUSTOM_ERROR = -1						// Error defined by caller
 } JNILAYER_ERROR_CODES;
 
@@ -64,7 +65,9 @@ typedef struct JNICache_def
 	jmethodID		setNextWarningMethodId;
 	jmethodID		sqlWarningMethodId;
 	jmethodID		SQLMXDescConstructorId;
+	jmethodID		SQLMXDescConstructorId2;
 	jmethodID		prepareOutputsMethodId;
+	jmethodID		prepareOutputsMethodId2;
 	jmethodID		execDirectOutputsMethodId;
 	jmethodID		execRSOutputsMethodId;
 	jmethodID		execDirectBatchOutputsMethodId;
@@ -132,8 +135,8 @@ typedef struct JNICache_def
 	Charset_def		*charsetInfo;
 	int				totalCharsets;
 	jint			defaultCharset;
-
-	~JNICache_def()
+	
+    ~JNICache_def()
 	{
 	    MEMORY_DELETE_ARRAY(charsetInfo);
 	}
@@ -147,6 +150,6 @@ extern const char *defaultEncodingOption;
 #ifdef NSK_PLATFORM
 //typedef long long Int64;
 #else
-typedef __int64 Int64;
+typedef long long Int64;
 #endif
 #endif /* JDBCDRIVERGLOBAL_H */
