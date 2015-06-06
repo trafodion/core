@@ -1,0 +1,9 @@
+Verified+2: Trafodion Jenkins
+Code-Review+2: John de Roo <john.deroo@hp.com>
+Workflow+1: John de Roo <john.deroo@hp.com>
+Code-Review+1: Dave Birdsall <dave.birdsall@hp.com>
+Submitted-by: Trafodion Jenkins
+Submitted-at: Sat, 06 Jun 2015 01:30:45 +0000
+Reviewed-on: https://review.trafodion.org/1712
+Project: trafodion/core
+Branch: refs/heads/master
