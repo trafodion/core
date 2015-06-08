@@ -1,6 +1,6 @@
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 2004-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 2004-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 // @@@ END COPYRIGHT @@@
 
 /*
-* Filename    : Row.java
-* Description :
-*
-*/
+ * Filename    : Row.java
+ * Description :
+ *
+ */
 
 package org.trafodion.jdbc.t2;
 
@@ -110,7 +110,7 @@ class Row extends BaseRow
                 currentVals[i] = null;
                 colsChanged.clear(i);
             }
-	}
+    }
 
     private void setColUpdated(int i) {
         colsChanged.set(i);
@@ -121,9 +121,9 @@ class Row extends BaseRow
         setColUpdated(i - 1);
     }
 
-	protected void setLobObject(int i, Object obj) {
+    protected void setLobObject(int i, Object obj) {
         currentVals[i - 1] = obj;
-		origVals[i-1] = obj;
+        origVals[i-1] = obj;
     }
 
 
@@ -138,29 +138,29 @@ class Row extends BaseRow
     protected void setUpdated() {
         updated = true;
     }
-	
-	protected void deleteRow(Locale locale, PreparedStatement deleteStmt, BitSet paramCols) throws SQLException
-	{
-		int i;
-		int j;
-		int count;
 
-		for (i = 0, j = 1; i < numCols ; i++)
-		{
-			if (paramCols.get(i))
-				deleteStmt.setObject(j++, origVals[i]);
-		}
-		count =	deleteStmt.executeUpdate();
-		if (count == 0)
-			throw SQLMXMessages.createSQLException(locale, "row_modified", null);
-	}
+    protected void deleteRow(Locale locale, PreparedStatement deleteStmt, BitSet paramCols) throws SQLException
+    {
+        int i;
+        int j;
+        int count;
 
-	protected void updateRow(Locale locale, PreparedStatement updateStmt, BitSet paramCols, BitSet keyCols) throws SQLException
-	{
-		int i;
-		int j;
-		int count;
-		Object obj;
+        for (i = 0, j = 1; i < numCols ; i++)
+        {
+            if (paramCols.get(i))
+                deleteStmt.setObject(j++, origVals[i]);
+        }
+        count =	deleteStmt.executeUpdate();
+        if (count == 0)
+            throw SQLMXMessages.createSQLException(locale, "row_modified", null);
+    }
+
+    protected void updateRow(Locale locale, PreparedStatement updateStmt, BitSet paramCols, BitSet keyCols) throws SQLException
+    {
+        int i;
+        int j;
+        int count;
+        Object obj;
         int numPKey=0;        
         int loc=0;           
         int pKeyCounter=1;    
@@ -170,103 +170,88 @@ class Row extends BaseRow
             if(keyCols.get(i))           
                 numPKey++;               
         }                               
-        
+
         loc = numCols - numPKey;         
 
-		for (i = 0, j = 1; i < numCols ; i++)
-		{
-			if (keyCols.get(i))
-			{
-				if (getColUpdated(i))
-					throw SQLMXMessages.createSQLException(locale, "primary_key_not_updateable", null);
+        for (i = 0, j = 1; i < numCols ; i++)
+        {
+            if (keyCols.get(i))
+            {
+                if (getColUpdated(i))
+                    throw SQLMXMessages.createSQLException(locale, "primary_key_not_updateable", null);
                 updateStmt.setObject((loc+pKeyCounter),getColumnObject(i+1)); 
                 pKeyCounter++;  
-			}
-			else
-			{
-				{
-					obj = getColumnObject((i+1));
-					if (obj instanceof SQLMXLob)
-					{
-						if (obj == origVals[i])	// New and old Lob objects are same
-						{
-							updateStmt.setObject(j++, new DataWrapper((int) ((SQLMXLob)obj).dataLocator_));
-							continue;
-						}
-					}
-					updateStmt.setObject(j++, obj);
-				}
-			}
-		}
-		
+            }
+            else
+            {
+                {
+                    obj = getColumnObject((i+1));
+                    if (obj instanceof SQLMXLob)
+                    {
+                        if (obj == origVals[i])	// New and old Lob objects are same
+                        {
+                            updateStmt.setObject(j++, new DataWrapper((int) ((SQLMXLob)obj).dataLocator_));
+                            continue;
+                        }
+                    }
+                    updateStmt.setObject(j++, obj);
+                }
+            }
+        }
 
-        /* 
-		for (i = 0 ;  i < numCols ; i++)
-		{
-			if (paramCols.get(i))
-			{
-				obj = origVals[i];
-				if (obj instanceof SQLMXLob)
-				{
-					updateStmt.setObject(j++, new DataWrapper(((SQLMXLob)obj).dataLocator_));
-					continue;
-				}
-				updateStmt.setObject(j++, origVals[i]);
-			}
-        } */
-		count = updateStmt.executeUpdate();
-		if (count == 0)
-			throw SQLMXMessages.createSQLException(locale, "row_modified", null);
-		moveCurrentToOrig();
-		setUpdated();
-	}
-	
-	protected void refreshRow(Locale locale, PreparedStatement selectStmt, BitSet selectCols, BitSet keyCols) throws SQLException
-	{
-		int i;
-		int j;
-		ResultSet rs;
-		ResultSetMetaData rsmd;
-		int columnCount;
-		
-		clearUpdated();	
-	
-		for (i = 0, j = 1; i < numCols ; i++)
-		{
-			if (keyCols.get(i))
-				selectStmt.setObject(j++, origVals[i]);
-		}
-		rs = selectStmt.executeQuery();
-		if (rs != null)
-		{
-			try {
-				rsmd = rs.getMetaData();
+        count = updateStmt.executeUpdate();
+        if (count == 0)
+            throw SQLMXMessages.createSQLException(locale, "row_modified", null);
+        moveCurrentToOrig();
+        setUpdated();
+    }
 
-				columnCount = rsmd.getColumnCount();
-				for (i = 0, j = 1 ; i < numCols ; i++)
-				{
-					if (selectCols.get(i))
-						origVals[i] = rs.getObject(j++);
-				}
-			} finally {
-				rs.close();
-			}
-		}
-	}
+    protected void refreshRow(Locale locale, PreparedStatement selectStmt, BitSet selectCols, BitSet keyCols) throws SQLException
+    {
+        int i;
+        int j;
+        ResultSet rs;
+        ResultSetMetaData rsmd;
+        int columnCount;
 
-	protected void closeLobObjects() 
-	{
-		int i;
-		SQLMXLob lob;
+        clearUpdated();	
 
-		for (i = 0; i < numCols ; i++)
-		{
-			if (currentVals[i] instanceof SQLMXLob)
-			{
-				lob = (SQLMXLob)currentVals[i];
-				lob.close();
-			}
-				
-		}
-	}
+        for (i = 0, j = 1; i < numCols ; i++)
+        {
+            if (keyCols.get(i))
+                selectStmt.setObject(j++, origVals[i]);
+        }
+        rs = selectStmt.executeQuery();
+        if (rs != null)
+        {
+            try {
+                rsmd = rs.getMetaData();
+
+                columnCount = rsmd.getColumnCount();
+                for (i = 0, j = 1 ; i < numCols ; i++)
+                {
+                    if (selectCols.get(i))
+                        origVals[i] = rs.getObject(j++);
+                }
+            } finally {
+                rs.close();
+            }
+        }
+    }
+
+    protected void closeLobObjects() 
+    {
+        int i;
+        SQLMXLob lob;
+
+        for (i = 0; i < numCols ; i++)
+        {
+            if (currentVals[i] instanceof SQLMXLob)
+            {
+                lob = (SQLMXLob)currentVals[i];
+                lob.close();
+            }
+
+        }
+    }
 }

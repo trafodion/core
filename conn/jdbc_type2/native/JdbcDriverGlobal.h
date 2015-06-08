@@ -42,9 +42,10 @@ typedef enum JNILAYER_ERROR_CODES
     INVALID_STMT_LABEL_ERROR,               // 29263
     INVALID_MODULE_NAME_ERROR,              // 29264
     UNSUPPORTED_ENCODING_ERROR,             // 29265
-	DATATYPE_NOT_SUPPPORTED_ERROR,			// 29266
-	JVM_MEM_ALLOC_ERROR,				// 29267
-	RESTRICTED_DATATYPE_ERROR,              // 29268
+    DATATYPE_NOT_SUPPPORTED_ERROR,			// 29266
+    JVM_MEM_ALLOC_ERROR,				// 29267
+    RESTRICTED_DATATYPE_ERROR,              // 29268
+    INVALID_DATA_BUFFER_ERROR,               // 29269
     CUSTOM_ERROR = -1						// Error defined by caller
 } JNILAYER_ERROR_CODES;
 
@@ -65,6 +66,7 @@ typedef struct JNICache_def
 	jmethodID		sqlWarningMethodId;
 	jmethodID		SQLMXDescConstructorId;
 	jmethodID		prepareOutputsMethodId;
+	jmethodID		prepareOutputsMethodId2;
 	jmethodID		execDirectOutputsMethodId;
 	jmethodID		execRSOutputsMethodId;
 	jmethodID		execDirectBatchOutputsMethodId;
@@ -79,7 +81,7 @@ typedef struct JNICache_def
 	jmethodID		getScaleMethodId;
 	jmethodID		getSqlDatetimeCodeMethodId;
 	jmethodID		setCurrentTxidStmtMethodId;
-      jmethodID		setCurrentStmtIdMethodId; //perf
+    jmethodID		setCurrentStmtIdMethodId; //perf
 	jmethodID		setCurrentTxidRSMethodId;
 	jmethodID		setCurrentTxidDBMMethodId;
 	jclass			sqlExceptionClass;
@@ -133,7 +135,7 @@ typedef struct JNICache_def
 	int				totalCharsets;
 	jint			defaultCharset;
 
-	~JNICache_def()
+    ~JNICache_def()
 	{
 	    MEMORY_DELETE_ARRAY(charsetInfo);
 	}
@@ -144,9 +146,6 @@ extern JNIEnv *gJEnv;
 extern JNICache_def gJNICache;
 extern const char *defaultEncodingOption;
 
-#ifdef NSK_PLATFORM
-//typedef long long Int64;
-#else
-typedef __int64 Int64;
-#endif
+typedef long long Int64;
+
 #endif /* JDBCDRIVERGLOBAL_H */
