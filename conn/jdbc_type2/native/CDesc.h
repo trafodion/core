@@ -24,25 +24,34 @@
 //
 // PURPOSE: Defines CSrvrStmt class
 //
-// 
+//
 #ifndef _CDESC_DEFINED
 #define _CDESC_DEFINED
 
 #include <platform_ndcs.h>
 
 class SRVR_DESC_HDL {
-public:
-	long	dataType;
-	BYTE	*varPtr;
-	BYTE	*indPtr;
-	long	charSet;
-	long	length;
-	long	precision;
-	long	scale;
-	long	sqlDatetimeCode;
-	long	FSDataType;
-	long	paramMode;
-	long    vc_ind_length;
+    public:
+        long	dataType;
+        BYTE	*varPtr;
+        BYTE	*indPtr;
+        long	charSet;
+        long	length;
+        long	precision;
+        long	scale;
+        long	sqlDatetimeCode;
+        long	FSDataType;
+        long	paramMode;
+        long    vc_ind_length;
 };
+
+typedef struct tagDESC_HDL_LISTSTMT
+{
+    long DataType;
+    long Length;
+    long Nullable;
+    long VarBuf;
+    long IndBuf;
+} DESC_HDL_LISTSTMT;
 
 #endif
