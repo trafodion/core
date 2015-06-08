@@ -42,6 +42,33 @@
 // addition to SrvrOthers.h indexes, which stop at 19
 #define     MAX_RESULT_SETS         255 // Max number of RS per stmt
 
+#define     UNKNOWN_METHOD              -1
+
+#define     ROWSET_NOT_DEFINED          0
+
+#define     DEFAULT_ROWSET_SIZE         1
+
+typedef struct ROWSET_ERROR_NODE {
+    ROWSET_ERROR_NODE(){
+        rowNumber = 0;
+        SQLError.errorList._length = 0;
+        SQLError.errorList._buffer = NULL;
+        nextNode = NULL;
+    }
+    Int32 rowNumber;
+    odbc_SQLSvc_SQLError SQLError;
+    ROWSET_ERROR_NODE* nextNode;
+} ROWSET_ERROR_NODE;
+
+typedef struct ROWSET_ERROR_LIST {
+    ROWSET_ERROR_LIST(){
+        nodeCount = 0;
+        firstNode = NULL;
+    }
+    UInt32 nodeCount;
+    ROWSET_ERROR_NODE* firstNode;
+} ROWSET_ERROR_LIST;
+
 
 class SRVR_STMT_HDL {
 public:
@@ -51,6 +78,7 @@ public:
     };
     short                   stmtType;                         // Used to indecate internal or external statment
     char                    cursorName[MAX_CURSOR_NAME_LEN+1];
+    short                   cursorNameLen;
     char                    previousCursorName[MAX_CURSOR_NAME_LEN+1];
     char                    stmtName[MAX_STMT_NAME_LEN+1];
     int                     paramCount; /*Venu changed the following two variables from long to int for 64 bit porting */
@@ -60,8 +88,8 @@ public:
     SQLDESC_ID              outputDesc;
     BYTE                    *inputDescVarBuffer;        // Data Buffer for input values
     BYTE                    *outputDescVarBuffer;       // Data Buffer for output values
-    long                    inputDescVarBufferLen;
-    long                    outputDescVarBufferLen;
+    Int32                   inputDescVarBufferLen;
+    Int32                   outputDescVarBufferLen;
     BOOL                    isReadFromModule;
     jobject                 resultSetObject;
     BOOL                    endOfData;
@@ -81,15 +109,39 @@ public:
     short                   sqlAsyncEnable;
     long                    queryTimeout;
     SQLValue_def            sqlString;
+    char                    *sqlStringText;
+    Int32                   maxRowCnt;
+    Int32                   maxRowLen;
     long                    inputRowCnt;
-    long                    maxRowCnt;
     short                   sqlStmtType;
     unsigned short          freeResourceOpt;
     SQLValueList_def        inputValueList;
 
+    Int32                   inputDescBufferLength;
+    BYTE                    *inputDescBuffer;
+    Int32                   outputDescBufferLength;
+    BYTE                    *outputDescBuffer;
+    Int32                   sqlWarningOrErrorLength;
+    BYTE                    *sqlWarningOrError;
+    Int32                   delayedSqlWarningOrErrorLength;
+    BYTE                    *delayedSqlWarningOrError;
+
+    // child query visibility
+    Int32                   sqlSubQueryType;
+
+    Int32                   maxRowsetSize;
+    short                   RowsetFetchRetcode;
+    short                   PerfFetchRetcode;
+
+    bool                    sqlBulkFetchPossible;
+    bool                    bFirstSqlBulkFetch;
+
     // output Values
     long                    estimatedCost;
     int                     rowsAffected;
+    Int32                   rowsAffectedHigherBytes; // Combine both rowsAffected and rowsAffectedHigherBytes as __int64 when interface between drvr/srvr changes
+    Int32                   delayedRowsAffected;
+    
     SQLItemDescList_def     inputDescList;
     SQLItemDescList_def     outputDescList;
     RES_HIT_DESC_def        rgPolicyHit;
@@ -121,6 +173,66 @@ public:
     long                    batchMaxRowsetSize;
     long                    inputDescParamOffset;
     struct SQLCLI_QUAD_FIELDS *batchQuadField;
+
+    ROWSET_ERROR_LIST       rowsetErrorList;
+    Int32                   estRowLength;
+
+    bool                    NA_supported;
+    bool                    bSQLMessageSet;
+    bool                    bSQLValueListSet;
+
+    bool                    bFetchStarted;
+
+    bool                           preparedWithRowsets;  
+    struct SQLCLI_QUAD_FIELDS      *inputQuadList;
+    struct SQLCLI_QUAD_FIELDS      *inputQuadList_recover;
+    BYTE                           *transportBuffer;
+    Int32                          transportBufferLen;
+
+    struct SQLCLI_QUAD_FIELDS      *outputQuadList;
+    BYTE                           *outputBuffer;
+    Int32                          outputBufferLength;
+    Int32                   returnCodeForDelayedError; // for the hash driver we need to save the returnCode
+
+    // Added for MODE_SPECIAL_1 behavior
+    Int32 numErrRows;
+    BYTE *errRowsArray;
+
+    // The following elements apply to SPJ result sets
+    Int32                            numResultSets;  // If this is CALL statement, then the number of RS for this invocation
+    SRVR_STMT_HDL                   *previousSpjRs;  // If this is SPJ RS, then the previous SPJ RS or CALL statement.
+    SRVR_STMT_HDL                   *nextSpjRs;      // If this is CALL statement or SPJ RS, then the next SPJ RS
+    SQLSTMT_ID                      *callStmtId;     // If this is an SPJ result set, then its CALL statement
+    SRVR_STMT_HDL                   *callStmtHandle; // If this is an SPJ result set, then its CALL statement handle
+    Int32                            resultSetIndex;
+
+    char *SpjProxySyntaxString;    // SPJ Proxy Syntax String
+    Int32  SpjProxySyntaxStringLen; // SPJ Proxy Syntax String Len
+    //--------------------------------------------------------------------------------
+    //  adaptive segment has been allocated by SQLPrepare
+
+    bool    m_isAdaptiveSegmentAllocated;
+    short   m_adaptive_segment;
+
+    unsigned long   m_internal_Id;      // random number to identify the query in WMS
+    short   m_aggPriority;              // used for release aggregated queries
+    bool    m_bSkipWouldLikeToExecute; // for this statement do not call WouldLikeToExecute
+    //bool    m_bDoneWouldLikeToExecute; // true when WouldLikeToexecute done on this statement
+
+    int64   m_curRowsFetched;
+
+    //---------------------------------------------------------------------------------
+    DESC_HDL_LISTSTMT   *SqlDescInfo;
+    Int32   current_holdableCursor;
+    Int32   holdableCursor;
+
+    bool    reprepareWarn;
+
+    SQL_DataValue_def outputDataValue;
+    SQL_DataValue_def inputDataValue;
+    SQL_DataValue_def delayedOutputDataValue;
+
+    IDL_long    myKey;
 
     // +++ T2_REPO
     char                    sqlUniqueQueryID[MAX_QUERY_NAME_LEN + 1];
@@ -179,6 +291,14 @@ public:
     inline int getSqlQueryStatementType (void) {
         return (SqlQueryStatementType);
     };
+
+private:
+    //message buffers between JAVA layer and native layer
+    char* m_wbuffer;
+    int   m_wbuffer_length;
+    char* m_rbuffer;
+    int   m_rbuffer_length;
+
 public:
     SRVR_STMT_HDL();
     SRVR_STMT_HDL(long dialogueId);
@@ -190,6 +310,10 @@ public:
     SQLRETURN Execute(const char *inCursorName, long inputRowcnt, short sqlStmtType,
         const SQLValueList_def *inputValueList,short inSqlAsyncEnable, long inQueryTimeout,
         SQLValueList_def *outputValueList);
+    // Rowsets
+    SQLRETURN Execute(const char *inCursorName, IDL_long inInputRowCnt, IDL_short inSqlStmtType,
+            const SQLValueList_def *inValueList, short inSqlAsyncEnable, Int32 inQueryTimeout);
+
     SQLRETURN Close(unsigned short inFreeResourceOpt);
     SQLRETURN Fetch(long inMaxRowCnt, short inSqlAsyncEnable, long inQueryTimeout);
     SQLRETURN ExecDirect(const char *inCursorName, const SQLValue_def *inSqlString, short inStmtType, short inSqlStmtType,
@@ -204,8 +328,14 @@ public:
     SQLRETURN InternalStmtClose(unsigned short inFreeResourceOpt);
     SQLRETURN freeBuffers(short descType);
     void processThreadReturnCode(void);
-    SQLRETURN allocSqlmxHdls(const char *stmtName, const char *moduleName, long long moduleTimestamp,
-        long moduleVersion, short sqlStmtType, BOOL useDefaultDesc);
+    SQLRETURN allocSqlmxHdls(const char *stmtName
+            , const char *moduleName
+            , long long moduleTimestamp
+            , long moduleVersion
+            , short sqlStmtType
+            , BOOL useDefaultDesc
+            , const char *inInputDescName = NULL
+            , const char *inOutputDescName = NULL);
     SQLRETURN allocSqlmxHdls_spjrs(SQLSTMT_ID *callpstmt, const char *stmtName, const char *moduleName, long long moduleTimestamp,
         long moduleVersion, short sqlStmtType, BOOL useDefaultDesc, long RSindex, const char * RSstmtName);
     SQLRETURN ExecuteCall(const SQLValueList_def *inValueList,short inSqlAsyncEnable,
@@ -227,6 +357,19 @@ public:
     BYTE **getDescVarBufferPtr(DESC_TYPE descType);
     long getRowsetSize(DESC_TYPE descType);
     struct SQLCLI_QUAD_FIELDS *getQuadField(DESC_TYPE descType);
+
+    //message buffers between JAVA layer and native layer
+    char*    w_allocate(size_t);
+    char*    r_allocate(size_t);
+    char*    w_assign(char*, int);
+    char*    r_assign(char*, int);
+    void     w_release();
+    void     r_release();
+    char*    w_buffer();
+    char*    r_buffer();
+    int      w_buffer_length();
+    int      r_buffer_length();
+
 private:
     int             SqlQueryStatementType;             // This is used to indecate the type of SQL query statment (SELECT, INSERT, UPDATE, ...)
 };

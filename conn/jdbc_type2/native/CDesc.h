@@ -2,7 +2,7 @@
 *
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1998-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1998-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -24,24 +24,33 @@
 //
 // PURPOSE: Defines CSrvrStmt class
 //
-// 
+//
 #ifndef _CDESC_DEFINED
 #define _CDESC_DEFINED
 
 #include <platform_ndcs.h>
 
 class SRVR_DESC_HDL {
-public:
-	long	dataType;
-	BYTE	*varPtr;
-	BYTE	*indPtr;
-	long	charSet;
-	long	length;
-	long	precision;
-	long	scale;
-	long	sqlDatetimeCode;
-	long	FSDataType;
-	long	paramMode;
+    public:
+        long	dataType;
+        BYTE	*varPtr;
+        BYTE	*indPtr;
+        long	charSet;
+        long	length;
+        long	precision;
+        long	scale;
+        long	sqlDatetimeCode;
+        long	FSDataType;
+        long	paramMode;
 };
+
+typedef struct tagDESC_HDL_LISTSTMT
+{
+    long DataType;
+    long Length;
+    long Nullable;
+    long VarBuf;
+    long IndBuf;
+} DESC_HDL_LISTSTMT;
 
 #endif
