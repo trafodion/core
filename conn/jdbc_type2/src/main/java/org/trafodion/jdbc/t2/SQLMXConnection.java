@@ -869,10 +869,13 @@ public synchronized PreparedStatement prepareStatement(String sql)
                             pstmt.fetchSize_, sql.trim(),getSqlStmtTypeForMFC(sql.trim()));
                 }
             } else {
-                pstmt.prepare(server_, getDialogueId_(), getTxid_(), autoCommit_,
+                /*
+                 * pstmt.prepare(server_, getDialogueId_(), getTxid_(), autoCommit_,
                         pstmt.getStmtLabel_(), pstmt.sql_.trim(), pstmt.isSelect_,
                         pstmt.queryTimeout_, pstmt.resultSetHoldability_,
                         batchBindingSize_, pstmt.fetchSize_);
+                        */
+				pstmt.prepare(pstmt.sql_, pstmt.queryTimeout_, pstmt.resultSetHoldability_);
             }
 
             // value
@@ -2613,6 +2616,7 @@ private void printIdMapEntry(SQLMXStatement stmt) {
             isClosed_ = false;
             byteSwap_ = false;
 
+			ic_ = new InterfaceConnection(this, t2props);
             refQ_ = new ReferenceQueue<SQLMXStatement>();
             refToStmt_ = new HashMap<WeakReference, Long>();
             pRef_ = new WeakReference<SQLMXConnection>(this, driver_.weakConnection.refQ_);
@@ -2663,6 +2667,7 @@ private void printIdMapEntry(SQLMXStatement stmt) {
 
             setIsSpjRSFlag(getDialogueId_(), t2props.isSpjrsOn());
 
+			ic_ = new InterfaceConnection(this, t2props);
             refQ_ = new ReferenceQueue<SQLMXStatement>();
             refToStmt_ = new HashMap<WeakReference, Long>();
             pRef_ = new WeakReference<SQLMXConnection>(this,WeakConnection.refQ_);
@@ -2710,6 +2715,7 @@ private void printIdMapEntry(SQLMXStatement stmt) {
             isClosed_ = false;
             byteSwap_ = false;
 
+			ic_ = new InterfaceConnection(this, t2props);
             refQ_ = new ReferenceQueue<SQLMXStatement>();
             refToStmt_ = new HashMap<WeakReference, Long>();
             pRef_ = new WeakReference<SQLMXConnection>(this,
@@ -2901,6 +2907,10 @@ public int getTxid_() {
         return txid_;
 //		return this.txIDPerThread.get().intValue();
     }
+
+public InterfaceConnection getServerHandle() {
+    return ic_;
+}
 
 public void setDialogueId_(long dialogueId_) throws SQLException {
         this.dialogueId_ = dialogueId_;
@@ -3100,7 +3110,7 @@ public static final int SQL_SET_TRANSACTION_FLAG = 0x0001;
     int loginTimeout_;
     int queryTimeout_;
     int connectionTimeout_;
-private long dialogueId_;
+    private long dialogueId_;
     int hClosestmtCount=0;
     int lClosestmtCount=0;
     int pStmtCount=0;
@@ -3112,8 +3122,9 @@ private long dialogueId_;
     String programStatisticsEnabled_;
     String statisticsSqlPlanEnabled_;
 
+    byte[] transactionToJoin;
     boolean byteSwap_;
-private int txid_;
+    private int txid_;
     //ThreadLocal<Integer> txIDPerThread;
     Map<String, Class<?>> userMap_;
     Locale locale_;
@@ -3134,6 +3145,7 @@ private int txid_;
     T2Driver driver_;
 
     T2Properties t2props;
+    InterfaceConnection ic_;
 
     int transactionMode_;
     String iso88591EncodingOverride_;
@@ -3379,6 +3391,20 @@ private PrintWriter tracer;
     PreparedStatement clearCQD1;
     PreparedStatement clearCQD2;
     PreparedStatement clearCQD3;
+
+    private boolean isBeginTransaction = false;
+
+    protected boolean isBeginTransaction() {
+        return isBeginTransaction;
+    }
+
+protected void setBeginTransaction(boolean isBeginTransaction) {
+    this.isBeginTransaction = isBeginTransaction;
+}
+
+public Locale getLocale() {
+    return locale_;
+}
 
 public Object unwrap(Class iface) throws SQLException {
         // TODO Auto-generated method stub
