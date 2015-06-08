@@ -1,7 +1,7 @@
 /**************************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 2004-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 2004-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -39,9 +39,10 @@ char *gJNILayerErrorMsgs[] =
     "Invalid or null statement label or name",
     "Invalid or null module name",
     "Unsupported character set encoding",
-	"Data type not supported",
-	"Exceeded JVM allocated memory",
-	"Restricted data type  ",
+    "Data type not supported",
+    "Exceeded JVM allocated memory",
+    "Restricted data type  ",
+    "Invalid data buffer",
     NULL
 };
 

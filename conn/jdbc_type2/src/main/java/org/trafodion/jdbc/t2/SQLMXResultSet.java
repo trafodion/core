@@ -28,6 +28,7 @@ package org.trafodion.jdbc.t2;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.lang.Integer;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
@@ -1577,8 +1578,9 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 			validateGetInvocation(columnIndex);
 			DataWrapper row = getCurrentRow();
 			wasNull_ = row.isNull(columnIndex);
-			if (wasNull_)
+			if (wasNull_) {
 				return null;
+			}
 
 			// For the CLOB datatype the toString() DataWrapper call will return
 			// the datalocator data from the base table. getString(col, x)
@@ -2424,9 +2426,10 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 			int queryTimeout;
 
 			clearWarnings();
-			if (isClosed_)
+			if (isClosed_) {
 				throw Messages.createSQLException(connection_.locale_,
 						"invalid_cursor_state", null);
+			}
 			if (isAnyLob_)
 				closeLobObjects();
 
@@ -2475,10 +2478,16 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 										connection_.locale_,
 										"invalid_cursor_state", null);
 							}
-							validRow = fetchN(connection_.server_, connection_
-									.getDialogueId_(), connection_.getTxid_(),
-									connection_.transactionMode_, stmtId_,
-									maxRowCnt, queryTimeout, holdability_);
+
+							if (stmt_ instanceof org.trafodion.jdbc.t2.SQLMXPreparedStatement) {
+								validRow = irs_.fetch(stmtId_, maxRowCnt, queryTimeout, holdability_, this);
+								fetchComplete_ = true;
+                            } else {
+                                validRow = fetchN(connection_.server_, connection_
+                                        .getDialogueId_(), connection_.getTxid_(),
+                                        connection_.transactionMode_, stmtId_,
+                                        maxRowCnt, queryTimeout, holdability_);
+							}
 						}// End sync
 					}
 					if (validRow) {
@@ -4013,6 +4022,32 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 		}
 	}
 
+    /*
+     * To make this work, we should overload all setXXX methods of Statement 
+     * and PreparedStatement, and DataWrapper should be replaced by Row 
+     * */
+	void setFetchOutputs(Row[] row, int rowsFetched, boolean endOfData) throws SQLException {
+		// numRows_ contain the number of rows in the ArrayList. In case of
+		// TYPE_FORWARD_ONLY,
+		// the numRows_ is reset to 0 whenever this method is called.
+		// totalRowsFetched_ contain the total number of rows fetched
+
+		if (getType() == ResultSet.TYPE_FORWARD_ONLY) {
+			rsCachedRows_.clear();
+			numRows_ = 0;
+			currentRow_ = 0;
+		}
+
+		for (int i = 0; i < row.length; i++) {
+			rsCachedRows_.add(row[i]);
+			// add to the totalRowsFetched
+		}
+		totalRowsFetched_ += rowsFetched;
+		numRows_ += rowsFetched;
+		endOfData_ = endOfData;
+		isBeforeFirst_ = false;
+	}
+
 	// Method used by JNI layer to set the Data Truncation warning
 	void setDataTruncation(int index, boolean parameter, boolean read,
 			int dataSize, int transferSize) {
@@ -4179,11 +4214,20 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 			fetchDirection_ = stmt.fetchDirection_;
 			stmtId_ = stmt.stmtId_;
 			cachedRows_ = new ArrayList<DataWrapper>();
+			rsCachedRows_ = new ArrayList();
 			isBeforeFirst_ = true;
 			holdability_ = stmt.resultSetHoldability_;
 			resultSetType_ = stmt.resultSetType_;
 			resultSetIndex_ = stmt.resultSetIndex_;
-			stmtId_ = stmt.stmtId_;
+			fetchComplete_ = false;
+			stmtLabel_ = stmt.getStmtLabel_();
+
+			//seqNum_ = seqCount_++;
+			try {
+				irs_ = new InterfaceResultSet(this);
+			} catch (SQLException e) {
+				throw e;
+			}
 
 			if (JdbcDebugCfg.traceActive)
 				debug[methodId_SQLMXResultSet_LL]
@@ -4201,7 +4245,8 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 	// Constructor - used in SQLMXDatabaseMetaData
 	// Venu changed stmtId from int to long for 64 bit
 	SQLMXResultSet(SQLMXDatabaseMetaData dbMetaData, SQLMXDesc[] outputDesc,
-			int txid, long stmtId) {
+		int txid, long stmtId)
+		throws SQLException {
 		if (JdbcDebugCfg.entryActive)
 			debug[methodId_SQLMXResultSet_LLII].methodEntry();
 		try {
@@ -4216,11 +4261,19 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 			concurrency_ = ResultSet.CONCUR_READ_ONLY;
 			fetchDirection_ = ResultSet.FETCH_FORWARD;
 			cachedRows_ = new ArrayList<DataWrapper>();
+			rsCachedRows_ = new ArrayList();
 			isBeforeFirst_ = true;
 			holdability_ = CLOSE_CURSORS_AT_COMMIT;
 			resultSetType_ = ResultSet.TYPE_FORWARD_ONLY;
 			resultSetIndex_ = 0;
-			stmtId_ = stmtId;
+			fetchComplete_ = false;
+
+			//seqNum_ = seqCount_++;
+			try {
+				irs_ = new InterfaceResultSet(this);
+			} catch (SQLException e) {
+				throw e;
+			}
 
 			// Check if the transaction is started by this Select statement
 			if (connection_.getTxid_() == 0 && txid != 0)
@@ -4230,6 +4283,54 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 		} finally {
 			if (JdbcDebugCfg.entryActive)
 				debug[methodId_SQLMXResultSet_LLII].methodExit();
+		}
+	}
+
+	// Constructors - used for SPJ ResultSets
+	SQLMXResultSet(SQLMXStatement stmt, SQLMXDesc[] outputDesc, String stmt_label, boolean spj_result_set)
+			throws SQLException {
+		/*
+			if (stmt.connection_.props_.t2Logger_.isLoggable(Level.FINE) == true) {
+			Object p[] = T2LoggingUtilities.makeParams(stmt.connection_.props_, stmt, outputDesc, stmt_label,
+					spj_result_set);
+			stmt.connection_.props_.t2Logger_.logp(Level.FINE, "TrafT2ResultSet", "", "", p);
+		}
+		if (stmt.connection_.props_.getLogWriter() != null) {
+			LogRecord lr = new LogRecord(Level.FINE, "");
+			Object p[] = T2LoggingUtilities.makeParams(stmt.connection_.props_, stmt, outputDesc, stmt_label,
+					spj_result_set);
+			lr.setParameters(p);
+			lr.setSourceClassName("TrafT2ResultSet");
+			lr.setSourceMethodName("");
+			T2LogFormatter lf = new T2LogFormatter();
+			String temp = lf.format(lr);
+			stmt.connection_.props_.getLogWriter().println(temp);
+		}
+		*/
+		stmt_ = stmt;
+		outputDesc_ = outputDesc;
+		// update all the resultSet fields from stmt
+		connection_ = stmt.connection_;
+		keepRawBuffer_ = connection_.t2props.getKeepRawFetchBuffer();
+		fetchSize_ = stmt.fetchSize_;
+		fetchDirection_ = stmt.fetchDirection_;
+		// Don't use the statement label from the statement object
+		// Instead, use it from the one provided (added for SPJ RS support) - SB
+		// 11/21/2005
+		stmtId_ = stmt.stmtId_;
+		stmtLabel_ = stmt_label;
+		cachedRows_ = new ArrayList<DataWrapper>();
+		rsCachedRows_ = new ArrayList();
+		isBeforeFirst_ = true;
+		holdability_ = stmt.resultSetHoldability_;
+		spj_rs_ = spj_result_set;
+		fetchComplete_ = false;
+		
+		seqNum_ = seqCount_++;
+		try {
+			irs_ = new InterfaceResultSet(this);
+		} catch (SQLException e) {
+			throw e;
 		}
 	}
 
@@ -4280,6 +4381,7 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 	// public static final int HOLD_CURSORS_OVER_COMMIT=1;
 	// public static final int CLOSE_CURSORS_AT_COMMIT=2;
 	// Fields
+	InterfaceResultSet irs_;
 	SQLMXDesc[] outputDesc_;
 	SQLMXStatement stmt_;
 	int resultSetType_;
@@ -4297,10 +4399,12 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 	int fetchDirection_;
 	//Venu changed stmtId_ from int to long for 64 bit
 	long stmtId_;
+	String stmtLabel_;
 	private PrintWriter tracer;
 	private String traceId_ = null;
 
 	ArrayList<DataWrapper> cachedRows_;
+	ArrayList rsCachedRows_;
 	boolean onInsertRow_;
 	DataWrapper insertRow_;
 	int savedCurrentRow_;
@@ -4327,6 +4431,16 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 
 	boolean txnStarted_;
 	boolean isAnyLob_;
+
+	String proxySyntax_  = "";
+	boolean keepRawBuffer_;
+	byte[] rawBuffer_;
+	boolean fetchComplete_;
+	
+	static long seqCount_ = 0;
+	long seqNum_ = 0;
+	boolean spj_rs_;
+
 	protected static final int DEFAULT_FETCH_SIZE = 100;
 	
 	private static int methodId_absolute = 0;
@@ -5075,11 +5189,11 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
 		return null;
 	}
 
-        public boolean isClosed() throws SQLException {
-               return false;
-        }
-    public SQLMXDesc[] getResultSetDesc(){
-        return outputDesc_;
+	public boolean isClosed() throws SQLException {
+		return false;
+	}
+	public SQLMXDesc[] getResultSetDesc(){
+		return outputDesc_;
     }
     public int getTotalRowsFetched(){
         return totalRowsFetched_;
@@ -5087,6 +5201,15 @@ public class SQLMXResultSet extends SQLMXHandle implements java.sql.ResultSet {
     public int getCurrentRowNumber(){
         return currentRow_;
     }
+    
+	public int getNoOfColumns() {
+		return outputDesc_.length;
+	}
+
+	public boolean useOldDateFormat() {
+		return true;
+	}
+
     public ArrayList<DataWrapper> getCachedRows(){
         ArrayList<DataWrapper> lcachedRows_ = cachedRows_;
         return lcachedRows_;
