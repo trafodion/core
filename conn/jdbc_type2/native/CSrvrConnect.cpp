@@ -268,10 +268,10 @@ void SRVR_CONNECT_HDL::addSrvrStmt(SRVR_STMT_HDL *pSrvrStmt,BOOL internalStmt)
         mapOfInternalSrvrStmt[pSrvrStmt->stmtName]= pSrvrStmt;  // +++ map error
     }
 
-
     //End of Soln. No.: 10-100202-7923
 
     count++;
+    pSrvrStmt->myKey = count;
     FUNCTION_RETURN_VOID((NULL));
 }
 
@@ -325,6 +325,7 @@ void SRVR_CONNECT_HDL::removeSrvrStmt(SRVR_STMT_HDL *pSrvrStmt)
             MEMORY_DELETE_OBJ(lpSrvrStmt);
         }
 
+		count--;
     }
     FUNCTION_RETURN_VOID((NULL));
 }
@@ -338,7 +339,10 @@ SRVR_STMT_HDL *SRVR_CONNECT_HDL::createSrvrStmt(
     short   sqlStmtType,
     BOOL    useDefaultDesc,
     BOOL    internalStmt,
-    long stmtId)
+    long stmtId,
+    short sqlQueryType,
+    Int32  resultSetIndex,
+    SQLSTMT_ID* callStmtId)
 {
     FUNCTION_ENTRY("SRVR_CONNECT_HDL::createSrvrStmt",("..."));
     DEBUG_OUT(DEBUG_LEVEL_ENTRY,("  stmtLabel=%s, sqlcode=0x%08x",
@@ -373,6 +377,13 @@ SRVR_STMT_HDL *SRVR_CONNECT_HDL::createSrvrStmt(
     if (pSrvrStmt == NULL)
     {
         MEMORY_ALLOC_OBJ(pSrvrStmt,SRVR_STMT_HDL((long)this));
+
+        if (sqlQueryType == SQL_SP_RESULT_SET)
+        {
+            pSrvrStmt->sqlQueryType   = SQL_SP_RESULT_SET;
+            pSrvrStmt->callStmtId     = callStmtId;
+            pSrvrStmt->resultSetIndex = resultSetIndex;
+        }
 
         rc = pSrvrStmt->allocSqlmxHdls(stmtLabel, moduleName, moduleTimestamp,
             moduleVersion, sqlStmtType, useDefaultDesc);
@@ -456,6 +467,32 @@ SRVR_STMT_HDL *SRVR_CONNECT_HDL::getSrvrStmt(long dialogueId,long stmtId,long   
 
     FUNCTION_RETURN_PTR(NULL,(NULL));
 }
+
+SRVR_STMT_HDL *SRVR_CONNECT_HDL::getInternalSrvrStmt(long dialogueId, const char* stmtLabel, long *sqlcode)
+{
+	FUNCTION_ENTRY("getSrvrStmt",("dialogueId=0x%08x, stmtId=0x%08x, sqlcode=0x%08x",
+		dialogueId,
+		stmtId,
+		sqlcode));
+
+	SRVR_STMT_HDL *pSrvrStmt = NULL;
+
+	MapOfInternalSrvrStmt::iterator iterOfStmtId = mapOfInternalSrvrStmt.find(stmtLabel);
+	if( !(iterOfStmtId == mapOfInternalSrvrStmt.end()) )
+		pSrvrStmt =(SRVR_STMT_HDL *)iterOfStmtId->second;
+
+	if(pSrvrStmt != NULL)
+		FUNCTION_RETURN_PTR(pSrvrStmt,(NULL));
+}
+
+/*
+char *getReplyBuffer(REPLY_TYPE replyType, Long stmtHandle)
+{
+	char rbuffer = (char *)replyMsgMap_.getBuffer(replyType, stmtHandle);
+	
+	FUNCTION_RETURN_PTR(rbuffer,(NULL));
+}
+*/
 
 SRVR_STMT_HDL *SRVR_CONNECT_HDL::createSrvrStmtForMFC(
     const char *stmtLabel,
