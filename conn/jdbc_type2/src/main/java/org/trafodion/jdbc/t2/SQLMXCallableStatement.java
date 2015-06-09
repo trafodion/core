@@ -2173,4 +2173,8 @@ public class SQLMXCallableStatement extends SQLMXPreparedStatement implements
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+    public byte[] getSQLBytes(int parameterIndex)  throws SQLException {
+        return paramValues_.getSQLBytes(parameterIndex);
+    }
 }
