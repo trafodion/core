@@ -4291,25 +4291,23 @@ void NADefaults::updateSystemParameters(NABoolean reInit)
         #define DEFAULT_ESPS_PER_NODE 2
 
         Lng32 numESPsPerNode = DEFAULT_ESPS_PER_NODE;
-        Lng32 coresPerNode = 1;
-        if(!OSIM_isNSKbehavior())
-        {
+        Lng32 coresPerNode = 1;        
           // Make sure the gpClusterInfo points at an NAClusterLinux object.
           // In osim simulation mode, the pointer can point at a NAClusterNSK
           // object, for which the method numTSEsForPOS() is not defined.
-          NAClusterInfoLinux* gpLinux = dynamic_cast<NAClusterInfoLinux*>(gpClusterInfo);
+        NAClusterInfoLinux* gpLinux = dynamic_cast<NAClusterInfoLinux*>(gpClusterInfo);
 
           // number of POS TSE
-          Lng32 numTSEsPerCluster = gpLinux->numTSEsForPOS();
+        Lng32 numTSEsPerCluster = gpLinux->numTSEsForPOS();
 
           // cluster nodes
-          Lng32 nodesdPerCluster = gpClusterInfo->getTotalNumberOfCPUs();
+        Lng32 nodesdPerCluster = gpClusterInfo->getTotalNumberOfCPUs();
 
           // TSEs per node
-          Lng32 TSEsPerNode = numTSEsPerCluster/nodesdPerCluster;
+        Lng32 TSEsPerNode = numTSEsPerCluster/nodesdPerCluster;
 
           // cores per node
-          coresPerNode = gpClusterInfo->numberOfCpusPerSMP();
+        coresPerNode = gpClusterInfo->numberOfCpusPerSMP();
 
           // For Linux/nt, we conservatively allocate ESPs per node as follows
           // - 1 ESP per 2 cpu cores if cores are equal or less than TSEs
@@ -4322,24 +4320,24 @@ void NADefaults::updateSystemParameters(NABoolean reInit)
 
           // TSEsPerNode is 0 for arkcmps started by the seapilot universal comsumers
           // in this case we only consider cpu cores
-          if ((coresPerNode <= TSEsPerNode) || (TSEsPerNode == 0))
-          {
-             if (coresPerNode > 1)
+        if ((coresPerNode <= TSEsPerNode) || (TSEsPerNode == 0))
+        {
+            if (coresPerNode > 1)
                 numESPsPerNode = DEFAULT_ESPS_PER_NODE; 
-          }
-          else if (coresPerNode > (TSEsPerNode*2))
-          {
-             numESPsPerNode = TSEsPerNode;
-          }
-          else if (TSEsPerNode > 1)
-          {
-             numESPsPerNode = TSEsPerNode/2;
-          }
-          else // not really needed since numESPsPerNode is set to 1 from above
-          {
-             numESPsPerNode = DEFAULT_ESPS_PER_NODE;
-          }
         }
+        else if (coresPerNode > (TSEsPerNode*2))
+        {
+             numESPsPerNode = TSEsPerNode;
+        }
+        else if (TSEsPerNode > 1)
+        {
+             numESPsPerNode = TSEsPerNode/2;
+        }
+        else // not really needed since numESPsPerNode is set to 1 from above
+        {
+             numESPsPerNode = DEFAULT_ESPS_PER_NODE;
+        }
+        
 
         ftoa_((float)(numESPsPerNode)/(float)(coresPerNode), valuestr);
         strcpy(newValue, valuestr);
@@ -4351,13 +4349,9 @@ void NADefaults::updateSystemParameters(NABoolean reInit)
       break;
 
     case DEF_NUM_NODES_IN_ACTIVE_CLUSTERS:
-      if(OSIM_isLinuxbehavior())
-      {
-        utoa_(((NAClusterInfoLinux*)gpClusterInfo)->numLinuxNodes(), valuestr);
-        strcpy(newValue, valuestr);
-      }
-      else
-        strcpy(newValue, "16");
+
+      utoa_(((NAClusterInfoLinux*)gpClusterInfo)->numLinuxNodes(), valuestr);
+      strcpy(newValue, valuestr);
 
       if(reInit)
         ActiveSchemaDB()->
@@ -4902,8 +4896,7 @@ float NADefaults::getNumOfESPsPerNodeInFloat() const
    double maxEspPerCpuPerOp = getAsDouble(MAX_ESPS_PER_CPU_PER_OP);
 
    CollIndex cores =
-     (OSIM_isNSKbehavior() || 
-      (CmpCommon::context() && CURRSTMT_OPTDEFAULTS->isFakeHardware())
+     ( (CmpCommon::context() && CURRSTMT_OPTDEFAULTS->isFakeHardware())
      ) ?  
         getAsLong(DEF_NUM_SMP_CPUS) :
         gpClusterInfo->numberOfCpusPerSMP();
@@ -4924,9 +4917,7 @@ ULng32 NADefaults::getTotalNumOfESPsInCluster(NABoolean& fakeEnv) const
 
    CollIndex numOfNodes = gpClusterInfo->numOfSMPs();
 
-   if (OSIM_isNSKbehavior() ||
-      (CmpCommon::context() && CURRSTMT_OPTDEFAULTS->isFakeHardware())) {
-
+   if ( (CmpCommon::context() && CURRSTMT_OPTDEFAULTS->isFakeHardware())) {
      fakeEnv = TRUE;
      numOfNodes = getAsLong(DEF_NUM_NODES_IN_ACTIVE_CLUSTERS);
    }

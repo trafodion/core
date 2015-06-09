@@ -1272,8 +1272,6 @@ OrderComparison ValueIdList::satisfiesReqdOrder(const ValueIdList & reqdOrder,
   if (entries() < numCols)
     return DIFFERENT_ORDER;
 
-  if (!OSIM_isNTbehavior() || (OSIM_isNTbehavior() && OSIM_runningSimulation()))
-  {
   ItemExpr *ie = (*this)[0].getItemExpr();
   ItemExpr * reqdExpr = reqdOrder[0].getItemExpr();
   CollIndex i = 0;
@@ -1305,35 +1303,7 @@ OrderComparison ValueIdList::satisfiesReqdOrder(const ValueIdList & reqdOrder,
 
      i++; j++;
   }
-  }
-  else{
-  for (CollIndex i = 0; i < numCols; i++)
-    {
-      if ((reqdOrder[i] == (*this)[i]))
-	{
-	  oneCol = SAME_ORDER;
-	}
-      else
-	{
-	  // if the expressions are not exactly the same, try to match similar
-	  // expressions that result in the same sorting order, like a and a+1
-	  oneCol = reqdOrder[i].getItemExpr()->
-	    sameOrder((*this)[i].getItemExpr());
-	}
 
-      // the first column determines whether we do the same order or the
-      // inverse order or nothing, all other columns have to follow that
-      // decision
-      if (i == 0)
-	allCols = oneCol;
-      else
-	allCols = combineOrderComparisons(allCols,oneCol);
-
-      // did we already loose it?
-      if (allCols == DIFFERENT_ORDER)
-	return allCols;
-    }
-  }
   return allCols;
 }
 

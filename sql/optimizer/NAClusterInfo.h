@@ -176,8 +176,6 @@ public:
   virtual size_t   totalMemoryAvailable() const = 0;
   virtual size_t   virtualMemoryAvailable() = 0;
 
-  void removeFromTableToClusterMap(CollIndex tableId);
-
   Int32 numOfSMPs();
 
   // This is called by captureNAClusterInfo() to capture the OSIM
@@ -202,22 +200,10 @@ public:
   // return total number of CPUs (includes all, that is, even down CPUs)
   Lng32 getTotalNumberOfCPUs();
 
-  // return total number of DP2s 
-  Lng32 getTotalNumberOfDP2s()
-  {
-    return (dp2NameToInfoMap_) ? dp2NameToInfoMap_->entries() : 0;
-  }
-
-  // This method returns a list of nodes across which a table is partitioned.
-  const NAList<CollIndex>* getTableNodeList(Int32 tableIdent) const;
-
-  Int32 discsOnCluster() const;
   Lng32 getNumActiveCluster();
   Lng32 mapNodeNameToNodeNum(const NAString &node) const;
   void cleanupPerStatement();
 
-  NABoolean checkIfMixedVersion();
-  NABoolean checkIfDownRevCompilerNeeded();
   void setMaxOSV(QualifiedName &qualName, COM_VERSION osv);
 
   // The OSIM uses these following methods to capture and simulate
@@ -225,7 +211,7 @@ public:
   void initializeForOSIMCapture();
   void captureNAClusterInfo(ofstream & naclfile);
   void simulateNAClusterInfo();
-
+  NABoolean NODE_ID_TO_NAME(Int32 nodeId, char *nodeName, short maxLen, short *actualLen);
   // three methods to enter, leave and test the test mode. The test 
   // mode is for testing POS.
 
@@ -244,7 +230,7 @@ protected :
 
   Int32 computeNumOfSMPs();
 
-  void fillOutDisks_(CollHeap * heap);
+  //void fillOutDisks_(CollHeap * heap);
   //Helper function for getSuperNodeMap(). This actually implements the
   //active cluster algorithm.
   void createActiveClusterList();
@@ -253,7 +239,7 @@ protected :
 
   //inserts table to cluster mapping into tableToClusterMap.
   //Checks for duplicates.
-  NABoolean insertIntoTableToClusterMap(Int32 tableIdent, Int32 cluster);
+  //NABoolean insertIntoTableToClusterMap(Int32 tableIdent, Int32 cluster);
 
   //------------------------------------------------------------------------
   // localCluster_ used to be the segment number.  On Linux, it is
@@ -280,11 +266,11 @@ protected :
   CollHeap * heap_;
 
   //------------------------------------------------------------------------
-  // hashdictionary used to store the mapping of DP2 to cluster and CPU
-  // information DP2info). This structure is stored on the context heap
+  // hashdictionary used to store the mapping of cluster name to cluster id
+  // This structure is stored on the context heap
   // because we don't expect this mapping to change during a session..
   //------------------------------------------------------------------------
-  NAHashDictionary<DP2name,DP2info>* dp2NameToInfoMap_;
+  NAHashDictionary<Int32, NAString>* nodeIdToNodeNameMap_;
 
   // ------------------------------------------------------------------------
   // On NSK and Windows, this maps from cluster number to its cpu
@@ -296,23 +282,10 @@ protected :
   NAHashDictionary<CollIndex,maps> * clusterToCPUMap_;
 
   // ------------------------------------------------------------------------
-  // hashdictionary that maps table to the clusters that contains one of its
-  // partitions.
-  // Stored on the statement heap.
-  // ------------------------------------------------------------------------
-  NAHashDictionary<CollIndex,maps> * tableToClusterMap_;
 
   // hashdictionary that maps nodeName to nodeId.
   NAHashDictionary<NAString, Int32> *nodeNameToNodeIdMap_;
 
-  // ------------------------------------------------------------------------
-  // Number of discs on local cluster, should get the total number of discs on
-  // all the cluster by multiplying with the number of active clusters in the
-  // network.
-  // ------------------------------------------------------------------------
-  Int32 discsOnCluster_;
-
-  // ------------------------------------------------------------------------
   // List containing the active clusters or the super node map where ESP's
   // will be brought up.  
   // This is stored on the statement heap.

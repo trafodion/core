@@ -413,15 +413,15 @@ const NAString
 NodeMapEntry::getText() const
 {
   short actualClusterNameLen = 0;
-  Int32 guardianRetcode;
-  char buffer[50];
+  NABoolean guardianRetcode;
+  char buffer[256];
 
-  guardianRetcode = OSIM_NODENUMBER_TO_NODENAME(getClusterNumber(),
-                                            buffer,
-                                            9-1, // leave room for NUL
-                                            &actualClusterNameLen);
-
-  if (guardianRetcode || actualClusterNameLen == 0) {
+  guardianRetcode = gpClusterInfo->NODE_ID_TO_NAME(getClusterNumber(), 
+                                                               buffer, 
+                                                               sizeof(buffer)-1, 
+                                                               &actualClusterNameLen);
+  
+  if (!guardianRetcode || actualClusterNameLen == 0) {
     sprintf(buffer, "Unknown:"); // error, don't have a node name
     actualClusterNameLen = (short)strlen("Unknown");
   } else {
@@ -1287,23 +1287,6 @@ NodeMap::isActive(const CollIndex position) const
   return map_[position]->isPartitionActive();
 
 } // NodeMap::isActive()
-//<pb>
-//==============================================================================
-// Retrieve the list of nodes across which a given table is partitioned.
-//
-// Input:
-//  none
-//
-// Output:
-//  none
-//
-// Returns:
-//  list of nodes across which a given table is partitioned.
-//
-const NAList<CollIndex>* NodeMap::getTableNodeList() const
-{
-  return gpClusterInfo->getTableNodeList ( tableIdent_ );
-}
 
 Lng32
 NodeMap::getPopularNodeNumber(CollIndex beginPos, CollIndex endPos) const
@@ -1906,8 +1889,8 @@ short NodeMap::codeGen(const PartitioningFunction *partFunc,
   const NodeMap *compNodeMap = partFunc->getNodeMap();
   ExEspNodeMap *exeNodeMap = new(space) ExEspNodeMap;
   ExEspNodeMapEntry *mapEntries = new (space) ExEspNodeMapEntry[numESPs];
-  char clusterNameTemp[9];
-  Int32 guardianRetcode;
+  char clusterNameTemp[256];
+  NABoolean guardianRetcode;
   
 #pragma warning (disable : 4018)   //warning elimination
   assert(numESPs == compNodeMap->getNumEntries());
@@ -1922,12 +1905,11 @@ short NodeMap::codeGen(const PartitioningFunction *partFunc,
       short actualClusterNameLen = 0;
       char *clusterName;
 
-      guardianRetcode = OSIM_NODENUMBER_TO_NODENAME(ne->getClusterNumber(),
-						clusterNameTemp,
-						9-1, // leave room for NUL
-						&actualClusterNameLen);
-
-      if (guardianRetcode || actualClusterNameLen == 0)
+      guardianRetcode = gpClusterInfo->NODE_ID_TO_NAME(ne->getClusterNumber(), 
+                                                                                              clusterNameTemp, 
+                                                                                              sizeof(clusterNameTemp)-1, 
+                                                                                              &actualClusterNameLen);
+      if (!guardianRetcode || actualClusterNameLen == 0)
 	clusterName = NULL; // error, don't have a node name
       else
 	{
