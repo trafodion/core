@@ -1,7 +1,7 @@
 /**********************************************************************
 // @@@ START COPYRIGHT @@@
 //
-// (C) Copyright 1998-2014 Hewlett-Packard Development Company, L.P.
+// (C) Copyright 1998-2015 Hewlett-Packard Development Company, L.P.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -83,6 +83,8 @@
 #include <sys/stat.h>
 
 ULng32 dp2DescHashFunc(const DP2name& name);
+
+ULng32 hashFunc_NAString(const NAString& str);
 
 THREAD_P NABoolean gIsStaticCompiler = FALSE;
 void SetStaticCompiler(NABoolean isStaticCompiler)
@@ -292,6 +294,9 @@ NAClusterInfo::NAClusterInfo(CollHeap * heap)
     case OptimizerSimulator::LOAD:
     case OptimizerSimulator::CAPTURE:
     {
+      // Hash Map to store NodeName and NoideIds
+      nodeNameToNodeIdMap_ = new (heap) NAHashDictionary<NAString, Int32>
+          (&hashFunc_NAString, 5, TRUE, heap_);
       dp2NameToInfoMap_ = new(heap) NAHashDictionary<DP2name,DP2info>
           (&dp2DescHashFunc, 101,TRUE,heap);
       clusterToCPUMap_ = new(heap) NAHashDictionary<CollIndex,maps>
@@ -348,6 +353,15 @@ NAClusterInfo::NAClusterInfo(CollHeap * heap)
 
           if (!nodeInfo[i].spare_node)
              smpCount_++;
+
+          // store nodeName-nodeId pairs
+          NAString *key_nodeName = new (heap_) NAString(nodeInfo[i].node_name, heap_);
+          size_t i = key_nodeName->index(':');
+          if (i && i != NA_NPOS)
+            key_nodeName->remove(i);
+
+          Int32 *val_nodeId = new Int32(nodeInfo[i].nid);
+          nodeNameToNodeIdMap_->insert(key_nodeName, val_nodeId);
         }
       }
 
@@ -396,6 +410,12 @@ NAClusterInfo::NAClusterInfo(CollHeap * heap)
 
 NAClusterInfo::~NAClusterInfo()
 {
+  if (nodeNameToNodeIdMap_)
+  {
+    nodeNameToNodeIdMap_->clear();
+    delete nodeNameToNodeIdMap_;
+  }
+
   // clear and delete dp2NameToInfoMap_
   if(dp2NameToInfoMap_)
   {
@@ -775,6 +795,18 @@ NAClusterInfo::getNumActiveCluster()
   return activeClusters_->entries();
 }// NAClusterInfo::getNumActiveClusters()
 // LCOV_EXCL_STOP
+
+Lng32
+NAClusterInfo::mapNodeNameToNodeNum(const NAString keyNodeName) const
+{
+  if ( nodeNameToNodeIdMap_->contains(&keyNodeName) )
+  {
+    Int32 *nodeValue = nodeNameToNodeIdMap_->getFirstValue(&keyNodeName);
+    return *nodeValue;
+  }
+  else return -1;
+
+} // NodeMap::getNodeNmber
 
 #pragma warn(1506)  // warning elimination 
 
