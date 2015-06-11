@@ -216,3 +216,33 @@ const char* comObjectTypeLit(ComObjectType objType)
   ComASSERT(FALSE);
   return COM_UNKNOWN_OBJECT_LIT;
 }
+
+const char* comObjectTypeName(ComObjectType objType)
+{
+  switch(objType)
+    {
+      case COM_UNKNOWN_OBJECT:
+        return "UNKNOWN ";
+      case COM_BASE_TABLE_OBJECT:
+        return "TABLE ";
+      case COM_INDEX_OBJECT:
+        return "INDEX ";
+      case COM_LIBRARY_OBJECT:
+        return "LIBRARY ";
+      case COM_STORED_PROCEDURE_OBJECT:
+        return "PROCEDURE ";
+      case COM_USER_DEFINED_ROUTINE_OBJECT:
+        return "FUNCTION ";
+      case COM_VIEW_OBJECT:
+        return "VIEW ";
+      case COM_SHARED_SCHEMA_OBJECT:
+        return "SHARED SCHEMA ";
+      case COM_PRIVATE_SCHEMA_OBJECT:
+        return "PRIVATE SCHEMA ";
+      case COM_SEQUENCE_GENERATOR_OBJECT:
+        return "SEQUENCE ";
+    }
+
+  return "UNKNOWN ";
+}
+
