@@ -185,6 +185,8 @@ unset USE_HADOOP_1
 # HADOOP_INC_DIR           directory with header files for libhdfs
 # THRIFT_LIB_DIR           directory of Thrift library libthrift.so
 # THRIFT_INC_DIR           directory with header files for thrift
+# CURL_LIB_DIR           directory of Thrift library libthrift.so
+# CURL_INC_DIR           directory with header files for thrift
 # LOC_JVMLIBS              directory of the JNI C++ DLL libjvm.so
 
 # Elements of the CLASSPATH for Trafodion
@@ -221,7 +223,8 @@ if [[ -e $MY_SQROOT/sql/scripts/sw_env.sh ]]; then
   export HADOOP_INC_DIR=$YARN_HOME/include
   export THRIFT_LIB_DIR=$TOOLSDIR/thrift-0.9.0/lib
   export THRIFT_INC_DIR=$TOOLSDIR/thrift-0.9.0/include
-
+  export CURL_INC_DIR=/usr/include
+  export CURL_LIB_DIR=/usr/lib64
   # directories with jar files and list of jar files
   export HADOOP_JAR_DIRS="$YARN_HOME/share/hadoop/common
                           $YARN_HOME/share/hadoop/common/lib
