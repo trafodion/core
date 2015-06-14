@@ -7,6 +7,7 @@
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //
+
 //      http://www.apache.org/licenses/LICENSE-2.0
 //
 //  Unless required by applicable law or agreed to in writing, software
@@ -12636,7 +12637,7 @@ ItemExpr * LOBconvert::copyTopNode(ItemExpr *derivedNode, CollHeap* outHeap)
   ItemExpr *result;
 
   if (derivedNode == NULL)
-    result = new (outHeap) LOBconvert(NULL, obj_, tgtSize_);
+    result = new (outHeap) LOBconvert(NULL,obj_,tgtSize_);
   else
     result = derivedNode;
 
