@@ -840,9 +840,6 @@ SQLRETURN CConnect::Connect(SQLCHAR *ServerName,
 		else 
 			strcpy(inContext.computerName, "UNKNOWN");
 	}
-	char *cp = strchr(gDrvrGlobal.gComputerName, '.');
-	if (cp != NULL) 
-		*cp = '\0';
 	strcpy(inContext.computerName, gDrvrGlobal.gComputerName);
 
 
