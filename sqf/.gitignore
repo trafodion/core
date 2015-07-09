@@ -5,6 +5,7 @@
 /export/lib64/
 /export/bin64d/*
 /export/lib64d/
+/rpmroot/
 
 # genverhdr
 /export/include/SCMBuild*
