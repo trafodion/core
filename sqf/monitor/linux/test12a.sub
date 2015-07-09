@@ -1,5 +1,0 @@
-! STD Redirection test
-ps
-exec {name $SHELL2,nid 2} shell test12b.sub
-delay 2
-exit

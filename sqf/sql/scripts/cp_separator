@@ -1,5 +1,0 @@
-#!/bin/sh
-pathlist=`echo $CLASSPATH | sed -e "s/:/ /g"`
-for p in $pathlist; do
-	echo $p
-done
